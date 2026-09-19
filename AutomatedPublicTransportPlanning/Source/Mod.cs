@@ -81,6 +81,16 @@ namespace AutomatedPublicTransportPlanning
                                                    Loc.LanguageNames,
                                                    Loc.CurrentIndex,
                                                    OnLanguageChanged) as UIDropDown;
+
+            if (picker != null)
+            {
+                // UIDropDown.OnMouseWheel moves the selection and then calls Use() on
+                // the event, so the page does not scroll. Left on, a player scrolling
+                // this page changes language once per notch — each one writing the
+                // settings file and rewriting every label — while the page sits still.
+                picker.enableMouseWheel = false;
+            }
+
             TrackDropdownLabel(picker, Strings.LabelLanguage);
 
             UIHelperBase diagnostics = helper.AddGroup(Loc.Get(Strings.GroupDiagnostics));
@@ -132,16 +142,24 @@ namespace AutomatedPublicTransportPlanning
 
         // ------------------------------------------------------------------ language
 
+        /// <summary>
+        /// Guarded like the button handlers are. The game dispatches dropdown and
+        /// checkbox events with a bare delegate call and no try/catch of its own, so an
+        /// exception here reaches the UI input dispatcher.
+        /// </summary>
         private static void OnLanguageChanged(int selection)
         {
-            string[] order = Loc.Languages;
-            if (selection < 0 || selection >= order.Length)
+            Log.Guard("language change", delegate
             {
-                return;
-            }
+                string[] order = Loc.Languages;
+                if (selection < 0 || selection >= order.Length)
+                {
+                    return;
+                }
 
-            Loc.SetLanguage(order[selection]);
-            Retranslate();
+                Loc.SetLanguage(order[selection]);
+                Retranslate();
+            });
         }
 
         /// <summary>
@@ -180,8 +198,19 @@ namespace AutomatedPublicTransportPlanning
             if (component != null)
             {
                 s_localised.Add(new KeyValuePair<object, string>(component, key));
+                return component;
             }
 
+            // Said out loud on purpose. The label lookups below walk a hierarchy built
+            // by templates that live in an asset bundle, so the number of levels between
+            // a control and its caption cannot be confirmed from any managed assembly —
+            // it was read off UIHelper's source and is an assumption until it runs.
+            //
+            // Silently skipping would leave a label that never changes language and no
+            // way to tell whether the hierarchy is wrong or Retranslate never ran. This
+            // line answers that on the first run instead of costing a second one.
+            Log.Warning("No UI component found to localise for key '" + key +
+                        "'; that label will not follow the language.");
             return component;
         }
 
@@ -225,10 +254,13 @@ namespace AutomatedPublicTransportPlanning
 
         private static void OnSpikeArmedChanged(bool isChecked)
         {
-            s_spikeArmed = isChecked;
-            Log.Info(isChecked
-                ? "Spike buttons armed. Buttons 1 and 3 will now change the loaded city."
-                : "Spike buttons disarmed.");
+            Log.Guard("spike arming", delegate
+            {
+                s_spikeArmed = isChecked;
+                Log.Info(isChecked
+                    ? "Spike buttons armed. Buttons 1 and 3 will now change the loaded city."
+                    : "Spike buttons disarmed.");
+            });
         }
 
         /// <summary>

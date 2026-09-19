@@ -28,9 +28,18 @@ namespace AutomatedPublicTransportPlanning.Spike
     ///     it. Every phase runs a warm-up pass that is not timed.
     ///
     /// All of it runs on the simulation thread, and AddAction does not split work
-    /// across frames — the whole delegate runs inside one simulation step. Each phase
-    /// is therefore bounded by both a sample count and a time budget, so the worst
-    /// case is a brief hitch rather than a freeze.
+    /// across frames — the whole delegate runs inside one simulation step.
+    ///
+    /// What bounds each phase differs, and the distinction matters:
+    ///
+    ///   Phases 2 and 3 sample, so they carry both a sample cap and a time budget.
+    ///   Phases 1, 4 and 5 walk a whole buffer or the whole line list. They are bounded
+    ///     by the size of those, which are compile-time constants (36864 segments,
+    ///     49152 buildings, 256 lines) — not by any time budget.
+    ///
+    /// So the worst case is a hitch of well under a second rather than a freeze, but it
+    /// is the buffer sizes that guarantee that, not a clock. An earlier version of this
+    /// comment claimed every phase was time-bounded, which was not true.
     /// </summary>
     internal static class PerformanceProbe
     {
@@ -76,19 +85,37 @@ namespace AutomatedPublicTransportPlanning.Spike
             }
 
             StringBuilder sb = new StringBuilder("A5-1 performance probe");
-            sb.Append("\n  timer resolution: ")
-              .Append((1000000.0 / (double)System.Diagnostics.Stopwatch.Frequency).ToString("F3"))
-              .Append(" us/tick, highRes=")
-              .Append(System.Diagnostics.Stopwatch.IsHighResolution);
-
             List<ushort> usable = new List<ushort>();
 
-            MeasureSegmentScan(busInfo, sb, usable);
-            MeasureStopPosition(busInfo, sb, usable);
-            MeasureCitizenUnits(sb);
-            ReportVehicleCensus(sb);
+            try
+            {
+                // Each phase is guarded separately, and the report is written in the
+                // finally. The whole point of this probe is to come back with numbers:
+                // a phase that throws must not take the phases that already succeeded
+                // with it, or a run costs a save reload to learn one stack trace.
+                Phase(sb, "segment walk", delegate { MeasureSegmentScan(busInfo, sb, usable); });
+                Phase(sb, "stop position", delegate { MeasureStopPosition(busInfo, sb, usable); });
+                Phase(sb, "demand field", delegate { MeasureCitizenUnits(sb); });
+                Phase(sb, "vehicle census", delegate { ReportVehicleCensus(sb); });
+            }
+            finally
+            {
+                Log.Info(sb.ToString());
+            }
+        }
 
-            Log.Info(sb.ToString());
+        private static void Phase(StringBuilder sb, string name, Action body)
+        {
+            try
+            {
+                body();
+            }
+            catch (Exception e)
+            {
+                sb.Append("\n\n  [!] phase '").Append(name).Append("' FAILED: ")
+                  .Append(e.GetType().Name).Append(": ").Append(e.Message)
+                  .Append("\n      (other phases below are unaffected)");
+            }
         }
 
         // ---------------------------------------------------------------- phase 1
@@ -113,12 +140,55 @@ namespace AutomatedPublicTransportPlanning.Spike
                 }
             }
 
-            // Pass A: flags plus m_averageLength. This is the claim that reading the
-            // length the game already computed is free; if it is not, the whole edge
-            // cost model needs rethinking.
-            int created = 0;
-            float lengthSum = 0f;
-            System.Diagnostics.Stopwatch swA = System.Diagnostics.Stopwatch.StartNew();
+            // Each pass runs twice and the second is kept. A first walk over a buffer
+            // this size pulls it into cache, so timing A cold and B warm would shrink
+            // the difference between them — and that difference IS the filter's cost,
+            // which is the number the M3 budget rests on.
+            int created;
+            float lengthSum;
+            int eligible;
+
+            ScanFlagsOnly(net, length, out created, out lengthSum);
+            long ticksA = ScanFlagsOnly(net, length, out created, out lengthSum);
+
+            ScanWithFilter(net, length, busInfo, out eligible);
+            long ticksB = ScanWithFilter(net, length, busInfo, out eligible);
+
+            // Collected outside the timed passes so the list growth is not measured.
+            for (int i = 1; i < length; i++)
+            {
+                if ((net.m_segments.m_buffer[i].m_flags & NetSegment.Flags.Created) != NetSegment.Flags.None &&
+                    StopPlacement.IsSegmentUsableForStops((ushort)i, busInfo))
+                {
+                    usable.Add((ushort)i);
+                }
+            }
+
+            // Two different denominators, because the loops and the work they do are
+            // not the same size. Both passes walk every one of the buffer's slots, so
+            // the scan cost divides by that. The filter only runs on created segments,
+            // so its cost divides by those. Dividing a full-buffer walk by the created
+            // count reports a number roughly buffer/created times too large — an order
+            // of magnitude on a small city — and this is the figure that decides
+            // whether stop positions can be precomputed.
+            sb.Append("\n\n  [1] segment walk   buffer=").Append(length)
+              .Append("  created=").Append(created)
+              .Append("  busEligible=").Append(eligible)
+              .Append("\n      flags + m_averageLength   ").Append(Millis(ticksA).ToString("F2")).Append(" ms")
+              .Append("   (").Append(MicrosPer(ticksA, length).ToString("F3")).Append(" us per buffer slot)")
+              .Append("\n      + IsSegmentUsableForStops ").Append(Millis(ticksB).ToString("F2")).Append(" ms")
+              .Append("   (").Append(MicrosPer(ticksB, length).ToString("F3")).Append(" us per buffer slot)")
+              .Append("\n      filter alone              ").Append(Millis(ticksB - ticksA).ToString("F2")).Append(" ms")
+              .Append("   (").Append(MicrosPer(ticksB - ticksA, created).ToString("F3")).Append(" us per created segment)")
+              .Append("\n      (lengthSum=").Append(lengthSum.ToString("F0")).Append(" m, kept so the read is not optimised away)");
+        }
+
+        private static long ScanFlagsOnly(NetManager net, int length, out int created, out float lengthSum)
+        {
+            created = 0;
+            lengthSum = 0f;
+
+            System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
             for (int i = 1; i < length; i++)
             {
                 if ((net.m_segments.m_buffer[i].m_flags & NetSegment.Flags.Created) == NetSegment.Flags.None)
@@ -129,11 +199,16 @@ namespace AutomatedPublicTransportPlanning.Spike
                 created++;
                 lengthSum += net.m_segments.m_buffer[i].m_averageLength;
             }
-            swA.Stop();
+            sw.Stop();
 
-            // Pass B: the same walk plus the eligibility test.
-            int eligible = 0;
-            System.Diagnostics.Stopwatch swB = System.Diagnostics.Stopwatch.StartNew();
+            return sw.ElapsedTicks;
+        }
+
+        private static long ScanWithFilter(NetManager net, int length, TransportInfo busInfo, out int eligible)
+        {
+            eligible = 0;
+
+            System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
             for (int i = 1; i < length; i++)
             {
                 if ((net.m_segments.m_buffer[i].m_flags & NetSegment.Flags.Created) == NetSegment.Flags.None)
@@ -146,28 +221,9 @@ namespace AutomatedPublicTransportPlanning.Spike
                     eligible++;
                 }
             }
-            swB.Stop();
+            sw.Stop();
 
-            // Collected outside the timed passes so the list growth is not measured.
-            for (int i = 1; i < length; i++)
-            {
-                if ((net.m_segments.m_buffer[i].m_flags & NetSegment.Flags.Created) != NetSegment.Flags.None &&
-                    StopPlacement.IsSegmentUsableForStops((ushort)i, busInfo))
-                {
-                    usable.Add((ushort)i);
-                }
-            }
-
-            sb.Append("\n\n  [1] segment walk   buffer=").Append(length)
-              .Append("  created=").Append(created)
-              .Append("  busEligible=").Append(eligible)
-              .Append("\n      flags + m_averageLength   ").Append(Millis(swA).ToString("F2")).Append(" ms")
-              .Append("   (").Append(MicrosPer(swA, created).ToString("F3")).Append(" us/segment)")
-              .Append("\n      + IsSegmentUsableForStops ").Append(Millis(swB).ToString("F2")).Append(" ms")
-              .Append("   (").Append(MicrosPer(swB, created).ToString("F3")).Append(" us/segment)")
-              .Append("\n      filter alone              ")
-              .Append((Millis(swB) - Millis(swA)).ToString("F2")).Append(" ms")
-              .Append("\n      (lengthSum=").Append(lengthSum.ToString("F0")).Append(" m, kept so the read is not optimised away)");
+            return sw.ElapsedTicks;
         }
 
         // ---------------------------------------------------------------- phase 2 and 3
@@ -186,12 +242,20 @@ namespace AutomatedPublicTransportPlanning.Spike
             }
 
             NetManager net = Singleton<NetManager>.instance;
-            int stride = Mathf.Max(1, usable.Count / StopPositionSamples);
+
+            // Rounded up, not down. Integer division floors, so a list of 5999 against
+            // a 3000 sample cap gives a stride of 1 — the loop then stops at the sample
+            // cap having walked only indices 0..2999, covering half the list from the
+            // front. Rounding up makes the stride actually span the list.
+            int stride = Mathf.Max(1, (usable.Count + StopPositionSamples - 1) / StopPositionSamples);
 
             Vector3 pos;
             bool platform;
 
-            for (int i = 0; i < usable.Count && i < WarmupSamples; i++)
+            // Warmed from the tail so the warm-up and the timed samples do not overlap.
+            // Starting both at zero leaves the first samples reading lane data the
+            // warm-up just pulled into cache, which reports the call as cheaper than it is.
+            for (int i = usable.Count - 1; i >= 0 && i >= usable.Count - WarmupSamples; i--)
             {
                 StopPlacement.TryGetStopPosition(usable[i], net.m_segments.m_buffer[usable[i]].m_middlePosition,
                                                  busInfo, out pos, out platform);
@@ -241,12 +305,15 @@ namespace AutomatedPublicTransportPlanning.Spike
                 return;
             }
 
-            for (int i = 0; i < positions.Count && i < WarmupSamples; i++)
+            // Tail warm-up and a rounded-up stride, for the same two reasons as phase 2.
+            // This phase is the more sensitive of the two: 64 warm-up samples against a
+            // 600 sample cap is over a tenth of the measurement.
+            for (int i = positions.Count - 1; i >= 0 && i >= positions.Count - WarmupSamples; i--)
             {
                 StopPlacement.CanAnchorStop(positions[i], busInfo);
             }
 
-            int stride = Mathf.Max(1, positions.Count / AnchorSamples);
+            int stride = Mathf.Max(1, (positions.Count + AnchorSamples - 1) / AnchorSamples);
             int attempted = 0;
             int anchored = 0;
 
@@ -352,9 +419,40 @@ namespace AutomatedPublicTransportPlanning.Spike
               .Append("   (").Append(MicrosPer(swB, created).ToString("F2")).Append(" us/building)")
               .Append("\n      chain alone          ")
               .Append((Millis(swB) - Millis(swA)).ToString("F2")).Append(" ms")
-              .Append("\n      capacity: homes=").Append(homes)
-              .Append("  workUnits=").Append(works).Append(" (x5 = ").Append(works * 5).Append(" jobs)")
-              .Append("  visitUnits=").Append(visits).Append(" (x5 = ").Append(visits * 5).Append(" slots)");
+              // Unit counts, all three in the same unit, with the conversion stated
+              // rather than applied to some of them. EnsureCitizenUnits decrements its
+              // required home count by one per Home unit but its work and visit counts
+              // by five, so a Home unit is one household while a Work unit is five
+              // workplaces — mixing a raw count with two already-multiplied ones under
+              // a single "capacity" label is how a demand field gets miscalibrated.
+              .Append("\n      units: home=").Append(homes)
+              .Append("  work=").Append(works)
+              .Append("  visit=").Append(visits)
+              .Append("\n      capacity: ").Append(homes).Append(" households")
+              .Append(", ").Append(works * 5).Append(" jobs (work x5)")
+              .Append(", ").Append(visits * 5).Append(" visitor slots (visit x5)");
+        }
+
+        /// <summary>
+        /// The line's prefab, or null if it no longer has one.
+        ///
+        /// Catching is not laziness here. TransportLine.Info goes through
+        /// PrefabCollection.GetPrefab, which indexes its buffer with no bounds check,
+        /// so a stale m_infoIndex left behind by a removed DLC or transport mod throws
+        /// IndexOutOfRange before any null check of ours could run. There is no way to
+        /// ask "is this index valid" from outside, so the question is asked by trying.
+        /// One unreadable line must not cost the whole census.
+        /// </summary>
+        private static TransportInfo TryGetLineInfo(TransportManager tm, ushort lineId)
+        {
+            try
+            {
+                return tm.m_lines.m_buffer[lineId].Info;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         private static void WalkUnits(CitizenManager citizens, uint firstUnit)
@@ -384,11 +482,18 @@ namespace AutomatedPublicTransportPlanning.Spike
                 return;
             }
 
+            if (!Singleton<EconomyManager>.exists)
+            {
+                sb.Append("\n\n  [5] no EconomyManager; vehicle census skipped.");
+                return;
+            }
+
             TransportManager tm = Singleton<TransportManager>.instance;
             sb.Append("\n\n  [5] vehicle census (R15)");
 
             int lines = 0;
             int starved = 0;
+            int orphaned = 0;
             int targetSum = 0;
             int actualSum = 0;
 
@@ -400,6 +505,18 @@ namespace AutomatedPublicTransportPlanning.Spike
                 }
 
                 lines++;
+
+                // A line whose prefab is gone — a DLC turned off, a transport mod
+                // removed — keeps its Created flag and a stale m_infoIndex. Reaching
+                // CalculateTargetVehicleCount with that is not survivable: it goes
+                // through PrefabCollection.GetPrefab, which indexes its buffer without
+                // a bounds check, and then dereferences the result for m_class. So the
+                // prefab is fetched here first and the line skipped if it has gone.
+                if (TryGetLineInfo(tm, lineId) == null)
+                {
+                    orphaned++;
+                    continue;
+                }
 
                 int target = tm.m_lines.m_buffer[lineId].CalculateTargetVehicleCount();
                 int actual = tm.m_lines.m_buffer[lineId].CountVehicles(lineId);
@@ -430,6 +547,7 @@ namespace AutomatedPublicTransportPlanning.Spike
 
             sb.Append("\n      lines=").Append(lines)
               .Append("  belowTarget=").Append(starved)
+              .Append("  prefabMissing=").Append(orphaned)
               .Append("  targetTotal=").Append(targetSum)
               .Append("  actualTotal=").Append(actualSum);
 
@@ -458,17 +576,27 @@ namespace AutomatedPublicTransportPlanning.Spike
 
         private static double Millis(System.Diagnostics.Stopwatch sw)
         {
-            return (double)sw.ElapsedTicks * 1000.0 / (double)System.Diagnostics.Stopwatch.Frequency;
+            return Millis(sw.ElapsedTicks);
+        }
+
+        private static double Millis(long ticks)
+        {
+            return (double)ticks * 1000.0 / (double)System.Diagnostics.Stopwatch.Frequency;
         }
 
         private static double MicrosPer(System.Diagnostics.Stopwatch sw, int count)
+        {
+            return MicrosPer(sw.ElapsedTicks, count);
+        }
+
+        private static double MicrosPer(long ticks, int count)
         {
             if (count <= 0)
             {
                 return 0.0;
             }
 
-            return (double)sw.ElapsedTicks * 1000000.0 / (double)System.Diagnostics.Stopwatch.Frequency / (double)count;
+            return (double)ticks * 1000000.0 / (double)System.Diagnostics.Stopwatch.Frequency / (double)count;
         }
     }
 }

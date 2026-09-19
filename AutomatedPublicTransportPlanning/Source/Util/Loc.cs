@@ -97,8 +97,19 @@ namespace AutomatedPublicTransportPlanning.Util
             }
 
             Settings.Current.Language = tag;
-            Settings.Current.Save();
-            Log.Info("Language set to '" + tag + "'.");
+
+            // The panel changes either way — refusing to switch because a file could
+            // not be written would be worse. But the log must not claim the choice was
+            // kept when it was not, or the player finds out at the next start.
+            if (Settings.Current.Save())
+            {
+                Log.Info("Language set to '" + tag + "'.");
+            }
+            else
+            {
+                Log.Error("Language set to '" + tag + "' for this session only: the " +
+                          "settings file could not be written, so it will revert on restart.");
+            }
         }
 
         /// <summary>

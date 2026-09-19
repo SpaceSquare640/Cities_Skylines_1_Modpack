@@ -86,7 +86,15 @@ namespace AutomatedPublicTransportPlanning.Util
             }
         }
 
-        public void Save()
+        /// <summary>
+        /// Writes the settings out. Returns false if that failed.
+        ///
+        /// The result is not decoration. Without it a read-only folder or a full disk
+        /// produces a panel that switches language, logs success, and then quietly
+        /// reverts on the next start with nothing having said so — the one shape of
+        /// failure that is worse than a visible one.
+        /// </summary>
+        public bool Save()
         {
             try
             {
@@ -95,12 +103,15 @@ namespace AutomatedPublicTransportPlanning.Util
                     XmlSerializer serialiser = new XmlSerializer(typeof(Settings));
                     serialiser.Serialize(stream, this);
                 }
+
+                return true;
             }
             catch (Exception e)
             {
-                // Losing the choice on the next start is a far smaller problem than
-                // throwing out of a UI event handler.
-                Log.Exception("Could not write settings", e);
+                // Still not rethrown: losing the choice at the next start is a far
+                // smaller problem than throwing out of a UI event handler.
+                Log.Exception("Could not write settings to " + FilePath, e);
+                return false;
             }
         }
     }
