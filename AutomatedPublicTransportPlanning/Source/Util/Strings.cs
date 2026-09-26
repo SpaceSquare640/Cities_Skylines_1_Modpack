@@ -50,6 +50,7 @@ namespace AutomatedPublicTransportPlanning.Util
         public const string ButtonTestLog = "btn.testLog";
         public const string ButtonBusPrefabs = "btn.busPrefabs";
         public const string ButtonMeasure = "btn.measure";
+        public const string ButtonSnapshot = "btn.snapshot";
         public const string GroupSpike = "group.spike";
         public const string CheckSpikeArm = "check.spikeArm";
         public const string ButtonSpikeCreate = "btn.spikeCreate";
@@ -87,6 +88,7 @@ namespace AutomatedPublicTransportPlanning.Util
             d[ButtonTestLog] = "Write a test line to the log";
             d[ButtonBusPrefabs] = "List bus prefabs in detail";
             d[ButtonMeasure] = "Measure planning costs (brief pause)";
+            d[ButtonSnapshot] = "Capture a world snapshot";
             d[GroupSpike] = "Spike 1 - save round trip (writes to your city)";
             d[CheckSpikeArm] = "Enable these buttons - they change the city you have loaded";
             d[ButtonSpikeCreate] = "1. Create a test bus line";
@@ -106,6 +108,7 @@ namespace AutomatedPublicTransportPlanning.Util
             d[ButtonTestLog] = "將測試路線寫入記錄檔";
             d[ButtonBusPrefabs] = "列出公車 prefab 詳細資料";
             d[ButtonMeasure] = "量測規劃成本（會短暫停頓）";
+            d[ButtonSnapshot] = "擷取世界快照";
             d[GroupSpike] = "Spike 1 - 存檔往返測試（會寫入你的城市）";
             d[CheckSpikeArm] = "啟用這些按鈕 - 它們會變更你已載入的城市";
             d[ButtonSpikeCreate] = "1. 建立測試公車路線";
@@ -125,6 +128,7 @@ namespace AutomatedPublicTransportPlanning.Util
             d[ButtonTestLog] = "将测试线路写入日志";
             d[ButtonBusPrefabs] = "列出公交 prefab 详细信息";
             d[ButtonMeasure] = "测量规划开销（会短暂停顿）";
+            d[ButtonSnapshot] = "抓取世界快照";
             d[GroupSpike] = "Spike 1 - 存档往返测试（会写入你的城市）";
             d[CheckSpikeArm] = "启用这些按钮 - 它们会更改你已载入的城市";
             d[ButtonSpikeCreate] = "1. 创建测试公交线路";
@@ -144,6 +148,7 @@ namespace AutomatedPublicTransportPlanning.Util
             d[ButtonTestLog] = "テスト路線をログに書き出す";
             d[ButtonBusPrefabs] = "バスのプレハブを詳細表示";
             d[ButtonMeasure] = "計画処理のコストを計測（一時的に停止します）";
+            d[ButtonSnapshot] = "ワールドスナップショットを取得";
             d[GroupSpike] = "Spike 1 - セーブ往復テスト（都市に書き込みます）";
             d[CheckSpikeArm] = "これらのボタンを有効にする - 読み込み中の都市が変更されます";
             d[ButtonSpikeCreate] = "1. テストバス路線を作成";
@@ -163,6 +168,7 @@ namespace AutomatedPublicTransportPlanning.Util
             d[ButtonTestLog] = "테스트 노선을 로그에 기록";
             d[ButtonBusPrefabs] = "버스 프리팹 상세 목록";
             d[ButtonMeasure] = "계획 비용 측정 (잠시 멈춤)";
+            d[ButtonSnapshot] = "월드 스냅샷 캡처";
             d[GroupSpike] = "Spike 1 - 저장 왕복 테스트 (도시에 기록됩니다)";
             d[CheckSpikeArm] = "이 버튼들을 활성화 - 불러온 도시가 변경됩니다";
             d[ButtonSpikeCreate] = "1. 테스트 버스 노선 생성";
@@ -182,6 +188,7 @@ namespace AutomatedPublicTransportPlanning.Util
             d[ButtonTestLog] = "Testlinie ins Protokoll schreiben";
             d[ButtonBusPrefabs] = "Bus-Prefabs im Detail auflisten";
             d[ButtonMeasure] = "Planungskosten messen (kurze Pause)";
+            d[ButtonSnapshot] = "Netzwerk-Momentaufnahme erstellen";
             d[GroupSpike] = "Spike 1 - Speicher-Rundlauf (schreibt in Ihre Stadt)";
             d[CheckSpikeArm] = "Diese Schaltflächen aktivieren - sie verändern die geladene Stadt";
             d[ButtonSpikeCreate] = "1. Testbuslinie erstellen";
@@ -201,6 +208,7 @@ namespace AutomatedPublicTransportPlanning.Util
             d[ButtonTestLog] = "Écrire une ligne de test dans le journal";
             d[ButtonBusPrefabs] = "Lister les prefabs de bus en détail";
             d[ButtonMeasure] = "Mesurer les coûts de planification (courte pause)";
+            d[ButtonSnapshot] = "Capturer un instantané du réseau";
             d[GroupSpike] = "Spike 1 - aller-retour de sauvegarde (écrit dans votre ville)";
             d[CheckSpikeArm] = "Activer ces boutons - ils modifient la ville chargée";
             d[ButtonSpikeCreate] = "1. Créer une ligne de bus de test";
@@ -220,6 +228,7 @@ namespace AutomatedPublicTransportPlanning.Util
             d[ButtonTestLog] = "Escribir una línea de prueba en el registro";
             d[ButtonBusPrefabs] = "Listar los prefabs de autobús en detalle";
             d[ButtonMeasure] = "Medir los costes de planificación (breve pausa)";
+            d[ButtonSnapshot] = "Capturar una instantánea de la red";
             d[GroupSpike] = "Spike 1 - ida y vuelta de guardado (escribe en tu ciudad)";
             d[CheckSpikeArm] = "Activar estos botones - modifican la ciudad que tienes cargada";
             d[ButtonSpikeCreate] = "1. Crear una línea de autobús de prueba";
@@ -239,6 +248,7 @@ namespace AutomatedPublicTransportPlanning.Util
             d[ButtonTestLog] = "Escrever uma linha de teste no log";
             d[ButtonBusPrefabs] = "Listar os prefabs de ônibus em detalhe";
             d[ButtonMeasure] = "Medir os custos de planejamento (breve pausa)";
+            d[ButtonSnapshot] = "Capturar um instantâneo da rede";
             d[GroupSpike] = "Spike 1 - ida e volta de salvamento (escreve na sua cidade)";
             d[CheckSpikeArm] = "Ativar estes botões - eles alteram a cidade carregada";
             d[ButtonSpikeCreate] = "1. Criar uma linha de ônibus de teste";
@@ -258,6 +268,7 @@ namespace AutomatedPublicTransportPlanning.Util
             d[ButtonTestLog] = "Записать тестовый маршрут в журнал";
             d[ButtonBusPrefabs] = "Подробный список префабов автобусов";
             d[ButtonMeasure] = "Измерить затраты на планирование (короткая пауза)";
+            d[ButtonSnapshot] = "Сделать снимок сети";
             d[GroupSpike] = "Spike 1 - цикл сохранения и загрузки (записывает в ваш город)";
             d[CheckSpikeArm] = "Включить эти кнопки - они изменяют загруженный город";
             d[ButtonSpikeCreate] = "1. Создать тестовый автобусный маршрут";
@@ -277,6 +288,7 @@ namespace AutomatedPublicTransportPlanning.Util
             d[ButtonTestLog] = "Zapisz linię testową do dziennika";
             d[ButtonBusPrefabs] = "Wypisz szczegóły prefabrykatów autobusów";
             d[ButtonMeasure] = "Zmierz koszty planowania (krótka pauza)";
+            d[ButtonSnapshot] = "Wykonaj migawkę sieci";
             d[GroupSpike] = "Spike 1 - test zapisu i wczytania (zapisuje w Twoim mieście)";
             d[CheckSpikeArm] = "Włącz te przyciski - zmieniają wczytane miasto";
             d[ButtonSpikeCreate] = "1. Utwórz testową linię autobusową";

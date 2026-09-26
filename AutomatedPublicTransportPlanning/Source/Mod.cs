@@ -110,6 +110,9 @@ namespace AutomatedPublicTransportPlanning
             Track(diagnostics.AddButton(Loc.Get(Strings.ButtonMeasure),
                   Guarded("performance probe", PerformanceProbe.Run)) as UIButton,
                   Strings.ButtonMeasure);
+            Track(diagnostics.AddButton(Loc.Get(Strings.ButtonSnapshot),
+                  Guarded("world snapshot", WorldSnapshot.LogSnapshot)) as UIButton,
+                  Strings.ButtonSnapshot);
 
             // Throwaway controls for the save round-trip spike. These write to the
             // loaded city, so they are kept in their own clearly labelled group and
