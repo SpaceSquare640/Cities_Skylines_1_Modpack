@@ -142,6 +142,7 @@
     <Compile Include="Source\Planning\BusPrefabResolver.cs" />
     <Compile Include="Source\Planning\StopPlacement.cs" />
     <Compile Include="Source\Planning\WorldSnapshot.cs" />
+    <Compile Include="Source\Planning\StopGraph.cs" />
     <Compile Include="Source\Spike\SaveRoundTripSpike.cs" />
     <Compile Include="Source\Spike\PerformanceProbe.cs" />
   </ItemGroup>

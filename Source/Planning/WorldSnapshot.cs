@@ -48,6 +48,14 @@ namespace AutomatedPublicTransportPlanning.Planning
         public float[] Length;
 
         /// <summary>
+        /// The junctions a segment runs between, which is what makes two segments
+        /// adjacent. Travelling forward means leaving at EndNode; backward means
+        /// leaving at StartNode.
+        /// </summary>
+        public ushort[] StartNode;
+        public ushort[] EndNode;
+
+        /// <summary>
         /// Speed limit of the fastest lane a vehicle of this type may use here.
         ///
         /// The edge cost model is length / speed, which is what PathFind computes; see
@@ -155,6 +163,8 @@ namespace AutomatedPublicTransportPlanning.Planning
             List<ushort> ids = new List<ushort>();
             List<uint> buildIndex = new List<uint>();
             List<float> length = new List<float>();
+            List<ushort> startNode = new List<ushort>();
+            List<ushort> endNode = new List<ushort>();
             List<float> speed = new List<float>();
             List<bool> forward = new List<bool>();
             List<bool> backward = new List<bool>();
@@ -206,6 +216,8 @@ namespace AutomatedPublicTransportPlanning.Planning
                 ids.Add(segmentId);
                 buildIndex.Add(net.m_segments.m_buffer[i].m_buildIndex);
                 length.Add(net.m_segments.m_buffer[i].m_averageLength);
+                startNode.Add(net.m_segments.m_buffer[i].m_startNode);
+                endNode.Add(net.m_segments.m_buffer[i].m_endNode);
                 speed.Add(laneSpeed);
                 forward.Add(laneForward);
                 backward.Add(laneBackward);
@@ -227,6 +239,8 @@ namespace AutomatedPublicTransportPlanning.Planning
             snapshot.SegmentIds = ids.ToArray();
             snapshot.SegmentBuildIndex = buildIndex.ToArray();
             snapshot.Length = length.ToArray();
+            snapshot.StartNode = startNode.ToArray();
+            snapshot.EndNode = endNode.ToArray();
             snapshot.SpeedLimit = speed.ToArray();
             snapshot.ForwardOpen = forward.ToArray();
             snapshot.BackwardOpen = backward.ToArray();
