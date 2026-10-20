@@ -2,6 +2,27 @@
 
 Author: OpenAI-Codex
 
+## 2026-10-21 — Release and Development Workshop pipeline
+
+- All six Workshop items are registered: AI Improve (3782858610, 3823575900), Automated Public Transport Planning (3823739383, 3823739653) and AI Gaming (3823740106, 3823740277). The AI Gaming upload workflows are no longer blocked.
+- Development Versions are always built with DevTools and can be uploaded automatically after each push to the module branch. Release Versions are always built without DevTools, are uploaded only on request, and wait for approval. Each build is checked for DevTools content before upload.
+- Preview images now come from the JPG icon set, which stays within Steam's 1 MB preview limit.
+- Automatic Development uploads and Release approval stay switched off until the self-hosted runner is set up.
+- Author: Anthropic-Claude_Code.
+
+## 2026-10-21 — AI Gaming 0.1.0 early preview
+
+- First AI Gaming preview, with English and Traditional Chinese settings. Players can write a read-only city summary (population, funds and in-game date) to the game log.
+- This version does not connect to an AI model, make network connections or control the simulation.
+- Author: OpenAI-Codex (recorded by Anthropic-Claude_Code).
+
+## 2026-10-21 — Automated Public Transport Planning 0.2.0 early preview
+
+- The mod description in all 11 languages now accurately describes a read-only city survey preview instead of finished route planning.
+- The save round-trip test and its city-changing controls are excluded from standard builds and kept for the DevTools build; read-only diagnostics remain.
+- Mod and assembly versions are 0.2.0.
+- Author: OpenAI-Codex (recorded by Anthropic-Claude_Code).
+
 ## 2026-10-21 — Workshop descriptions from the mod branches
 
 - Upload workflows can now update the Workshop description from `Workshop/Release.txt` or `Workshop/Development.txt` on the mod branch. Without that file the current description is kept.

@@ -1,68 +1,70 @@
 # Steam Workshop Upload Workflows
 
-These workflows prepare and submit updates to existing Cities: Skylines Workshop items. They do not create new items, run on pushes, or publish AI Gaming. Each module has separate Release Version and Development Version items.
+These workflows build and submit updates to the six existing Cities: Skylines Workshop items: a Release Version and a Development Version for each of AI Improve, Automated Public Transport Planning and AI Gaming. They never create new items. Each item was created once with the Mod Uploader to obtain its ID; every later update, including the preview image and description, goes through these workflows.
 
-## Current readiness
+## Release and Development
 
-| Workshop item | Workflow | Status |
+| | Development Version | Release Version |
 | --- | --- | --- |
-| AI Improve: Release Version | AI Improve: Release Version upload | Builds the current AI_Improve branch HEAD with DevTools=false, then submits the DLL and selected preview image. Defaults to `Cities_Skylines_1_AI_Improve_Icon_Kingsley.png`. |
-| AI Improve: Development Version | AI Improve: Development Version upload | Uses the same branch HEAD and safe build profile, but targets a separate Workshop item. Defaults to `Cities_Skylines_1_AI_Improve_Icon_Kingsley.png`. |
-| Automated Public Transport Planning: Release Version | Automated Public Transport Planning: Release Version upload | Builds the current Automated_Public_Transport_Planning branch HEAD and submits the DLL and selected preview image. Defaults to `Cities_Skylines_1_Automated_Public_Transport_Planning_Icon_Kingsley.png`. |
-| Automated Public Transport Planning: Development Version | Automated Public Transport Planning: Development Version upload | Uses the same branch HEAD and build configuration, but targets a separate Workshop item. Defaults to `Cities_Skylines_1_Automated_Public_Transport_Planning_Icon_Kingsley.png`. |
-| AI Gaming: Release Version | AI Gaming: Release Version upload (blocked) | Intentionally stops because there is no buildable project or package definition. |
-| AI Gaming: Development Version | AI Gaming: Development Version upload (blocked) | Intentionally stops because there is no buildable project or package definition. |
+| Build | Always `DevTools=true` (testing panels and probes included) | Always `DevTools=false` |
+| When | Automatically after each push to the module branch, or manually | Manually only, after approval in the `workshop-release` environment |
+| Source | The pushed commit, or the `source_ref` input | The `source_ref` input; use the commit already tested on the Development item |
+| Change note | Commit hash and subject (automatic runs) | Entered when dispatching |
+
+`tools/steam-workshop/Upload-Mod.ps1` decides `DevTools` from the edition; no input can change it. After building, it checks the DLL for a type that exists only in DevTools builds (`DevTriggerExtension` for AI Improve, `SaveRoundTripSpike` for Transport) and stops if a Release DLL contains it or a Development DLL lacks it. AI Gaming has no DevTools content yet.
+
+Development builds contain tools that can change a city: AI Improve's hotkey-armed dev panel and LateMergeProbe (which deliberately alters vehicle paths), and Transport's save round-trip spike (behind an arming checkbox). Keep Development items hidden or limited to trusted testers, and say so in their descriptions.
 
 ## Registered Workshop item IDs
 
-Each module and edition is pinned to one Workshop item in `tools/steam-workshop/Upload-Mod.ps1`. An upload whose ID does not match the registered item, or whose item has no registered ID yet, stops before anything is built or sent. The two AI Improve workflows prefill their registered ID.
+Each module and edition is pinned to one item in `Upload-Mod.ps1`. An upload whose ID does not match, or whose item has no registered ID, stops before anything is built or sent. Every workflow prefills its registered ID.
 
 | Workshop item | PublishedFileId | Visibility |
 | --- | --- | --- |
 | AI Improve: Release Version | 3782858610 | Public |
-| AI Improve: Development Version | 3823575900 | Not public |
-| Automated Public Transport Planning: Release Version | Not created yet | — |
-| Automated Public Transport Planning: Development Version | Not created yet | — |
-| AI Gaming: Release Version | Not created yet | — |
-| AI Gaming: Development Version | Not created yet | — |
+| AI Improve: Development Version | 3823575900 | Hidden |
+| Automated Public Transport Planning: Release Version | 3823739383 | Hidden |
+| Automated Public Transport Planning: Development Version | 3823739653 | Hidden |
+| AI Gaming: Release Version | 3823740106 | Hidden |
+| AI Gaming: Development Version | 3823740277 | Hidden |
 
-After creating a new item, add its ID to the `$registeredItemIds` table in `Upload-Mod.ps1` and to this table, and set it as the workflow's `published_file_id` default.
+To add an item, register its ID in `$registeredItemIds`, add the workflow default, and update this table.
 
-The Release and Development items currently differ by Workshop item ID and title only. Both build from the module branch HEAD. AI Improve uses DevTools=false for both because its project explicitly warns against uploading the DevTools build. Transport has no separate Release/Development build profile. Add a distinct build profile only after its package contents and behavior are defined.
+## Switches that are still off
 
-The upload workflows live on the Modpack_Website default branch because GitHub requires a workflow_dispatch workflow to exist on the default branch. The source checkout remains pinned to each module's named branch and uses that branch's latest commit at dispatch time. Local edits must be pushed to the respective branch before a future GitHub workflow can use them.
+| Repository setting | Effect | Status |
+| --- | --- | --- |
+| Variable `WORKSHOP_DEV_AUTO_UPLOAD` = `true` | Pushes to a module branch dispatch its Development upload (`development-workshop-dispatch.yml` on each module branch) | Not set; enable after the runner works |
+| Environment `workshop-release` with Kingsley as required reviewer | Release jobs wait for approval | Not created |
+| Variable `WORKSHOP_RELEASE_APPROVAL_READY` = `true` | Release workflows run at all; without it they stop with an error | Not set; set only after the environment above exists |
 
 ## Required local runner
 
-AI Improve and Transport need Cities: Skylines managed DLLs to compile. The upload also needs SteamCMD and a saved SteamCMD login. GitHub-hosted runners do not have those local game files or the persistent Steam login, so these four workflows target a Windows self-hosted runner with the labels self-hosted, Windows, X64, and cs1-workshop.
+The mods compile against Cities: Skylines managed DLLs, and the upload needs SteamCMD with a saved login. GitHub-hosted runners have neither, so the upload jobs target a Windows self-hosted runner with the labels self-hosted, Windows, X64 and cs1-workshop. The Development dispatch jobs on the module branches run on GitHub-hosted runners and only call the GitHub API.
 
-Before enabling the runner:
+1. Install a Windows GitHub Actions runner for this repository with the cs1-workshop label. Do not add pull request triggers to any job that uses it.
+2. Provide pwsh, the .NET SDK (AI Improve, AI Gaming) and Visual Studio or Build Tools with MSBuild (Transport; found through vswhere when not on PATH). Set CITIES_SKYLINES_DIR to the game folder.
+3. Set MODPACK_ROOT to the local Cities_Skyline_1_Modpack folder. Preview images are read from `Resource/Icon/Uses_icon/JPG/` and must be at most 1 MB (Steam's preview limit); the PNG originals in `Uses_icon/PNG/` are larger and are not used. Preview images stay local and are not committed.
+4. Install SteamCMD in a persistent folder; set STEAMCMD_EXE to its executable and STEAMCMD_USERNAME to the account name. Under the same Windows account that runs the runner, complete one interactive SteamCMD login with Steam Guard. Keep SteamCMD's `config/config.vdf`; never commit or upload it. If the saved login expires, uploads fail until it is renewed interactively.
+5. Builds never copy into the runner account's own Mods folder: AI Improve's copy goes to the job's package folder and Transport's deploy step is disabled with an empty ModsDir.
 
-1. Install a Windows GitHub Actions runner for this repository and add the cs1-workshop label. Keep it dedicated to these manual upload jobs; do not add push or pull request triggers.
-2. Make pwsh, dotnet, and msbuild.exe available on the runner. Install the Cities: Skylines game and set the machine environment variable CITIES_SKYLINES_DIR to its game folder.
-3. Set MODPACK_ROOT to the local Cities_Skyline_1_Modpack folder. The preview filename entered at dispatch must exist under `Resource/Icon/Uses_icon/`. Workshop preview images stay in this local resource folder and are not copied into the repository. Each runnable workflow defaults to its mod's `_Kingsley.png` icon; the filename input remains editable if you replace or rename an icon. The AI Gaming icon is `Cities_Skylines_1_AI_Gaming_Icon_Kingsley.png`; AI Gaming uploads remain blocked until a buildable package exists.
-4. Install SteamCMD in a persistent folder and set STEAMCMD_EXE to its executable and STEAMCMD_USERNAME to the account name. Using that same Windows account and SteamCMD folder, complete one interactive SteamCMD login and Steam Guard check before using the workflow. Preserve SteamCMD's local config/config.vdf between runs; never commit or upload it.
-5. Restrict who can run Actions in the repository. GitHub requires write access to run workflow_dispatch; the upload jobs use read-only GitHub content permissions.
+GitHub warns that self-hosted runners attached to public repositories need extra care because untrusted code can be dangerous. These jobs run only on manual dispatch or on dispatches from pushes by people with write access, never on pull requests. Use a dedicated Windows account if possible and keep write access limited to trusted maintainers.
 
-GitHub warns that self-hosted runners attached to public repositories need extra care because untrusted code can be dangerous. These workflows avoid running on pull requests or pushes, but a self-hosted runner still executes repository code. Use a dedicated Windows account and keep repository write access limited to trusted maintainers.
-
-## Run an existing-item update
+## Run an update manually
 
 1. Open the repository's Actions tab and choose one of the six version workflows.
-2. Keep or enter the Workshop PublishedFileId, the preview image filename, and an optional change note. Leave the confirmation set to DO NOT UPLOAD to stop safely.
-3. Before selecting UPLOAD EXISTING ITEM, check that the ID belongs to the displayed module and edition; the script also rejects any ID other than the registered one. The workflow sets the title to the exact version name shown above.
-4. Development item visibility is not changed by the workflow. Set and verify the intended visibility in Steam before uploading a development build.
-5. After SteamCMD completes, inspect its Workshop build log and the item page. A successful process exit alone is not sufficient confirmation that the item is visible and correct.
+2. Keep the prefilled ID and preview filename; set `source_ref` to the commit to build and add a change note if wanted. Leave the confirmation on DO NOT UPLOAD to stop safely.
+3. Choose UPLOAD EXISTING ITEM to submit. Release runs then wait for approval in the `workshop-release` environment.
+4. The workflow sets the title to the exact version name above. Visibility and tags are never changed.
+5. After SteamCMD completes, check its Workshop build log and the item page. A successful process exit alone does not prove the item is correct.
 
-The Workshop App ID is 255710 (Cities: Skylines). Each runnable upload requires a non-zero existing PublishedFileId; missing IDs and AI Gaming uploads fail closed. The VDF updates the item ID, title, content folder, preview image, optional change note, and optional description. It omits visibility and tags so they remain unchanged.
+The Workshop App ID is 255710 (Cities: Skylines). The VDF updates the item ID, title, content folder, preview image, optional change note and optional description.
 
 ## Workshop descriptions
 
-The Mod Uploader is used only for each item's first upload, to obtain its Workshop ID. Later updates, including the description, go through these workflows.
+Each mod branch may contain `Workshop/Release.txt` and `Workshop/Development.txt` in Steam BBCode. When the file for the uploaded edition exists, its text replaces the Workshop description; when it is absent, the current description stays unchanged. The upload stops if the file is empty, longer than 8,000 characters, or contains double quotes or backslashes (use typographic quotes instead). Line breaks are written literally into the VDF; confirm the first description update on a Development item before relying on it for a Release item.
 
-Each mod branch may contain `Workshop/Release.txt` and `Workshop/Development.txt` in Steam BBCode. When the file for the uploaded edition exists, its text replaces the Workshop description; when it is absent, the current description stays unchanged. The upload stops if the file is empty, longer than 8,000 characters, or contains double quotes or backslashes (use typographic quotes instead). Line breaks are written literally into the VDF; confirm the first description update on the Development item before relying on it for a Release item.
-
-Steam's Workshop guide describes the SteamCMD Workshop route as intended for testing and notes that it requires Steam credentials. These workflows keep the password and Steam Guard code out of GitHub and use a persistent local SteamCMD login. Review each update manually before relying on it as a public release.
+Steam's Workshop guide describes the SteamCMD Workshop route as intended for testing and notes that it requires Steam credentials. These workflows keep the password and Steam Guard code out of GitHub and use a persistent local SteamCMD login.
 
 ## References
 

@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('AI_Improve', 'Automated_Public_Transport_Planning')]
+    [ValidateSet('AI_Improve', 'Automated_Public_Transport_Planning', 'AI_Gaming')]
     [string]$Module,
 
     [Parameter(Mandatory = $true)]
@@ -38,8 +38,12 @@ if ($PublishedFileId -notmatch '^\d{1,20}$' -or $PublishedFileId -eq '0') {
 # push a build into the wrong item (the Release item is public with real subscribers). Register an
 # ID here once its item exists; any combination without one fails closed.
 $registeredItemIds = @{
-    'AI_Improve/Release'     = '3782858610'
-    'AI_Improve/Development' = '3823575900'
+    'AI_Improve/Release'                              = '3782858610'
+    'AI_Improve/Development'                          = '3823575900'
+    'Automated_Public_Transport_Planning/Release'     = '3823739383'
+    'Automated_Public_Transport_Planning/Development' = '3823739653'
+    'AI_Gaming/Release'                               = '3823740106'
+    'AI_Gaming/Development'                           = '3823740277'
 }
 $itemKey = "$Module/$Edition"
 if (-not $registeredItemIds.ContainsKey($itemKey)) {
@@ -47,6 +51,18 @@ if (-not $registeredItemIds.ContainsKey($itemKey)) {
 }
 if ($PublishedFileId -cne $registeredItemIds[$itemKey]) {
     throw "PublishedFileId $PublishedFileId is not the registered $itemKey item ($($registeredItemIds[$itemKey]))."
+}
+
+# The edition decides the build, not a workflow input: Development items always carry the
+# DevTools build (testing panels and probes), Release items never do. Nothing a dispatcher types
+# can put DevTools into a Release item.
+$devTools = if ($Edition -eq 'Development') { 'true' } else { 'false' }
+
+# Types that exist only in a DevTools build. Checked after the build so a broken gate in a project
+# file cannot slip a DevTools DLL into a Release item, or ship a Development item without its tools.
+$devToolsMarkers = @{
+    'AI_Improve'                          = 'DevTriggerExtension'
+    'Automated_Public_Transport_Planning' = 'SaveRoundTripSpike'
 }
 
 foreach ($name in @('CITIES_SKYLINES_DIR', 'MODPACK_ROOT', 'STEAMCMD_EXE', 'STEAMCMD_USERNAME', 'RUNNER_TEMP')) {
@@ -62,7 +78,9 @@ if (-not (Test-Path -LiteralPath $managedAssembly -PathType Leaf)) {
 }
 
 $modpackRoot = [IO.Path]::GetFullPath($env:MODPACK_ROOT)
-$iconRoot = [IO.Path]::GetFullPath((Join-Path $modpackRoot 'Resource\Icon\Uses_icon'))
+# Workshop previews come from the JPG set: the PNG originals in Uses_icon\PNG are 1.4-1.9 MB, over
+# Steam's 1 MB preview limit.
+$iconRoot = [IO.Path]::GetFullPath((Join-Path $modpackRoot 'Resource\Icon\Uses_icon\JPG'))
 if ($PreviewFileName -match '[\\/]' -or $PreviewFileName -notmatch '\.(png|jpe?g|gif)$') {
     throw 'PreviewFileName must be a PNG, JPG, JPEG, or GIF filename without a directory path.'
 }
@@ -74,6 +92,9 @@ if (-not $previewPath.StartsWith($iconRootPrefix, [StringComparison]::OrdinalIgn
 }
 if (-not (Test-Path -LiteralPath $previewPath -PathType Leaf)) {
     throw "Preview image not found in the Modpack Icon folder: $PreviewFileName"
+}
+if ((Get-Item -LiteralPath $previewPath).Length -gt 1MB) {
+    throw "Preview image is larger than Steam's 1 MB limit: $PreviewFileName"
 }
 
 $steamCmd = [IO.Path]::GetFullPath($env:STEAMCMD_EXE)
@@ -107,7 +128,7 @@ switch ($Module) {
         # The project's CopyToMods target copies every build into the local Mods folder. On the
         # runner that folder belongs to the maintainer's own game, so send the copy to the job's
         # package folder instead of replacing whatever build they are playing with.
-        & $dotnet.Source build $project --configuration Release '-p:DevTools=false' "-p:CSInstallPath=$gameRoot" "-p:CSDataPath=$(Join-Path $packageRoot 'mods-copy')"
+        & $dotnet.Source build $project --configuration Release --no-incremental "-p:DevTools=$devTools" "-p:CSInstallPath=$gameRoot" "-p:CSDataPath=$(Join-Path $packageRoot 'mods-copy')"
         if ($LASTEXITCODE -ne 0) {
             throw "AI Improve build failed with exit code $LASTEXITCODE."
         }
@@ -119,17 +140,55 @@ switch ($Module) {
         if (-not (Test-Path -LiteralPath $project -PathType Leaf)) {
             throw 'AutomatedPublicTransportPlanning.csproj is missing from the checked-out Transport branch.'
         }
-        $msbuild = Get-Command msbuild.exe -ErrorAction Stop
-        & $msbuild.Source $project '/t:Build' '/p:Configuration=Release' "/p:CitiesSkylinesDir=$gameRoot"
+        # Old-style project: needs Visual Studio's MSBuild, which is rarely on PATH. Fall back to
+        # vswhere, the locator Visual Studio installs for exactly this purpose.
+        $msbuildPath = (Get-Command msbuild.exe -ErrorAction SilentlyContinue).Source
+        if (-not $msbuildPath) {
+            $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+            if (Test-Path -LiteralPath $vswhere -PathType Leaf) {
+                $msbuildPath = & $vswhere -latest -products * -requires Microsoft.Component.MSBuild -find 'MSBuild\**\Bin\MSBuild.exe' | Select-Object -First 1
+            }
+        }
+        if (-not $msbuildPath) {
+            throw 'MSBuild was not found on PATH or through vswhere. Install Visual Studio or its Build Tools with MSBuild on the runner.'
+        }
+        # ModsDir is cleared so the project's DeployToMods step cannot copy into the runner
+        # account's own Mods folder.
+        & $msbuildPath $project '/t:Rebuild' '/p:Configuration=Release' "/p:DevTools=$devTools" "/p:CitiesSkylinesDir=$gameRoot" '/p:ModsDir='
         if ($LASTEXITCODE -ne 0) {
             throw "Transport build failed with exit code $LASTEXITCODE."
+        }
+    }
+
+    'AI_Gaming' {
+        $project = Join-Path $sourceRoot 'AIGaming.csproj'
+        $outputDll = Join-Path $sourceRoot 'bin\Release\AIGaming.dll'
+        if (-not (Test-Path -LiteralPath $project -PathType Leaf)) {
+            throw 'AIGaming.csproj is missing from the checked-out AI_Gaming branch.'
+        }
+        $dotnet = Get-Command dotnet -ErrorAction Stop
+        & $dotnet.Source build $project --configuration Release --no-incremental "-p:DevTools=$devTools" "-p:CSInstallPath=$gameRoot"
+        if ($LASTEXITCODE -ne 0) {
+            throw "AI Gaming build failed with exit code $LASTEXITCODE."
         }
     }
 }
 
 if (-not (Test-Path -LiteralPath $outputDll -PathType Leaf)) {
-    throw "Expected release DLL was not produced: $outputDll"
+    throw "Expected DLL was not produced: $outputDll"
 }
+
+if ($devToolsMarkers.ContainsKey($Module)) {
+    $marker = $devToolsMarkers[$Module]
+    $hasDevTools = [Text.Encoding]::ASCII.GetString([IO.File]::ReadAllBytes($outputDll)).Contains($marker)
+    if ($Edition -eq 'Release' -and $hasDevTools) {
+        throw "Release build of $Module contains the DevTools type $marker. Upload stopped."
+    }
+    if ($Edition -eq 'Development' -and -not $hasDevTools) {
+        throw "Development build of $Module is missing the DevTools type $marker. Upload stopped."
+    }
+}
+Write-Output "Built $Module $Edition with DevTools=$devTools."
 
 $packageDll = Join-Path $contentRoot (Split-Path -Leaf $outputDll)
 Copy-Item -LiteralPath $outputDll -Destination $packageDll
@@ -141,6 +200,8 @@ $workshopTitle = switch ("$Module/$Edition") {
     'AI_Improve/Development' { 'AI Improve: Development Version' }
     'Automated_Public_Transport_Planning/Release' { 'Automated Public Transport Planning: Release Version' }
     'Automated_Public_Transport_Planning/Development' { 'Automated Public Transport Planning: Development Version' }
+    'AI_Gaming/Release' { 'AI Gaming: Release Version' }
+    'AI_Gaming/Development' { 'AI Gaming: Development Version' }
     default { throw 'Unsupported module and edition combination.' }
 }
 

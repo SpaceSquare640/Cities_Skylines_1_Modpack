@@ -1,25 +1,88 @@
-name: "AI Gaming: Development Version upload (blocked)"
+name: "AI Gaming: Development Version upload"
+
+# Development items are built with DevTools=true. Pushes to the module branch can dispatch this workflow.
+# Upload-Mod.ps1 decides the DevTools setting from the edition and rejects any other item ID.
 
 on:
   workflow_dispatch:
+    inputs:
+      confirm_upload:
+        description: Confirm updating the existing AI Gaming Development Version item
+        type: choice
+        options:
+          - DO NOT UPLOAD
+          - UPLOAD EXISTING ITEM
+        default: DO NOT UPLOAD
+        required: true
+      source_ref:
+        description: Commit SHA or branch name on the module branch to build
+        type: string
+        required: true
+        default: AI_Gaming
+      published_file_id:
+        description: Workshop item ID for AI Gaming Development Version (must match the ID registered in Upload-Mod.ps1)
+        type: string
+        required: true
+        default: "3823740277"
+      preview_file_name:
+        description: Preview filename inside Resource/Icon/Uses_icon/JPG/
+        type: string
+        required: true
+        default: Cities_Skylines_1_AI_Gaming_Icon_Kingsley.jpg
+      change_note:
+        description: Optional Workshop change note
+        type: string
+        required: false
+        default: ""
 
 permissions:
   contents: read
 
+concurrency:
+  group: steam-workshop-ai-gaming-development
+  cancel-in-progress: false
+
 jobs:
-  block-unavailable-package:
+  upload:
     if: github.repository == 'SpaceSquare640/Cities_Skylines_1_Modpack'
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Windows, X64, cs1-workshop]
+    timeout-minutes: 60
     steps:
-      - name: Check out AI Gaming branch HEAD
+      - name: Check out the default-branch uploader
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: Modpack_Website
+          path: orchestrator
+          persist-credentials: false
+      - name: Check out AI Gaming branch history
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: ${{ github.repository }}
           ref: AI_Gaming
+          path: mod-source
+          fetch-depth: 0
           persist-credentials: false
-      - name: Stop until a development package is defined
-        shell: bash
+      - name: Select the source commit on the module branch
+        shell: pwsh
+        env:
+          SOURCE_REF: ${{ inputs.source_ref }}
         run: |
-          echo "::error::AI Gaming Development Version is blocked because AI_Gaming has no buildable mod project or Workshop package definition."
-          exit 1
+          Set-Location "$env:GITHUB_WORKSPACE\mod-source"
+          if ($env:SOURCE_REF -notmatch '^[A-Za-z0-9._/-]{1,100}$') { throw 'source_ref contains unsupported characters.' }
+          $sha = git rev-parse --verify "$($env:SOURCE_REF)^{commit}"
+          if ($LASTEXITCODE -ne 0) { throw "source_ref $($env:SOURCE_REF) is not a commit in this repository." }
+          git merge-base --is-ancestor $sha HEAD
+          if ($LASTEXITCODE -ne 0) { throw "Commit $sha is not on the AI_Gaming branch." }
+          git checkout --quiet --detach $sha
+          Write-Output "Building AI Gaming Development Version from $sha"
+      - name: Build and submit Development Version
+        shell: pwsh
+        env:
+          CONFIRM_UPLOAD: ${{ inputs.confirm_upload }}
+          PUBLISHED_FILE_ID: ${{ inputs.published_file_id }}
+          PREVIEW_FILE_NAME: ${{ inputs.preview_file_name }}
+          CHANGE_NOTE: ${{ inputs.change_note }}
+        run: |
+          & "$env:GITHUB_WORKSPACE\orchestrator\tools\steam-workshop\Upload-Mod.ps1" -Module "AI_Gaming" -Edition "Development" -SourcePath "$env:GITHUB_WORKSPACE\mod-source" -PublishedFileId $env:PUBLISHED_FILE_ID -PreviewFileName $env:PREVIEW_FILE_NAME -ChangeNote $env:CHANGE_NOTE -ConfirmUpload $env:CONFIRM_UPLOAD
 # Author: OpenAI-Codex.
+# Modified by: Anthropic-Claude_Code.
