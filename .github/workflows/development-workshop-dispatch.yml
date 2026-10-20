@@ -1,0 +1,35 @@
+name: "Automated Public Transport Planning: dispatch Development Version upload"
+
+# Every push to this branch asks the Modpack_Website upload workflow to build this exact commit
+# with DevTools=true and update the hidden Development Workshop item. Disabled until the
+# repository variable WORKSHOP_DEV_AUTO_UPLOAD is set to true (the self-hosted runner must exist).
+
+on:
+  push:
+    branches:
+      - Automated_Public_Transport_Planning
+    paths-ignore:
+      - README.md
+      - LICENSE
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  dispatch:
+    if: github.repository == 'SpaceSquare640/Cities_Skylines_1_Modpack' && vars.WORKSHOP_DEV_AUTO_UPLOAD == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch the Development Version upload
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.sha }}
+          MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          subject="$(printf '%s\n' "$MESSAGE" | head -n 1 | tr -d '"\\' | cut -c 1-160)"
+          gh workflow run "transport-development-upload.yml" --repo "$GITHUB_REPOSITORY" --ref Modpack_Website \
+            -f confirm_upload="UPLOAD EXISTING ITEM" \
+            -f source_ref="$SHA" \
+            -f change_note="${SHA:0:7} $subject"
+# Author: Anthropic-Claude_Code.
