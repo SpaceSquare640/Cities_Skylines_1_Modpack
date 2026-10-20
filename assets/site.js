@@ -17,7 +17,11 @@
     document.querySelectorAll('[data-en][data-zh]').forEach(el => { el.textContent = chinese ? el.dataset.zh : el.dataset.en; });
     document.querySelectorAll('[data-en-aria][data-zh-aria]').forEach(el => { el.setAttribute('aria-label', chinese ? el.dataset.zhAria : el.dataset.enAria); });
     document.title = `${chinese ? document.body.dataset.titleZh : document.body.dataset.titleEn} | CS1 Modpack`;
-    document.querySelector('meta[name="description"]').content = chinese ? '探索 Cities: Skylines 1 模組集：AI Improve、自動公共運輸規劃與 AI Gaming。' : 'Explore the Cities: Skylines 1 Modpack: AI Improve, Automated Public Transport Planning, and AI Gaming.';
+    const description = document.querySelector('meta[name="description"]');
+    description.content = chinese ? description.dataset.zhDescription : description.dataset.enDescription;
+    document.querySelector('meta[property="og:description"]').content = description.content;
+    document.querySelector('meta[name="twitter:description"]').content = description.content;
+    document.querySelectorAll('[data-en-alt][data-zh-alt]').forEach(el => { el.alt = chinese ? el.dataset.zhAlt : el.dataset.enAlt; });
     languageControl.value = language;
     updateThemeControl();
   }

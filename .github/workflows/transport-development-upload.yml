@@ -1,0 +1,64 @@
+name: "Automated Public Transport Planning: Development Version upload"
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_upload:
+        description: Confirm updating the existing Transport Development Version item
+        type: choice
+        options:
+          - DO NOT UPLOAD
+          - UPLOAD EXISTING ITEM
+        default: DO NOT UPLOAD
+        required: true
+      published_file_id:
+        description: Existing Workshop item ID for Transport Development Version
+        type: string
+        required: true
+      preview_file_name:
+        description: Preview filename inside Resource/Icon/Uses_icon/
+        type: string
+        required: true
+        default: Cities_Skylines_1_Automated_Public_Transport_Planning_Icon_Kingsley.png
+      change_note:
+        description: Optional Workshop change note
+        type: string
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: steam-workshop-transport-development
+  cancel-in-progress: false
+
+jobs:
+  upload:
+    if: github.repository == 'SpaceSquare640/Cities_Skylines_1_Modpack'
+    runs-on: [self-hosted, Windows, X64, cs1-workshop]
+    timeout-minutes: 60
+    steps:
+      - name: Check out the default-branch uploader
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: Modpack_Website
+          path: orchestrator
+          persist-credentials: false
+      - name: Check out Transport branch HEAD
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.repository }}
+          ref: Automated_Public_Transport_Planning
+          path: mod-source
+          persist-credentials: false
+      - name: Build and submit Development Version
+        shell: pwsh
+        env:
+          CONFIRM_UPLOAD: ${{ inputs.confirm_upload }}
+          PUBLISHED_FILE_ID: ${{ inputs.published_file_id }}
+          PREVIEW_FILE_NAME: ${{ inputs.preview_file_name }}
+          CHANGE_NOTE: ${{ inputs.change_note }}
+        run: |
+          & "$env:GITHUB_WORKSPACE\orchestrator\tools\steam-workshop\Upload-Mod.ps1" -Module "Automated_Public_Transport_Planning" -Edition "Development" -SourcePath "$env:GITHUB_WORKSPACE\mod-source" -PublishedFileId $env:PUBLISHED_FILE_ID -PreviewFileName $env:PREVIEW_FILE_NAME -ChangeNote $env:CHANGE_NOTE -ConfirmUpload $env:CONFIRM_UPLOAD
+# Author: OpenAI-Codex.

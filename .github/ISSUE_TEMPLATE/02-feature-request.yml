@@ -1,0 +1,50 @@
+name: Feature request
+description: Suggest an improvement for a mod, the website, or the modpack.
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Search existing issues before submitting. Describe the user need and the outcome you want; implementation details are optional.
+  - type: dropdown
+    id: project
+    attributes:
+      label: Target project
+      options:
+        - Modpack website
+        - AI Improve
+        - Automated Public Transport Planning
+        - AI Gaming
+        - Modpack-wide
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem should this solve?
+      description: Explain the current limitation or user need.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to happen?
+      description: Describe the desired behavior or result.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives or related work
+      description: Mention alternatives you considered, related mods, or links to relevant issues.
+    validations:
+      required: false
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional context
+      description: Add mockups, examples, constraints, or other useful information.
+    validations:
+      required: false
+# Author: OpenAI-Codex.

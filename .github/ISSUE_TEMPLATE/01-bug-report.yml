@@ -1,0 +1,97 @@
+name: Bug or compatibility report
+description: Report a reproducible problem with a mod, the website, or repository documentation.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Search existing issues before submitting. Never include passwords, Steam Guard codes, API keys, or other credentials. Redact personal information and sensitive local paths from logs.
+  - type: dropdown
+    id: project
+    attributes:
+      label: Affected project
+      options:
+        - Modpack website
+        - AI Improve
+        - Automated Public Transport Planning
+        - AI Gaming
+        - Repository-wide or other
+    validations:
+      required: true
+  - type: dropdown
+    id: issue_type
+    attributes:
+      label: Problem type
+      options:
+        - Crash or error
+        - Incorrect in-game behavior
+        - Performance
+        - Mod compatibility
+        - Installation or build
+        - Website or documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Describe the problem and its impact.
+      placeholder: A clear summary of the observed behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: List the steps needed to reproduce the problem. If it is intermittent, say how often it occurs.
+      placeholder: |
+        1. Start the game or open the page...
+        2. Select...
+        3. Observe...
+    validations:
+      required: true
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: false
+  - type: input
+    id: game_version
+    attributes:
+      label: "Cities: Skylines version"
+      description: Leave blank for website or documentation issues.
+      placeholder: "For example: 1.17.1-f4"
+    validations:
+      required: false
+  - type: input
+    id: mod_version
+    attributes:
+      label: Mod version
+      description: Include the version shown in-game or on Steam Workshop, if applicable.
+    validations:
+      required: false
+  - type: textarea
+    id: compatibility
+    attributes:
+      label: Other mods or environment details
+      description: List relevant mods, operating system, and any compatibility checks already performed.
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Add relevant logs or attach screenshots. Remove personal information, account names, and sensitive paths first.
+    validations:
+      required: false
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional context
+      description: Add any other details that may help investigate the issue.
+    validations:
+      required: false
+# Author: OpenAI-Codex.

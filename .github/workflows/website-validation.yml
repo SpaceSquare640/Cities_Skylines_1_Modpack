@@ -1,0 +1,33 @@
+name: Website validation
+
+on:
+  push:
+    branches:
+      - Modpack_Website
+  pull_request:
+    branches:
+      - Modpack_Website
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Check JavaScript syntax
+        run: |
+          node --check tools/build.cjs
+          node --check tools/serve.cjs
+          node --check assets/site.js
+          node --check assets/preferences.js
+
+      - name: Regenerate pages and check committed output
+        run: |
+          node tools/build.cjs
+          git diff --exit-code -- index.html ai-improve/index.html automated-public-transport-planning/index.html ai-gaming/index.html
+
+# Author: OpenAI-Codex.

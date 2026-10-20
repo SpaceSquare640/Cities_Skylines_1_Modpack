@@ -1,0 +1,25 @@
+name: "AI Gaming: Release Version upload (blocked)"
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  block-unavailable-package:
+    if: github.repository == 'SpaceSquare640/Cities_Skylines_1_Modpack'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out AI Gaming branch HEAD
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.repository }}
+          ref: AI_Gaming
+          persist-credentials: false
+      - name: Stop until a release package is defined
+        shell: bash
+        run: |
+          echo "::error::AI Gaming Release Version is blocked because AI_Gaming has no buildable mod project or Workshop package definition."
+          exit 1
+# Author: OpenAI-Codex.
