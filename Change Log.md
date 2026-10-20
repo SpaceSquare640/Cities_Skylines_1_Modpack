@@ -2,6 +2,12 @@
 
 Author: OpenAI-Codex
 
+## 2026-10-21 — GPL-3.0 license
+
+- Added the GNU General Public License v3.0 to the website and all three mod branches (AI Improve, Automated Public Transport Planning, AI Gaming), copied verbatim from https://www.gnu.org/licenses/gpl-3.0.txt.
+- Added a license line to each branch README and updated the licensing note in DEVELOPMENT.md. Third-party components keep their own licenses.
+- Author: Anthropic-Claude_Code.
+
 ## 2026-10-20 — Website experience and artwork
 
 - Added the three project-specific artworks to the home page selector and project pages; each image is identified as artwork, not gameplay.
