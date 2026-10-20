@@ -1,0 +1,75 @@
+name: Transport source integrity
+
+on:
+  push:
+    branches:
+      - Automated_Public_Transport_Planning
+  pull_request:
+    branches:
+      - Automated_Public_Transport_Planning
+
+permissions:
+  contents: read
+
+jobs:
+  project-manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Check project manifest and local path safeguards
+        run: |
+          python3 - <<'PY'
+          import subprocess
+          import sys
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          project_path = Path("AutomatedPublicTransportPlanning.csproj")
+          root = ET.parse(project_path).getroot()
+          includes = [
+              item.attrib["Include"].replace("\\", "/")
+              for item in root.iter()
+              if item.tag.rsplit("}", 1)[-1] == "Compile" and "Include" in item.attrib
+          ]
+
+          missing = []
+          for include in includes:
+              matches = list(Path(".").glob(include))
+              if not matches:
+                  missing.append(include)
+          if missing:
+              print("Missing Compile Include targets:", sorted(missing))
+              sys.exit(1)
+
+          def property_value(name):
+              for item in root.iter():
+                  if item.tag.rsplit("}", 1)[-1] == name:
+                      return (item.text or "").strip()
+              return None
+
+          if property_value("TargetFrameworkVersion") != "v3.5":
+              print("Unexpected target framework; expected v3.5.")
+              sys.exit(1)
+          if property_value("CodePage") != "65001":
+              print("UTF-8 compiler code page safeguard is missing.")
+              sys.exit(1)
+
+          tracked = subprocess.run(
+              ["git", "ls-files", "--error-unmatch", "Local.props"],
+              capture_output=True,
+              text=True,
+          )
+          ignored = subprocess.run(
+              ["git", "check-ignore", "--quiet", "Local.props"],
+              check=False,
+          )
+          if tracked.returncode == 0 or ignored.returncode != 0:
+              print("Local.props must remain ignored and untracked.")
+              sys.exit(1)
+
+          print(f"Project integrity OK: {len(includes)} Compile entries resolve; framework, UTF-8, and Local.props safeguards are present.")
+          PY
+
+# Author: OpenAI-Codex.
