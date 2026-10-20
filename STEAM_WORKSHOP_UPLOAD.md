@@ -54,7 +54,13 @@ GitHub warns that self-hosted runners attached to public repositories need extra
 4. Development item visibility is not changed by the workflow. Set and verify the intended visibility in Steam before uploading a development build.
 5. After SteamCMD completes, inspect its Workshop build log and the item page. A successful process exit alone is not sufficient confirmation that the item is visible and correct.
 
-The Workshop App ID is 255710 (Cities: Skylines). Each runnable upload requires a non-zero existing PublishedFileId; missing IDs and AI Gaming uploads fail closed. The VDF updates the item ID, title, content folder, preview image, and optional change note. It omits visibility, description, and tags so they remain unchanged.
+The Workshop App ID is 255710 (Cities: Skylines). Each runnable upload requires a non-zero existing PublishedFileId; missing IDs and AI Gaming uploads fail closed. The VDF updates the item ID, title, content folder, preview image, optional change note, and optional description. It omits visibility and tags so they remain unchanged.
+
+## Workshop descriptions
+
+The Mod Uploader is used only for each item's first upload, to obtain its Workshop ID. Later updates, including the description, go through these workflows.
+
+Each mod branch may contain `Workshop/Release.txt` and `Workshop/Development.txt` in Steam BBCode. When the file for the uploaded edition exists, its text replaces the Workshop description; when it is absent, the current description stays unchanged. The upload stops if the file is empty, longer than 8,000 characters, or contains double quotes or backslashes (use typographic quotes instead). Line breaks are written literally into the VDF; confirm the first description update on the Development item before relying on it for a Release item.
 
 Steam's Workshop guide describes the SteamCMD Workshop route as intended for testing and notes that it requires Steam credentials. These workflows keep the password and Steam Guard code out of GitHub and use a persistent local SteamCMD login. Review each update manually before relying on it as a public release.
 

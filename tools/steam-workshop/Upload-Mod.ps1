@@ -152,6 +152,25 @@ function ConvertTo-VdfValue {
     return $Value.Replace('\', '\\').Replace('"', '\"')
 }
 
+# The Workshop description lives on the mod branch (Workshop/<Edition>.txt, Steam BBCode) so each
+# update ships the text that matches its code. A missing file leaves the current description as it
+# is. Line breaks are written literally inside the quoted VDF value; double quotes and backslashes
+# are refused rather than escaped, because whether SteamCMD unescapes them is not verified yet.
+$descriptionPath = Join-Path $sourceRoot "Workshop\$Edition.txt"
+$description = $null
+if (Test-Path -LiteralPath $descriptionPath -PathType Leaf) {
+    $description = [IO.File]::ReadAllText($descriptionPath, [Text.Encoding]::UTF8).Replace("`r`n", "`n").Trim()
+    if ($description.Length -eq 0) {
+        throw "Workshop description file is empty: Workshop\$Edition.txt. Delete it to keep the current description, or add text."
+    }
+    if ($description.Contains('"') -or $description.Contains('\')) {
+        throw "Workshop\$Edition.txt must not contain double quotes or backslashes; use typographic quotes instead."
+    }
+    if ($description.Length -gt 8000) {
+        throw "Workshop\$Edition.txt is $($description.Length) characters; Steam allows at most 8000."
+    }
+}
+
 $vdfPath = Join-Path $packageRoot 'workshop-item.vdf'
 $vdfLines = @(
     '"workshopitem"'
@@ -165,11 +184,19 @@ $vdfLines = @(
 if (-not [string]::IsNullOrWhiteSpace($ChangeNote)) {
     $vdfLines += '    "changenote" "' + (ConvertTo-VdfValue $ChangeNote.Trim()) + '"'
 }
+if ($null -ne $description) {
+    $vdfLines += '    "description" "' + $description.Replace("`n", [Environment]::NewLine) + '"'
+}
 $vdfLines += '}'
 [IO.File]::WriteAllText($vdfPath, ($vdfLines -join [Environment]::NewLine), [Text.UTF8Encoding]::new($false))
 
 Write-Output "Target: $workshopTitle (existing item $PublishedFileId)"
-Write-Output 'Visibility, description, and tags are omitted from the VDF and remain unchanged.'
+if ($null -ne $description) {
+    Write-Output "Description: updated from Workshop\$Edition.txt ($($description.Length) characters)."
+} else {
+    Write-Output "Description: no Workshop\$Edition.txt on the branch; the current description stays unchanged."
+}
+Write-Output 'Visibility and tags are omitted from the VDF and remain unchanged.'
 Write-Output 'SteamCMD credentials and Steam Guard codes are not supplied by this workflow; the runner uses its saved local SteamCMD login.'
 
 $startInfo = [Diagnostics.ProcessStartInfo]::new()

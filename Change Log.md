@@ -2,6 +2,12 @@
 
 Author: OpenAI-Codex
 
+## 2026-10-21 — Workshop descriptions from the mod branches
+
+- Upload workflows can now update the Workshop description from `Workshop/Release.txt` or `Workshop/Development.txt` on the mod branch. Without that file the current description is kept.
+- Visibility and tags are still left unchanged by uploads.
+- Author: Anthropic-Claude_Code.
+
 ## 2026-10-21 — Workshop item IDs pinned in upload workflows
 
 - Registered the AI Improve Workshop items: Release Version 3782858610 and Development Version 3823575900. Both upload workflows now prefill their ID.
