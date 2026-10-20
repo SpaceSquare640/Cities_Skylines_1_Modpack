@@ -1,0 +1,70 @@
+name: AI Improve source checks
+
+on:
+  push:
+    branches:
+      - AI_Improve
+  pull_request:
+    branches:
+      - AI_Improve
+
+permissions:
+  contents: read
+
+jobs:
+  localization-and-release-boundary:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Check localization consistency
+        run: |
+          set -euo pipefail
+          report="$(python3 tools/check_localization.py)"
+          printf '%s\n' "$report"
+          if printf '%s\n' "$report" | grep -Eq 'warning LOC[0-9]{3}:'; then
+            echo "Localization findings must be resolved before merging." >&2
+            exit 1
+          fi
+
+      - name: Verify development tools stay out of shipping compile
+        run: |
+          python3 - <<'PY'
+          import json
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          def compile_items(dev_tools):
+              result = subprocess.run(
+                  [
+                      "dotnet", "msbuild", "AIImprove.csproj",
+                      "-getItem:Compile", f"-p:DevTools={str(dev_tools).lower()}",
+                  ],
+                  check=True,
+                  capture_output=True,
+                  text=True,
+              )
+              data = json.loads(result.stdout)
+              return {
+                  item["Identity"].replace("\\", "/")
+                  for item in data["Items"]["Compile"]
+              }
+
+          dev_sources = {path.as_posix() for path in Path("dev").rglob("*.cs")}
+          shipping = compile_items(False)
+          development = compile_items(True)
+          shipped_dev_sources = {path for path in shipping if path.startswith("dev/")}
+          missing_dev_sources = dev_sources - development
+
+          if shipped_dev_sources:
+              print("Development-only sources entered the default compile:", sorted(shipped_dev_sources))
+              sys.exit(1)
+          if missing_dev_sources:
+              print("DevTools=true did not include:", sorted(missing_dev_sources))
+              sys.exit(1)
+          print(f"Compile boundary OK: {len(dev_sources)} dev source files excluded by default and included with DevTools=true.")
+          PY
+
+# Author: OpenAI-Codex.
