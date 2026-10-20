@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net35</TargetFramework>
+    <OutputType>Library</OutputType>
+    <AssemblyName>AIGaming</AssemblyName>
+    <RootNamespace>AIGaming</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <Version>0.1.0</Version>
+    <AssemblyVersion>0.1.0.0</AssemblyVersion>
+    <FileVersion>0.1.0.0</FileVersion>
+    <InformationalVersion>0.1.0 - Early preview</InformationalVersion>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <CSInstallPath Condition="'$(CSInstallPath)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Cities_Skylines</CSInstallPath>
+    <DevTools Condition="'$(DevTools)' == ''">false</DevTools>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="ICities">
+      <HintPath>$(CSInstallPath)\Cities_Data\Managed\ICities.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="ColossalManaged">
+      <HintPath>$(CSInstallPath)\Cities_Data\Managed\ColossalManaged.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(CSInstallPath)\Cities_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$(CSInstallPath)\Cities_Data\Managed\UnityEngine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Source\Development\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DevTools)' == 'true'">
+    <Compile Include="Source\Development\**\*.cs" />
+  </ItemGroup>
+
+  <Target Name="WarnDevTools" BeforeTargets="Build" Condition="'$(DevTools)' == 'true'">
+    <Warning Text="DevTools=true: this DLL is for development only and must not be uploaded to the Workshop." />
+  </Target>
+
+</Project>
