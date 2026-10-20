@@ -15,7 +15,7 @@ namespace AutomatedPublicTransportPlanning
     public sealed class Mod : IUserMod
     {
         public const string ModName = "Automated Public Transport Planning";
-        public const string Version = "0.1.0";
+        public const string Version = "0.2.0";
 
         /// <summary>
         /// The name stays in English in every language. It is how the mod is found on
@@ -117,6 +117,7 @@ namespace AutomatedPublicTransportPlanning
                   Guarded("stop graph", StopGraph.LogGraph)) as UIButton,
                   Strings.ButtonGraph);
 
+#if DEVTOOLS
             // Throwaway controls for the save round-trip spike. These write to the
             // loaded city, so they are kept in their own clearly labelled group and
             // will be removed once the spike has served its purpose.
@@ -144,6 +145,7 @@ namespace AutomatedPublicTransportPlanning
             Track(spike.AddButton(Loc.Get(Strings.ButtonSpikeRemove),
                   Guarded("remove test lines", ArmedOnly(SaveRoundTripSpike.RemoveTestLines))) as UIButton,
                   Strings.ButtonSpikeRemove);
+#endif
         }
 
         // ------------------------------------------------------------------ language
@@ -250,6 +252,7 @@ namespace AutomatedPublicTransportPlanning
             Track(childOfGroup.parent.parent.Find<UILabel>("Label"), key);
         }
 
+#if DEVTOOLS
         // ------------------------------------------------------------------ spike arming
 
         /// <summary>
@@ -286,6 +289,7 @@ namespace AutomatedPublicTransportPlanning
                 handler();
             };
         }
+#endif
 
         /// <summary>
         /// Wraps a button handler so nothing it throws reaches the game's UI event

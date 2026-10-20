@@ -50,6 +50,10 @@ namespace AutomatedPublicTransportPlanning.Spike
 
         private const double PhaseBudgetMs = 250.0;
 
+        // Keep aligned with the DevTools spike without requiring that write-capable
+        // class in the release assembly.
+        private const string TestLinePrefix = "APTP Test";
+
         /// <summary>Guards against a corrupt citizen unit chain looping forever.</summary>
         private const int MaxUnitsPerBuilding = 512;
 
@@ -529,7 +533,7 @@ namespace AutomatedPublicTransportPlanning.Spike
                 }
 
                 string name = tm.GetLineName(lineId);
-                bool ours = name != null && name.StartsWith(SaveRoundTripSpike.TestLinePrefix);
+                bool ours = name != null && name.StartsWith(TestLinePrefix);
 
                 // Only the outliers and our own lines are listed; a city can have
                 // hundreds of lines and the totals carry the answer.
