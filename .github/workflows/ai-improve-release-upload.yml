@@ -12,9 +12,10 @@ on:
         default: DO NOT UPLOAD
         required: true
       published_file_id:
-        description: Existing Workshop item ID for AI Improve Release Version
+        description: Workshop item ID for AI Improve Release Version (must match the ID registered in Upload-Mod.ps1)
         type: string
         required: true
+        default: "3782858610"
       preview_file_name:
         description: Preview filename inside Resource/Icon/Uses_icon/
         type: string
@@ -62,3 +63,4 @@ jobs:
         run: |
           & "$env:GITHUB_WORKSPACE\orchestrator\tools\steam-workshop\Upload-Mod.ps1" -Module "AI_Improve" -Edition "Release" -SourcePath "$env:GITHUB_WORKSPACE\mod-source" -PublishedFileId $env:PUBLISHED_FILE_ID -PreviewFileName $env:PREVIEW_FILE_NAME -ChangeNote $env:CHANGE_NOTE -ConfirmUpload $env:CONFIRM_UPLOAD
 # Author: OpenAI-Codex.
+# Modified by: Anthropic-Claude_Code.

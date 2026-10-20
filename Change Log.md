@@ -2,6 +2,14 @@
 
 Author: OpenAI-Codex
 
+## 2026-10-21 — Workshop item IDs pinned in upload workflows
+
+- Registered the AI Improve Workshop items: Release Version 3782858610 and Development Version 3823575900. Both upload workflows now prefill their ID.
+- The upload script now rejects any ID that does not match the registered item for that module and edition, and refuses items that have no registered ID yet (Transport and AI Gaming).
+- AI Improve uploads no longer copy the build into the runner account's own Mods folder.
+- Workflows still need the self-hosted runner and SteamCMD setup before they can run.
+- Author: Anthropic-Claude_Code.
+
 ## 2026-10-21 — AI Improve author credit and settings links
 
 - AI Improve: the mod description shown in the Content Manager now credits Kingsley instead of SpaceSquare. The internal Harmony ID is unchanged for compatibility.

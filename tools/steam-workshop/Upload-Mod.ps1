@@ -34,6 +34,21 @@ if ($PublishedFileId -notmatch '^\d{1,20}$' -or $PublishedFileId -eq '0') {
     throw 'A non-zero existing Steam Workshop PublishedFileId is required. New item creation is disabled.'
 }
 
+# Each module and edition is pinned to its own Workshop item, so a mistyped or pasted ID can never
+# push a build into the wrong item (the Release item is public with real subscribers). Register an
+# ID here once its item exists; any combination without one fails closed.
+$registeredItemIds = @{
+    'AI_Improve/Release'     = '3782858610'
+    'AI_Improve/Development' = '3823575900'
+}
+$itemKey = "$Module/$Edition"
+if (-not $registeredItemIds.ContainsKey($itemKey)) {
+    throw "No Workshop item ID is registered for $itemKey yet. Create the item, then register its ID in Upload-Mod.ps1."
+}
+if ($PublishedFileId -cne $registeredItemIds[$itemKey]) {
+    throw "PublishedFileId $PublishedFileId is not the registered $itemKey item ($($registeredItemIds[$itemKey]))."
+}
+
 foreach ($name in @('CITIES_SKYLINES_DIR', 'MODPACK_ROOT', 'STEAMCMD_EXE', 'STEAMCMD_USERNAME', 'RUNNER_TEMP')) {
     if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($name))) {
         throw "Required self-hosted runner environment variable is missing: $name"
@@ -89,7 +104,10 @@ switch ($Module) {
             throw 'AIImprove.csproj is missing from the checked-out AI_Improve branch.'
         }
         $dotnet = Get-Command dotnet -ErrorAction Stop
-        & $dotnet.Source build $project --configuration Release '-p:DevTools=false' "-p:CSInstallPath=$gameRoot"
+        # The project's CopyToMods target copies every build into the local Mods folder. On the
+        # runner that folder belongs to the maintainer's own game, so send the copy to the job's
+        # package folder instead of replacing whatever build they are playing with.
+        & $dotnet.Source build $project --configuration Release '-p:DevTools=false' "-p:CSInstallPath=$gameRoot" "-p:CSDataPath=$(Join-Path $packageRoot 'mods-copy')"
         if ($LASTEXITCODE -ne 0) {
             throw "AI Improve build failed with exit code $LASTEXITCODE."
         }
@@ -174,3 +192,4 @@ if ($process.ExitCode -ne 0) {
 Write-Output 'SteamCMD exited with code 0. Verify the item page and Workshop build logs before treating the update as published.'
 
 # Author: OpenAI-Codex.
+# Modified by: Anthropic-Claude_Code.

@@ -13,6 +13,21 @@ These workflows prepare and submit updates to existing Cities: Skylines Workshop
 | AI Gaming: Release Version | AI Gaming: Release Version upload (blocked) | Intentionally stops because there is no buildable project or package definition. |
 | AI Gaming: Development Version | AI Gaming: Development Version upload (blocked) | Intentionally stops because there is no buildable project or package definition. |
 
+## Registered Workshop item IDs
+
+Each module and edition is pinned to one Workshop item in `tools/steam-workshop/Upload-Mod.ps1`. An upload whose ID does not match the registered item, or whose item has no registered ID yet, stops before anything is built or sent. The two AI Improve workflows prefill their registered ID.
+
+| Workshop item | PublishedFileId | Visibility |
+| --- | --- | --- |
+| AI Improve: Release Version | 3782858610 | Public |
+| AI Improve: Development Version | 3823575900 | Not public |
+| Automated Public Transport Planning: Release Version | Not created yet | — |
+| Automated Public Transport Planning: Development Version | Not created yet | — |
+| AI Gaming: Release Version | Not created yet | — |
+| AI Gaming: Development Version | Not created yet | — |
+
+After creating a new item, add its ID to the `$registeredItemIds` table in `Upload-Mod.ps1` and to this table, and set it as the workflow's `published_file_id` default.
+
 The Release and Development items currently differ by Workshop item ID and title only. Both build from the module branch HEAD. AI Improve uses DevTools=false for both because its project explicitly warns against uploading the DevTools build. Transport has no separate Release/Development build profile. Add a distinct build profile only after its package contents and behavior are defined.
 
 The upload workflows live on the Modpack_Website default branch because GitHub requires a workflow_dispatch workflow to exist on the default branch. The source checkout remains pinned to each module's named branch and uses that branch's latest commit at dispatch time. Local edits must be pushed to the respective branch before a future GitHub workflow can use them.
@@ -34,8 +49,8 @@ GitHub warns that self-hosted runners attached to public repositories need extra
 ## Run an existing-item update
 
 1. Open the repository's Actions tab and choose one of the six version workflows.
-2. Enter the existing Workshop PublishedFileId, the preview image filename, and an optional change note. Leave the confirmation set to DO NOT UPLOAD to stop safely.
-3. Before selecting UPLOAD EXISTING ITEM, check that the ID belongs to the displayed module and edition. The workflow sets the title to the exact version name shown above.
+2. Keep or enter the Workshop PublishedFileId, the preview image filename, and an optional change note. Leave the confirmation set to DO NOT UPLOAD to stop safely.
+3. Before selecting UPLOAD EXISTING ITEM, check that the ID belongs to the displayed module and edition; the script also rejects any ID other than the registered one. The workflow sets the title to the exact version name shown above.
 4. Development item visibility is not changed by the workflow. Set and verify the intended visibility in Steam before uploading a development build.
 5. After SteamCMD completes, inspect its Workshop build log and the item page. A successful process exit alone is not sufficient confirmation that the item is visible and correct.
 
@@ -52,3 +67,4 @@ Steam's Workshop guide describes the SteamCMD Workshop route as intended for tes
 - GitHub: Self-hosted runner security guidance: https://docs.github.com/en/actions/how-tos/manage-runners/self-hosted-runners/manage-access
 
 Author: OpenAI-Codex.
+Modified by: Anthropic-Claude_Code.
