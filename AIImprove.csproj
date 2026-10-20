@@ -52,7 +52,9 @@
   </ItemGroup>
 
   <Target Name="WarnDevTools" BeforeTargets="Build" Condition="'$(DevTools)' == 'true'">
-    <Warning Text="DevTools=true: this DLL contains the dev trigger panel and must NOT be uploaded to the Workshop. Rebuild without -p:DevTools=true before releasing." />
+    <!-- Since 2026-10-21 the DevTools build is what goes to the hidden "AI Improve: Development
+         Version" Workshop item; Upload-Mod.ps1 enforces DevTools=false for the Release item. -->
+    <Warning Text="DevTools=true: this DLL contains the dev trigger panel and probes. Only the Development Version Workshop item may receive it; never upload it to the Release Version." />
   </Target>
 
   <ItemGroup>
