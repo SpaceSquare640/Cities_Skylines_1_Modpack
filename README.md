@@ -1,5 +1,8 @@
-# Cities: Skylines 1 AI Gaming
+# AI Gaming
 
-New mod for Cities: Skylines (2015). In development.
+Visit the [AI Gaming website page](https://spacesquare640.github.io/Cities_Skylines_1_Modpack/ai-gaming/) for project information, documentation, and updates.
 
-Part of the [Cities: Skylines 1 Modpack](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack).
+Author: Kingsley
+
+
+Licensed under the GNU General Public License v3.0. See LICENSE.
