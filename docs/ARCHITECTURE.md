@@ -65,6 +65,32 @@
 3. `[Inferred]` **AI suggestions:** connect the external companion to a local or cloud model; display proposals in game without executing them and let the player dismiss or copy them.
 4. `[Inferred]` **Restricted control:** add a separate opt-in mode with a typed action allowlist, current-state validation, explicit start/stop controls, per-action limits, and a tested recovery path.
 
+## Modpack interoperability (proposal)
+
+**Status:** Proposal only. `[Inferred]` The Lead Architect will decide the final cross-mod architecture. Once that decision is recorded in its authoritative design document, replace this section with a reference to that document.
+
+### Optional capability discovery
+
+- `[Inferred]` AI Gaming should treat every other Modpack module as an optional dependency. It may inspect loaded mods for a published capability provider through a small optional contract or a narrowly scoped reflection adapter. AI Gaming must not add a hard assembly reference that prevents loading when the provider is absent.
+- `[Inferred]` A provider should publish stable capability identifiers and contract versions through a public facade. AI Gaming can discover identifiers and compatible versions first, then call only the documented facade. Reflection should be confined to a compatibility adapter; it must not reach into private types, fields, or implementation details.
+- `[Inferred]` If AI Improve is absent, incompatible, or fails during discovery, AI Gaming should omit its integration and continue with its own features. If present and compatible, AI Gaming may query documented feature states and, when the player explicitly enables the integration, request supported feature-toggle changes through AI Improve's own API so AI Improve retains ownership of its behavior and validation.
+- `[Inferred]` If Automated Public Transport Planning is absent or incompatible, AI Gaming should continue without transport-planning capabilities. If present, AI Gaming may request a documented planning result or proposal and present it to the player. Planning and any later execution must remain separate capabilities; AI Gaming must not assume that receiving a plan authorizes applying it.
+- `[Inferred]` Discovery and calls should be bounded, exception-isolated, and fail closed. A missing provider, unknown capability, unsupported version, timeout, or provider exception should disable only that integration for the current session and must not block the simulation thread or the rest of AI Gaming.
+
+### Conflict-avoidance rules
+
+- `[Inferred]` Keep each module authoritative for the behavior it owns. AI Gaming should call a provider's supported capability instead of implementing a second feature switch, transport planner, or other behavior already owned by that module.
+- `[Inferred]` Integrate through public contracts, events, or documented facades. Do not patch another module's methods, and do not Harmony-patch a method that another Modpack module already patches. Avoid depending on load order or another module's private implementation.
+- `[Inferred]` When no supported capability is available, hide or disable the related AI Gaming option and explain that the optional module or compatible capability is unavailable. Do not silently substitute a competing implementation.
+
+### Capability contract sketch
+
+- `[Inferred]` A provider descriptor should expose a stable provider ID, provider version, contract/API version, and a collection of capability descriptors. Each capability descriptor should contain a stable ID, its own version, a short description, and an operation classification.
+- `[Inferred]` Classify operations explicitly as `ReadOnly` or `Write`. Read-only examples include querying AI Improve feature status or requesting a transport-planning proposal. Write examples include asking AI Improve to change a feature setting or asking a transport module to apply a plan. A proposal-producing call must not be classified as an applied write unless it changes game or module state.
+- `[Inferred]` The contract should make write operations visibly distinct, require explicit player consent for each enabled write-capable integration, and let the provider validate and reject every request. AI Gaming should not invoke write capabilities in the default read-only mode.
+- `[Inferred]` Calls should use typed, bounded request and response objects, include the contract version, and return an explicit result such as success, unsupported, rejected, or failed. Providers should reject unknown versions and invalid or stale requests; consumers should treat errors as no-ops.
+- `[Inferred]` The final contract shape, discovery mechanism, version policy, and ownership rules require a Lead Architect decision and compatibility validation against the game's .NET 3.5 / Unity Mono runtime before implementation.
+
 ## Validation Boundary
 
 - `[Verified]` A successful Release build and static inspection establish that the source compiles against the available game references and that the built assembly contains no direct networking type references.
