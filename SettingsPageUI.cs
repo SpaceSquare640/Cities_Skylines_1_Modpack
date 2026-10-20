@@ -36,7 +36,12 @@ namespace AIImprove
     // anything.
     internal static class SettingsPageUI
     {
-        private const string RepoUrl = "https://github.com/SpaceSquare640/Cities_Skylines_1_AI_Improve";
+        // The standalone Cities_Skylines_1_AI_Improve repository no longer exists (2026-10-21): the
+        // mod now lives on the AI_Improve branch of the modpack repository, its Wiki is disabled,
+        // and every branch's change log is published on the modpack website instead.
+        private const string RepoUrl = "https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack";
+        private const string BranchUrl = RepoUrl + "/tree/AI_Improve";
+        private const string WebsiteUrl = "https://spacesquare640.github.io/Cities_Skylines_1_Modpack/";
         private const string WorkshopUrl = "https://steamcommunity.com/sharedfiles/filedetails/?id=3782858610";
 
         private const string DropdownTemplate = "OptionsDropdownTemplate";
@@ -528,7 +533,7 @@ namespace AIImprove
             changelog.textScale = 0.72f;
             StyleAccentButton(changelog);
             changelog.relativePosition = new Vector3(header.width - changelog.width - 16f, 46f);
-            changelog.eventClick += (component, param) => Application.OpenURL(RepoUrl + "/commits/main");
+            changelog.eventClick += (component, param) => Application.OpenURL(WebsiteUrl + "change-log/");
 
             AddSearchField(header, root, helper);
         }
@@ -1162,8 +1167,8 @@ namespace AIImprove
 
         private static void BuildAboutPage(UIPanel page, UIComponent root, UIHelperBase helper)
         {
-            AddLinkButton(page, Localization.Get("about.github"), RepoUrl);
-            AddLinkButton(page, Localization.Get("about.wiki"), RepoUrl + "/wiki");
+            AddLinkButton(page, Localization.Get("about.github"), BranchUrl);
+            AddLinkButton(page, Localization.Get("about.wiki"), WebsiteUrl + "ai-improve/");
             AddLinkButton(page, Localization.Get("about.workshop"), WorkshopUrl);
             AddLinkButton(page, Localization.Get("about.reportIssue"), RepoUrl + "/issues/new/choose");
         }

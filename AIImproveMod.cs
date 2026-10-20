@@ -11,7 +11,7 @@ namespace AIImprove
     {
         public string Name => "AI_Improve";
 
-        public string Description => "Improves traffic, citizen and service vehicle AI decision quality. By SpaceSquare.";
+        public string Description => "Improves traffic, citizen and service vehicle AI decision quality. By Kingsley.";
 
         public void OnEnabled()
         {
