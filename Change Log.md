@@ -2,6 +2,13 @@
 
 Author: OpenAI-Codex
 
+## 2026-10-21 — AI Improve author credit and settings links
+
+- AI Improve: the mod description shown in the Content Manager now credits Kingsley instead of SpaceSquare. The internal Harmony ID is unchanged for compatibility.
+- AI Improve: settings-page links no longer point to the removed standalone repository. "GitHub Source" opens the AI_Improve branch, "Documentation Wiki" opens the AI Improve website page, "Changelog" opens the website Change Log, and "Report an Issue" opens this repository's issue forms.
+- Takes effect in game after the next Workshop update.
+- Author: Anthropic-Claude_Code.
+
 ## 2026-10-21 — GPL-3.0 license
 
 - Added the GNU General Public License v3.0 to the website and all three mod branches (AI Improve, Automated Public Transport Planning, AI Gaming), copied verbatim from https://www.gnu.org/licenses/gpl-3.0.txt.
