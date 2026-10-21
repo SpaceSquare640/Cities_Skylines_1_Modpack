@@ -24,6 +24,7 @@ namespace AIImprove
             ModSettings.ApplySchemaMigrations();
 
             ColossalFramework.Singleton<LoadingManager>.instance.m_levelLoaded += IngameUI.OnLevelLoaded;
+            ColossalFramework.Singleton<LoadingManager>.instance.m_levelLoaded += CitizenCarProbabilityPatch.ResetForNewLevel;
 
             // One-shot inventory of stations and outside connections, to establish whether the
             // city can produce intercity traffic at all before blaming anything for how little of
@@ -34,6 +35,7 @@ namespace AIImprove
             // a city loads, so asking at startup finds nobody. See Patcher.ReportSharedMethods.
             ColossalFramework.Singleton<LoadingManager>.instance.m_levelLoaded += _ => Patcher.ReportSharedMethods();
             ColossalFramework.Singleton<LoadingManager>.instance.m_levelUnloaded += IngameUI.OnLevelUnloading;
+            ColossalFramework.Singleton<LoadingManager>.instance.m_levelUnloaded += CitizenCarProbabilityPatch.ReportAndResetForLevel;
 
             // Every ID-keyed tracker in this mod describes one specific city. IDs are recycled
             // from fixed pools on load, so anything left over would be misread as describing the
@@ -50,10 +52,13 @@ namespace AIImprove
             }
 
             ColossalFramework.Singleton<LoadingManager>.instance.m_levelLoaded -= IngameUI.OnLevelLoaded;
+            ColossalFramework.Singleton<LoadingManager>.instance.m_levelLoaded -= CitizenCarProbabilityPatch.ResetForNewLevel;
             ColossalFramework.Singleton<LoadingManager>.instance.m_levelLoaded -= IntercityServiceInventory.OnLevelLoaded;
             ColossalFramework.Singleton<LoadingManager>.instance.m_levelUnloaded -= IngameUI.OnLevelUnloading;
+            ColossalFramework.Singleton<LoadingManager>.instance.m_levelUnloaded -= CitizenCarProbabilityPatch.ReportAndResetForLevel;
             ColossalFramework.Singleton<LoadingManager>.instance.m_levelUnloaded -= TrackerReset.ResetAll;
             IngameUI.OnLevelUnloading();
+            CitizenCarProbabilityPatch.ReportAndResetForLevel();
             TrackerReset.ResetAll();
         }
 

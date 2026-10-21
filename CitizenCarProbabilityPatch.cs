@@ -1,4 +1,5 @@
 using UnityEngine;
+using ColossalFramework;
 
 namespace AIImprove
 {
@@ -20,6 +21,12 @@ namespace AIImprove
     // itself or removing anyone's ability to still choose to drive.
     internal static class CitizenCarProbabilityPatch
     {
+        // If a citizen's parked car is this far from home, assume TM:PE Parking AI (or another
+        // parking mod) left it at a previous destination. Tune after in-game testing.
+        private const float HomeParkingDistanceThresholdMeters = 150f;
+        private const float HomeParkingDistanceThresholdSquared =
+            HomeParkingDistanceThresholdMeters * HomeParkingDistanceThresholdMeters;
+
         // Below this NetSegment.m_trafficDensity (0-100 scale) reading, vanilla's probability is
         // left untouched entirely - only meaningfully congested destinations are affected.
         // "每個功能中的調整設定及數據可以拆開以及詳細調整" (2026-08-15): now a slider.
@@ -38,7 +45,32 @@ namespace AIImprove
         // handling is needed beyond just skipping the density check for this call.
         private static readonly PerFrameBudget Budget = new PerFrameBudget(5);
 
-        private static bool loggedFirstCall;
+        // Updated without logging in the per-trip patch; one summary is emitted when the level unloads.
+        private static int congestionReductionCount;
+        private static int remoteParkedCarPreservationCount;
+        private static bool hasActiveLevel;
+
+        public static void ResetForNewLevel(SimulationManager.UpdateMode mode)
+        {
+            System.Threading.Interlocked.Exchange(ref congestionReductionCount, 0);
+            System.Threading.Interlocked.Exchange(ref remoteParkedCarPreservationCount, 0);
+            hasActiveLevel = true;
+        }
+
+        public static void ReportAndResetForLevel()
+        {
+            if (!hasActiveLevel)
+            {
+                return;
+            }
+
+            hasActiveLevel = false;
+            int reductions = System.Threading.Interlocked.Exchange(ref congestionReductionCount, 0);
+            int preserved = System.Threading.Interlocked.Exchange(ref remoteParkedCarPreservationCount, 0);
+            Debug.Log(
+                "[AIImprove] Citizen car probability FINAL: congestion reductions=" + reductions +
+                ", preserved for parked car away from home=" + preserved + ".");
+        }
 
         public static void Postfix(ref CitizenInstance citizenData, ref int __result)
         {
@@ -47,13 +79,19 @@ namespace AIImprove
                 return;
             }
 
-            if (!loggedFirstCall)
+            int originalProbability = __result;
+            if (originalProbability <= 0)
             {
-                loggedFirstCall = true;
-                Debug.Log("[AIImprove] CitizenCarProbabilityPatch is executing.");
+                return;
             }
 
-            if (__result <= 0 || !Budget.TryConsume())
+            if (HasParkedVehicleAwayFromHome(ref citizenData))
+            {
+                System.Threading.Interlocked.Increment(ref remoteParkedCarPreservationCount);
+                return;
+            }
+
+            if (!Budget.TryConsume())
             {
                 return;
             }
@@ -66,7 +104,71 @@ namespace AIImprove
 
             float t = Mathf.Clamp01((density - DensityThreshold) / (100f - DensityThreshold));
             float reduction = t * MaxReductionFraction;
-            __result = Mathf.Max(0, Mathf.RoundToInt(__result * (1f - reduction)));
+            int adjustedProbability = Mathf.Max(0, Mathf.RoundToInt(originalProbability * (1f - reduction)));
+            if (adjustedProbability < originalProbability)
+            {
+                __result = adjustedProbability;
+                System.Threading.Interlocked.Increment(ref congestionReductionCount);
+            }
+        }
+
+        private static bool HasParkedVehicleAwayFromHome(ref CitizenInstance citizenData)
+        {
+            uint citizenId = citizenData.m_citizen;
+            if (citizenId == 0)
+            {
+                return false;
+            }
+
+            CitizenManager citizenManager = Singleton<CitizenManager>.instance;
+            VehicleManager vehicleManager = Singleton<VehicleManager>.instance;
+            BuildingManager buildingManager = Singleton<BuildingManager>.instance;
+            if (citizenManager == null || vehicleManager == null || buildingManager == null)
+            {
+                return false;
+            }
+
+            Citizen[] citizens = citizenManager.m_citizens.m_buffer;
+            if (citizenId >= (uint)citizens.Length)
+            {
+                return false;
+            }
+
+            Citizen citizen = citizens[(int)citizenId];
+            ushort parkedVehicleId = citizen.m_parkedVehicle;
+            ushort homeBuildingId = citizen.m_homeBuilding;
+            if (parkedVehicleId == 0 || homeBuildingId == 0)
+            {
+                return false;
+            }
+
+            VehicleParked[] parkedVehicles = vehicleManager.m_parkedVehicles.m_buffer;
+            Building[] buildings = buildingManager.m_buildings.m_buffer;
+            if (parkedVehicleId >= parkedVehicles.Length || homeBuildingId >= buildings.Length)
+            {
+                return false;
+            }
+
+            VehicleParked parkedVehicle = parkedVehicles[parkedVehicleId];
+            if ((((VehicleParked.Flags)parkedVehicle.m_flags) & VehicleParked.Flags.Created) == 0 ||
+                parkedVehicle.m_ownerCitizen != citizenId)
+            {
+                return false;
+            }
+
+            Building homeBuilding = buildings[homeBuildingId];
+            if ((homeBuilding.m_flags & Building.Flags.Created) == 0)
+            {
+                return false;
+            }
+
+            Vector3 vehiclePosition = parkedVehicle.m_position;
+            Vector3 homePosition = homeBuilding.m_position;
+            float dx = vehiclePosition.x - homePosition.x;
+            float dy = vehiclePosition.y - homePosition.y;
+            float dz = vehiclePosition.z - homePosition.z;
+            float distanceSquared = dx * dx + dy * dy + dz * dz;
+            return distanceSquared > HomeParkingDistanceThresholdSquared;
         }
     }
 }
