@@ -53,6 +53,11 @@ namespace AutomatedPublicTransportPlanning.Util
         public const string ButtonSnapshot = "btn.snapshot";
         public const string ButtonGraph = "btn.graph";
 #if DEVTOOLS
+        public const string ButtonPlanningPreview = "btn.planningPreview";
+        public const string LabelPlanningStatus = "label.planningStatus";
+        public const string SnapshotStaleNote = "note.snapshotStale";
+#endif
+#if DEVTOOLS
         public const string GroupSpike = "group.spike";
         public const string CheckSpikeArm = "check.spikeArm";
         public const string ButtonSpikeCreate = "btn.spikeCreate";
@@ -94,6 +99,11 @@ namespace AutomatedPublicTransportPlanning.Util
             d[ButtonSnapshot] = "Capture a world snapshot";
             d[ButtonGraph] = "Build the route graph";
 #if DEVTOOLS
+            d[ButtonPlanningPreview] = "Generate a read-only planning preview";
+            d[LabelPlanningStatus] = "Planning preview status";
+            d[SnapshotStaleNote] = "Snapshot may become stale after city changes.";
+#endif
+#if DEVTOOLS
             d[GroupSpike] = "Spike 1 - save round trip (writes to your city)";
             d[CheckSpikeArm] = "Enable these buttons - they change the city you have loaded";
             d[ButtonSpikeCreate] = "1. Create a test bus line";
@@ -116,6 +126,11 @@ namespace AutomatedPublicTransportPlanning.Util
             d[ButtonMeasure] = "量測規劃成本（會短暫停頓）";
             d[ButtonSnapshot] = "擷取世界快照";
             d[ButtonGraph] = "建立路線圖";
+#if DEVTOOLS
+            d[ButtonPlanningPreview] = "產生唯讀規劃預覽";
+            d[LabelPlanningStatus] = "規劃預覽狀態";
+            d[SnapshotStaleNote] = "城市變動後，快照可能已過期。";
+#endif
 #if DEVTOOLS
             d[GroupSpike] = "Spike 1 - 存檔往返測試（會寫入你的城市）";
             d[CheckSpikeArm] = "啟用這些按鈕 - 它們會變更你已載入的城市";
@@ -140,6 +155,11 @@ namespace AutomatedPublicTransportPlanning.Util
             d[ButtonSnapshot] = "抓取世界快照";
             d[ButtonGraph] = "构建线路图";
 #if DEVTOOLS
+            d[ButtonPlanningPreview] = "生成只读规划预览";
+            d[LabelPlanningStatus] = "规划预览状态";
+            d[SnapshotStaleNote] = "城市变化后，快照可能已过期。";
+#endif
+#if DEVTOOLS
             d[GroupSpike] = "Spike 1 - 存档往返测试（会写入你的城市）";
             d[CheckSpikeArm] = "启用这些按钮 - 它们会更改你已载入的城市";
             d[ButtonSpikeCreate] = "1. 创建测试公交线路";
@@ -162,6 +182,11 @@ namespace AutomatedPublicTransportPlanning.Util
             d[ButtonMeasure] = "計画処理のコストを計測（一時的に停止します）";
             d[ButtonSnapshot] = "ワールドスナップショットを取得";
             d[ButtonGraph] = "路線グラフを構築";
+#if DEVTOOLS
+            d[ButtonPlanningPreview] = "読み取り専用の計画プレビューを生成";
+            d[LabelPlanningStatus] = "計画プレビューの状態";
+            d[SnapshotStaleNote] = "都市の変更後、スナップショットが古くなっている場合があります。";
+#endif
 #if DEVTOOLS
             d[GroupSpike] = "Spike 1 - セーブ往復テスト（都市に書き込みます）";
             d[CheckSpikeArm] = "これらのボタンを有効にする - 読み込み中の都市が変更されます";
@@ -186,6 +211,11 @@ namespace AutomatedPublicTransportPlanning.Util
             d[ButtonSnapshot] = "월드 스냅샷 캡처";
             d[ButtonGraph] = "노선 그래프 구축";
 #if DEVTOOLS
+            d[ButtonPlanningPreview] = "읽기 전용 계획 미리보기 생성";
+            d[LabelPlanningStatus] = "계획 미리보기 상태";
+            d[SnapshotStaleNote] = "도시가 변경되면 스냅샷이 오래된 정보가 될 수 있습니다.";
+#endif
+#if DEVTOOLS
             d[GroupSpike] = "Spike 1 - 저장 왕복 테스트 (도시에 기록됩니다)";
             d[CheckSpikeArm] = "이 버튼들을 활성화 - 불러온 도시가 변경됩니다";
             d[ButtonSpikeCreate] = "1. 테스트 버스 노선 생성";
@@ -208,6 +238,11 @@ namespace AutomatedPublicTransportPlanning.Util
             d[ButtonMeasure] = "Planungskosten messen (kurze Pause)";
             d[ButtonSnapshot] = "Netzwerk-Momentaufnahme erstellen";
             d[ButtonGraph] = "Routengraph aufbauen";
+#if DEVTOOLS
+            d[ButtonPlanningPreview] = "Schreibgeschützte Planungsvorschau erstellen";
+            d[LabelPlanningStatus] = "Status der Planungsvorschau";
+            d[SnapshotStaleNote] = "Nach Änderungen an der Stadt kann der Schnappschuss veraltet sein.";
+#endif
 #if DEVTOOLS
             d[GroupSpike] = "Spike 1 - Speicher-Rundlauf (schreibt in Ihre Stadt)";
             d[CheckSpikeArm] = "Diese Schaltflächen aktivieren - sie verändern die geladene Stadt";
@@ -232,6 +267,11 @@ namespace AutomatedPublicTransportPlanning.Util
             d[ButtonSnapshot] = "Capturer un instantané du réseau";
             d[ButtonGraph] = "Construire le graphe des itinéraires";
 #if DEVTOOLS
+            d[ButtonPlanningPreview] = "Générer un aperçu de planification en lecture seule";
+            d[LabelPlanningStatus] = "État de l'aperçu de planification";
+            d[SnapshotStaleNote] = "L'instantané peut être obsolète après des changements dans la ville.";
+#endif
+#if DEVTOOLS
             d[GroupSpike] = "Spike 1 - aller-retour de sauvegarde (écrit dans votre ville)";
             d[CheckSpikeArm] = "Activer ces boutons - ils modifient la ville chargée";
             d[ButtonSpikeCreate] = "1. Créer une ligne de bus de test";
@@ -254,6 +294,11 @@ namespace AutomatedPublicTransportPlanning.Util
             d[ButtonMeasure] = "Medir los costes de planificación (breve pausa)";
             d[ButtonSnapshot] = "Capturar una instantánea de la red";
             d[ButtonGraph] = "Construir el grafo de rutas";
+#if DEVTOOLS
+            d[ButtonPlanningPreview] = "Generar una vista previa de planificación de solo lectura";
+            d[LabelPlanningStatus] = "Estado de la vista previa de planificación";
+            d[SnapshotStaleNote] = "La instantánea puede quedar obsoleta después de cambios en la ciudad.";
+#endif
 #if DEVTOOLS
             d[GroupSpike] = "Spike 1 - ida y vuelta de guardado (escribe en tu ciudad)";
             d[CheckSpikeArm] = "Activar estos botones - modifican la ciudad que tienes cargada";
@@ -278,6 +323,11 @@ namespace AutomatedPublicTransportPlanning.Util
             d[ButtonSnapshot] = "Capturar um instantâneo da rede";
             d[ButtonGraph] = "Construir o grafo de rotas";
 #if DEVTOOLS
+            d[ButtonPlanningPreview] = "Gerar uma prévia de planejamento somente leitura";
+            d[LabelPlanningStatus] = "Estado da prévia de planejamento";
+            d[SnapshotStaleNote] = "O instantâneo pode ficar desatualizado após mudanças na cidade.";
+#endif
+#if DEVTOOLS
             d[GroupSpike] = "Spike 1 - ida e volta de salvamento (escreve na sua cidade)";
             d[CheckSpikeArm] = "Ativar estes botões - eles alteram a cidade carregada";
             d[ButtonSpikeCreate] = "1. Criar uma linha de ônibus de teste";
@@ -301,6 +351,11 @@ namespace AutomatedPublicTransportPlanning.Util
             d[ButtonSnapshot] = "Сделать снимок сети";
             d[ButtonGraph] = "Построить граф маршрутов";
 #if DEVTOOLS
+            d[ButtonPlanningPreview] = "Создать предварительный план только для чтения";
+            d[LabelPlanningStatus] = "Состояние предварительного плана";
+            d[SnapshotStaleNote] = "После изменений города снимок может устареть.";
+#endif
+#if DEVTOOLS
             d[GroupSpike] = "Spike 1 - цикл сохранения и загрузки (записывает в ваш город)";
             d[CheckSpikeArm] = "Включить эти кнопки - они изменяют загруженный город";
             d[ButtonSpikeCreate] = "1. Создать тестовый автобусный маршрут";
@@ -323,6 +378,11 @@ namespace AutomatedPublicTransportPlanning.Util
             d[ButtonMeasure] = "Zmierz koszty planowania (krótka pauza)";
             d[ButtonSnapshot] = "Wykonaj migawkę sieci";
             d[ButtonGraph] = "Zbuduj graf tras";
+#if DEVTOOLS
+            d[ButtonPlanningPreview] = "Utwórz podgląd planowania tylko do odczytu";
+            d[LabelPlanningStatus] = "Stan podglądu planowania";
+            d[SnapshotStaleNote] = "Po zmianach w mieście migawka może być nieaktualna.";
+#endif
 #if DEVTOOLS
             d[GroupSpike] = "Spike 1 - test zapisu i wczytania (zapisuje w Twoim mieście)";
             d[CheckSpikeArm] = "Włącz te przyciski - zmieniają wczytane miasto";

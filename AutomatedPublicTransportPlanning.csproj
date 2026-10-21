@@ -151,6 +151,10 @@
     <Compile Include="Source\Planning\StopPlacement.cs" />
     <Compile Include="Source\Planning\WorldSnapshot.cs" />
     <Compile Include="Source\Planning\StopGraph.cs" />
+    <Compile Include="Source\Planning\PlanningSnapshot.cs" Condition=" '$(DevTools)' == 'true' " />
+    <Compile Include="Source\Planning\PlanningEngine.cs" Condition=" '$(DevTools)' == 'true' " />
+    <Compile Include="Source\Planning\PlanningCapture.cs" Condition=" '$(DevTools)' == 'true' " />
+    <Compile Include="Source\Planning\PlanningThreadingExtension.cs" Condition=" '$(DevTools)' == 'true' " />
     <!-- This probe only reads the city and remains available in the release diagnostics. -->
     <Compile Include="Source\Spike\PerformanceProbe.cs" />
     <Compile Include="Source\Spike\SaveRoundTripSpike.cs" Condition=" '$(DevTools)' == 'true' " />

@@ -271,8 +271,8 @@ namespace AutomatedPublicTransportPlanning.Planning
         /// becomes passable in the wrong direction — and those are common, and invisible
         /// on a map.
         /// </summary>
-        private static float FastestUsableLane(NetInfo segmentInfo, TransportInfo info, bool invert,
-                                               out bool forwardOpen, out bool backwardOpen)
+        internal static float FastestUsableLane(NetInfo segmentInfo, TransportInfo info, bool invert,
+                                                out bool forwardOpen, out bool backwardOpen)
         {
             forwardOpen = false;
             backwardOpen = false;

@@ -44,6 +44,9 @@ namespace AutomatedPublicTransportPlanning
         /// </summary>
         private static readonly List<KeyValuePair<object, string>> s_localised =
             new List<KeyValuePair<object, string>>();
+#if DEVTOOLS
+        private static UITextField s_planningStatus;
+#endif
 
         /// <summary>
         /// Lets go of the tracked components.
@@ -57,7 +60,25 @@ namespace AutomatedPublicTransportPlanning
         public static void ReleaseTrackedUI()
         {
             s_localised.Clear();
+#if DEVTOOLS
+            s_planningStatus = null;
+#endif
         }
+
+#if DEVTOOLS
+        /// <summary>Called on the main thread by PlanningThreadingExtension.OnUpdate.</summary>
+        internal static void UpdatePlanningStatus(string text)
+        {
+            UITextField status = s_planningStatus;
+            if (status != null)
+            {
+                string display = text ?? string.Empty;
+                display = display.Replace(PlanningEngine.SnapshotStalePlaceholder,
+                                         Loc.Get(Strings.SnapshotStaleNote));
+                status.text = display;
+            }
+        }
+#endif
 
         /// <summary>
         /// Called when the player opens this mod's entry in the content manager.
@@ -104,18 +125,27 @@ namespace AutomatedPublicTransportPlanning
                   Guarded("bus prefab dump", BusPrefabResolver.DumpBusPrefabs)) as UIButton,
                   Strings.ButtonBusPrefabs);
 
-            // Read-only, so it is not behind the spike arming checkbox. It does cost a
-            // brief hitch: every phase is bounded, but they all run in one simulation
-            // step because AddAction cannot split work across frames.
+            // This older probe remains an optional read-only diagnostic. Planning
+            // snapshots and previews use the sliced simulation-frame pipeline below.
             Track(diagnostics.AddButton(Loc.Get(Strings.ButtonMeasure),
                   Guarded("performance probe", PerformanceProbe.Run)) as UIButton,
                   Strings.ButtonMeasure);
-            Track(diagnostics.AddButton(Loc.Get(Strings.ButtonSnapshot),
-                  Guarded("world snapshot", WorldSnapshot.LogSnapshot)) as UIButton,
-                  Strings.ButtonSnapshot);
-            Track(diagnostics.AddButton(Loc.Get(Strings.ButtonGraph),
-                  Guarded("stop graph", StopGraph.LogGraph)) as UIButton,
-                  Strings.ButtonGraph);
+
+#if DEVTOOLS
+            UIButton preview = Track(diagnostics.AddButton(Loc.Get(Strings.ButtonPlanningPreview),
+                Guarded("planning preview", delegate { PlanningCapture.RequestPreview(); })) as UIButton,
+                Strings.ButtonPlanningPreview);
+            TrackGroupTitle(preview, Strings.GroupDiagnostics);
+
+            s_planningStatus = diagnostics.AddTextfield(Loc.Get(Strings.LabelPlanningStatus),
+                PlanningCapture.DisplayText, null) as UITextField;
+            if (s_planningStatus != null)
+            {
+                s_planningStatus.multiline = true;
+                s_planningStatus.readOnly = true;
+                s_planningStatus.height = 240f;
+            }
+#endif
 
 #if DEVTOOLS
             // Throwaway controls for the save round-trip spike. These write to the

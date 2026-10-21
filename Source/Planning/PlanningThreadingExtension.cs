@@ -1,0 +1,22 @@
+using ICities;
+using AutomatedPublicTransportPlanning;
+
+namespace AutomatedPublicTransportPlanning.Planning
+{
+    /// <summary>
+    /// Bridges the sliced capture to actual simulation frames. AddAction drains its
+    /// queue in one step, so it cannot be used to spread a capture over frames.
+    /// </summary>
+    public sealed class PlanningThreadingExtension : ThreadingExtensionBase
+    {
+        public override void OnAfterSimulationFrame()
+        {
+            PlanningCapture.OnAfterSimulationFrame();
+        }
+
+        public override void OnUpdate(float realTimeDelta, float simulationTimeDelta)
+        {
+            Mod.UpdatePlanningStatus(PlanningCapture.DisplayText);
+        }
+    }
+}

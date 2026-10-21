@@ -2,6 +2,7 @@ using System;
 using System.Text;
 using ColossalFramework;
 using ICities;
+using AutomatedPublicTransportPlanning.Planning;
 using AutomatedPublicTransportPlanning.Util;
 
 namespace AutomatedPublicTransportPlanning
@@ -56,6 +57,9 @@ namespace AutomatedPublicTransportPlanning
         /// </summary>
         public override void OnLevelUnloading()
         {
+#if DEVTOOLS
+            PlanningCapture.CancelForLevelChange();
+#endif
             Mod.ReleaseTrackedUI();
             base.OnLevelUnloading();
         }
