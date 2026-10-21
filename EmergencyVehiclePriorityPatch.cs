@@ -4,13 +4,8 @@ using UnityEngine;
 
 namespace AIImprove
 {
-    // TMPE-only path: reduces the congestion cost penalty TMPE's Advanced Vehicle AI
-    // applies to a road segment when the path being calculated belongs to an emergency
-    // vehicle (ambulance / fire truck / police responding to a call).
-    //
-    // Only ever applied when TmpeCompat.IsTmpeLoaded() is true (see Patcher.cs). Vanilla
-    // (no-TMPE) behaviour is a separate, not-yet-implemented Transpiler patch on
-    // PathFind.ProcessItemCosts - see Cities_Skylines_1_AI_Improve_Document/03.
+    // Legacy postfix implementation retained during the TMPE transpiler feasibility spike.
+    // It is not registered by the current Patcher path; the spike only applies no-op transpilers.
     internal static class EmergencyVehiclePriorityPatch
     {
         // ExtVehicleType.Emergency = 1 << 5, per TLM/TMPE.API/Traffic/Enums/ExtVehicleType.cs.

@@ -48,5 +48,42 @@ namespace AIImprove
                 .GetMethods(BindingFlags.NonPublic | BindingFlags.Instance)
                 .FirstOrDefault(m => m.Name == CostFactorsMethodName);
         }
+
+        public static MethodInfo FindUniqueInstanceMethod(Type customPathFindType, string methodName, out string reason)
+        {
+            if (customPathFindType == null)
+            {
+                reason = "CustomPathFind type not found.";
+                return null;
+            }
+
+            MethodInfo match = null;
+            MethodInfo[] methods = customPathFindType.GetMethods(
+                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            foreach (MethodInfo method in methods)
+            {
+                if (method.Name != methodName)
+                {
+                    continue;
+                }
+
+                if (match != null)
+                {
+                    reason = "multiple instance methods named " + methodName + " were found.";
+                    return null;
+                }
+
+                match = method;
+            }
+
+            if (match == null)
+            {
+                reason = "instance method " + methodName + " was not found.";
+                return null;
+            }
+
+            reason = null;
+            return match;
+        }
     }
 }

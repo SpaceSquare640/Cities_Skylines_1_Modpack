@@ -882,47 +882,44 @@ namespace AIImprove
             return true;
         }
 
-        // Soft dependency: prefer the TMPE-aware patch when TMPE is present and it actually
-        // applies cleanly, otherwise fall back to the vanilla PathFind transpiler. Resilient
-        // to either path failing for any reason - the other is still attempted.
+        // Feasibility spike: with TMPE present, independently try no-op transpilers on two
+        // candidate methods. Without TMPE, retain the vanilla emergency congestion transpiler.
         //
-        // KNOWN DEAD as of 2026-08-12 (kept in place; see Cities_Skylines_1_AI_Improve_Document/03
-        // "策略性轉向"): the TMPE branch fails on a Mono JIT limitation, and the vanilla branch
-        // patches successfully but is never actually called when TMPE is active - TMPE's
-        // CustomPathFind replaces PathFind entirely for real pathfinding. Superseded by
-        // TryPatchAmbulanceIgnoreCosts below, which works whether or not TMPE is installed.
+        // The previous TMPE postfix failed during Harmony/Mono wrapper generation, while the
+        // vanilla PathFind fallback is not used when TMPE's CustomPathFind is active. During the
+        // feasibility spike, TMPE users receive two no-op transpiler attempts instead. The
+        // separate ignore-costs patch does not adjust emergency congestion priority.
         private static void PatchEmergencyVehiclePriority(Harmony harmony)
         {
-            if (TryPatchTmpeEmergencyVehiclePriority(harmony))
+            Type customPathFindType = TmpeCompat.FindCustomPathFindType();
+            if (customPathFindType != null)
             {
-                return;
-            }
-
-            // BUG FOUND VIA AUDIT (2026-09-07): the fallback below used to be attempted
-            // unconditionally, and it PATCHES SUCCESSFULLY even with TMPE installed - logging
-            // "Vanilla emergency congestion patch applied." while TMPE's CustomPathFind has
-            // replaced PathFind entirely, so the patched method is never called for real
-            // pathfinding. The feature was inert and the log said it was working, which is worse
-            // than either on its own: every log this project has collected from a TMPE user
-            // contained a line asserting a thing that was not happening.
-            //
-            // Detecting TMPE by the same type the TMPE branch looks for, so the two cannot
-            // disagree about whether TMPE is present.
-            if (TmpeCompat.FindCustomPathFindType() != null)
-            {
+                LogTmpeAssemblyVersion(customPathFindType);
                 Debug.Log(
-                    "[AIImprove] TMPE is installed, so its CustomPathFind replaces the vanilla " +
-                    "PathFind this fallback would attach to - not registering it, because doing " +
-                    "so would report success for something that never runs. Emergency priority " +
-                    "still applies through the ignore-costs patch, which does not depend on " +
-                    "which pathfinder is in use.");
+                    "[AIImprove] TMPE is installed, so its CustomPathFind replaces vanilla PathFind; " +
+                    "the vanilla emergency congestion patch is skipped. This no-op transpiler spike " +
+                    "does not change costs. The separate ignore-costs patch does not adjust congestion priority.");
+
+                // Run the two no-op tests independently so one Harmony/Mono failure does not
+                // prevent the other candidate from being evaluated.
+                TryPatchTmpeNoOpTranspilerSpike(
+                    harmony,
+                    customPathFindType,
+                    "CalculateAdvancedAiCostFactors",
+                    typeof(TmpeCalculateAdvancedAiCostFactorsSpike));
+                TryPatchTmpeNoOpTranspilerSpike(
+                    harmony,
+                    customPathFindType,
+                    "ProcessItemMain",
+                    typeof(TmpeProcessItemMainSpike));
                 return;
             }
 
             TryPatchVanillaEmergencyCongestion(harmony);
         }
 
-        // Vehicle-level, TMPE-independent emergency priority patch - see EmergencyIgnoreCostsPatch.cs.
+        // Vehicle-level, TMPE-independent ignore-costs patch - see EmergencyIgnoreCostsPatch.cs.
+        // It does not change congestion costs or emergency path priority.
         // Same shared transpiler body applied to AmbulanceAI, FireTruckAI and PoliceCarAI, each
         // via its own thin wrapper class (Harmony transpilers must be plain static methods).
         private static bool TryPatchEmergencyIgnoreCosts(Harmony harmony, Type vehicleAiType, Type patchWrapperType)
@@ -958,9 +955,64 @@ namespace AIImprove
             }
         }
 
-        // Reflection-only patch: no compile-time reference to TMPE exists anywhere in this
-        // project, so this is skipped harmlessly (not an error) when TMPE isn't installed,
-        // or if TMPE's internals have changed since this was written.
+        private static void LogTmpeAssemblyVersion(Type customPathFindType)
+        {
+            try
+            {
+                Version version = customPathFindType.Assembly.GetName().Version;
+                Debug.Log("[AIImprove] TMPE assembly version: " + (version == null ? "unknown" : version.ToString()) + ".");
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning("[AIImprove] TMPE detected but its assembly version could not be read. Reason: " + ex.Message);
+            }
+        }
+
+        private static bool TryPatchTmpeNoOpTranspilerSpike(
+            Harmony harmony,
+            Type customPathFindType,
+            string targetMethodName,
+            Type transpilerType)
+        {
+            try
+            {
+                string reason;
+                MethodInfo original = TmpeCompat.FindUniqueInstanceMethod(
+                    customPathFindType,
+                    targetMethodName,
+                    out reason);
+                if (original == null)
+                {
+                    Debug.LogWarning(
+                        "[AIImprove] TMPE no-op transpiler spike skipped for " + targetMethodName + ". Reason: " + reason);
+                    return false;
+                }
+
+                MethodInfo transpiler = transpilerType.GetMethod(
+                    "Transpiler",
+                    BindingFlags.Public | BindingFlags.Static);
+                if (transpiler == null)
+                {
+                    Debug.LogWarning(
+                        "[AIImprove] TMPE no-op transpiler spike skipped for " + targetMethodName + ": transpiler method not found.");
+                    return false;
+                }
+
+                harmony.Patch(original, transpiler: new HarmonyMethod(transpiler));
+                Debug.Log(
+                    "[AIImprove] TMPE no-op transpiler spike applied for " + targetMethodName + "; no IL instructions were changed.");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning(
+                    "[AIImprove] TMPE no-op transpiler spike failed for " + targetMethodName + ". Reason: " + ex.Message);
+                return false;
+            }
+        }
+
+        // Legacy postfix attempt retained for reference during the no-op transpiler spike.
+        // PatchEmergencyVehiclePriority no longer calls this method.
         //
         // KNOWN ISSUE (2026-08-12): currently fails at runtime with
         // "FormatException: ... cannot be patched. Reason: Invalid IL code".
