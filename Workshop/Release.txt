@@ -1,0 +1,33 @@
+[h1]AI Improve[/h1]
+Smarter decisions for the vehicles, services and citizens of your city.
+
+Vanilla Cities: Skylines makes many choices without looking at the current state of the city: a car keeps its route while the road ahead is jammed, trains crowd onto one platform while another sits empty, and five fire trucks answer one small fire. AI Improve adds that awareness, one behaviour at a time. Every feature has its own switch in the mod settings, so you decide which parts of the city it touches.
+
+[h2]What it improves[/h2]
+[list]
+[*][b]Road traffic[/b] – cars, taxis, trucks, local buses and intercity buses reconsider their route when the road ahead is congested.
+[*][b]Rail[/b] – metro and intercity trains are sent to the platform that is actually free, and can reroute around congestion.
+[*][b]Aviation and shipping[/b] – airport gates, passenger helicopter landing points and harbour docks are assigned by real occupancy; airports refuse landings and departures during thunderstorms.
+[*][b]Emergency services[/b] – a cap on how many fire vehicles answer one building, idle fire vehicles that check for nearby fires first, and emergency helicopters that stay grounded in thunderstorms.
+[*][b]Sanitation[/b] – garbage trucks and hearses with room to spare collect from nearby buildings first.
+[*][b]Citizens[/b] – fewer trips by car toward destinations that are already congested, and more use of taxis.
+[*][b]Optional, off by default[/b] – emergency vehicles rerouting around jams, shorter stops when nobody is waiting, and spacing out vehicles that bunch up on a line.
+[/list]
+
+[h2]Good to know[/h2]
+[list]
+[*]Requires [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2040656402]Harmony[/url].
+[*]Steps aside where another mod already handles the same job: Improved Public Transport, Express Bus Services and Advanced Vehicle Options.
+[*]Settings in 9 languages: English, 繁體中文, 简体中文, 日本語, 한국어, Deutsch, Français, Español, Русский.
+[*]Want to try changes before they reach this version? See the [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3823575900]Development Version[/url] – but never subscribe to both.
+[/list]
+
+[h2]Links[/h2]
+[list]
+[*][url=https://spacesquare640.github.io/Cities_Skylines_1_Modpack/ai-improve/]Project page and guide[/url]
+[*][url=https://spacesquare640.github.io/Cities_Skylines_1_Modpack/change-log/]Change log[/url]
+[*][url=https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/tree/AI_Improve]Source code (GPL-3.0)[/url]
+[*][url=https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/issues/new/choose]Report a bug or suggest a feature[/url]
+[/list]
+
+Part of the Cities: Skylines 1 Modpack by Kingsley. The Modpack mods are built to work together without conflicting.

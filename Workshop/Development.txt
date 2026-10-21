@@ -1,0 +1,22 @@
+[h1]AI Improve – Development Version[/h1]
+[b]This is the testing build of AI Improve.[/b] It is updated automatically with every change, before the [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3782858610]Release Version[/url]. It may be unstable. For normal play, use the Release Version.
+
+[b]Never subscribe to both versions.[/b] They are the same mod and will conflict.
+
+[h2]Developer tools are included[/h2]
+This build contains testing tools that the Release Version does not:
+[list]
+[*]A developer panel triggered with Ctrl+Shift+R and Ctrl+Shift+T, used to force rare events such as thunderstorm handling and level reloads.
+[*]Experimental probes that can [b]deliberately alter vehicle paths[/b] to test new behaviour.
+[/list]
+Only use this version on a copy of your save, and only if you know why you need it.
+
+[h2]How to help[/h2]
+[list]
+[*]Note what you changed and what happened, then [url=https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/issues/new/choose]report it[/url] with your mod list and output log.
+[*]Each update's change note shows the source commit, so problems can be traced to an exact change.
+[/list]
+
+Requires [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2040656402]Harmony[/url]. Features and settings match the Release Version unless the [url=https://spacesquare640.github.io/Cities_Skylines_1_Modpack/change-log/]change log[/url] says otherwise.
+
+Part of the Cities: Skylines 1 Modpack by Kingsley.
