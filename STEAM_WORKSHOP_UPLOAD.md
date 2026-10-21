@@ -30,13 +30,15 @@ Each module and edition is pinned to one item in `Upload-Mod.ps1`. An upload who
 
 To add an item, register its ID in `$registeredItemIds`, add the workflow default, and update this table.
 
-## Switches that are still off
+## Repository switches
 
-| Repository setting | Effect | Status |
+| Repository setting | Effect | Status (2026-10-21) |
 | --- | --- | --- |
-| Variable `WORKSHOP_DEV_AUTO_UPLOAD` = `true` | Pushes to a module branch dispatch its Development upload (`development-workshop-dispatch.yml` on each module branch) | Not set; enable after the runner works |
-| Environment `workshop-release` with Kingsley as required reviewer | Release jobs wait for approval | Not created |
-| Variable `WORKSHOP_RELEASE_APPROVAL_READY` = `true` | Release workflows run at all; without it they stop with an error | Not set; set only after the environment above exists |
+| Variable `WORKSHOP_DEV_AUTO_UPLOAD` = `true` | Pushes to a module branch dispatch its Development upload (`development-workshop-dispatch.yml` on each module branch) | On |
+| Environment `workshop-release`: required reviewer SpaceSquare640 (Kingsley), deployments only from `Modpack_Website` | Release jobs wait for approval | On |
+| Variable `WORKSHOP_RELEASE_APPROVAL_READY` = `true` | Release workflows run at all; without it they stop with an error | On |
+
+To pause automation, set either variable to `false`. Uploads only run while the self-hosted runner is online; start it with `Start Actions Runner.lnk` in the local Modpack folder and keep its window open. The first automated upload (AI Improve: Development Version, run 39518052371) succeeded on 2026-10-21.
 
 ## Required local runner
 
