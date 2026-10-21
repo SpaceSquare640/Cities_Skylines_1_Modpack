@@ -28,7 +28,7 @@ const text = locale === 'zh-tw';
 		<a href="https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack" target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
 	</nav>
 	<div class="preferences">
-		<a class="language-switch" href={otherPath} lang={text ? 'en' : 'zh-TW'} aria-label={text ? 'Switch to Traditional Chinese' : '切換至 English'}>{text ? '繁中' : '繁體中文'}</a>
+		<a class="language-switch" href={otherPath} lang={text ? 'en' : 'zh-TW'} aria-label={text ? 'Switch to English' : '切換至繁體中文'}>{text ? 'English' : '繁體中文'}</a>
 		<button class="theme-toggle" type="button" aria-pressed="false" aria-label={text ? '切換淺色主題' : 'Switch to light theme'}>{text ? '淺色' : 'Light'}</button>
 	</div>
 </header>

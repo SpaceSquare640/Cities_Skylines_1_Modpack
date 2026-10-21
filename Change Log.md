@@ -2,6 +2,11 @@
 
 Author: OpenAI-Codex
 
+## 2026-10-22 — Language switch label fixed
+
+- The language button in the site header now shows the language it switches to: English on Traditional Chinese pages, 繁體中文 on English pages. Its screen-reader label was corrected to match.
+- Author: Anthropic-Claude_Code.
+
 ## 2026-10-22 — Development Versions on the website
 
 - The Development Versions of AI Improve, Automated Public Transport Planning and AI Gaming are now public on Steam Workshop, and each mod page links to them. The Release Versions of Automated Public Transport Planning and AI Gaming are still marked coming soon.
