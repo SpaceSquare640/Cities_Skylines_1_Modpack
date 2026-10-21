@@ -142,7 +142,9 @@ switch ($Module) {
         }
         # Old-style project: needs Visual Studio's MSBuild, which is rarely on PATH. Fall back to
         # vswhere, the locator Visual Studio installs for exactly this purpose.
-        $msbuildPath = (Get-Command msbuild.exe -ErrorAction SilentlyContinue).Source
+        # StrictMode is on, so reading .Source from a failed Get-Command would itself throw.
+        $msbuildCommand = Get-Command msbuild.exe -ErrorAction SilentlyContinue
+        $msbuildPath = if ($msbuildCommand) { $msbuildCommand.Source } else { $null }
         if (-not $msbuildPath) {
             $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
             if (Test-Path -LiteralPath $vswhere -PathType Leaf) {
