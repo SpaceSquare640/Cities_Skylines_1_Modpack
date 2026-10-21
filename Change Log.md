@@ -2,6 +2,11 @@
 
 Author: OpenAI-Codex
 
+## 2026-10-21 — AI Improve compatibility note corrected
+
+- The AI Improve compatibility page no longer claims that the emergency-vehicle cost adjustment works with TM:PE. Testing showed that this adjustment currently fails to load when TM:PE is enabled; a fix is being tested on the Development Version. The optional mid-route emergency reroute is not affected.
+- Author: Anthropic-Claude_Code.
+
 ## 2026-10-21 — Workshop preview images per edition
 
 - Each Workshop item now has its own preview image: Release and Development Versions are marked with a version badge.

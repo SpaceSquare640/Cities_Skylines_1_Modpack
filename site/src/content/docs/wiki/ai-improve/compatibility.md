@@ -11,7 +11,7 @@ AI Improve tries not to fight other mods. When another mod already handles a job
 | **UnifiedUI** | Optional. Adds the [in-game panel](/Cities_Skylines_1_Modpack/wiki/ai-improve/in-game/). |
 | **Improved Public Transport**, **Express Bus Services** | *Shorten empty stop dwell* and *Unbunch vehicles on a line* stand down while either is installed, because those mods already decide when vehicles depart. |
 | **Transfer Manager CE** | When its fire dispatch is active, AI Improve lets it choose which fire a vehicle attends and only keeps the per-building responder cap. |
-| **Traffic Manager: President Edition (TM:PE)** | Detected. TM:PE replaces the game's pathfinding, so AI Improve applies its emergency-vehicle routing adjustment to TM:PE's pathfinder instead of the original one. |
+| **Traffic Manager: President Edition (TM:PE)** | Detected. TM:PE replaces the game's pathfinding. AI Improve's emergency-vehicle cost adjustment for TM:PE's pathfinder currently fails to load, so it is inactive while TM:PE is enabled; a fix is being tested. The optional mid-route emergency reroute is not affected. |
 | **Real Time** | Detected. The two mods touch the same fire-dispatch step, but Real Time only does its own bookkeeping there, so they do not interfere. |
 | **SingleTrainTrackAI**, **Reversible Tram AI** | Detected. AI Improve does not try to do their jobs. |
 
