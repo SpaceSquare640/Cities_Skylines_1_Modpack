@@ -1,0 +1,25 @@
+[h1]AI Gaming[/h1]
+[b]Early preview (0.1.0).[/b] What if an AI could play Cities: Skylines? AI Gaming aims to connect a local AI model or a cloud AI service to the game, so you can watch an AI build a city, let it assist you while you play, or hand it the controls.
+
+[h2]What this version does[/h2]
+[list]
+[*]Shows the project status in the mod settings, in English and Traditional Chinese.
+[*]Can write a short summary of your city – population, funds and in-game date – to the game log.
+[*][b]It does not control the game yet, makes no network connections and asks for no API keys.[/b]
+[/list]
+
+[h2]Where it is going[/h2]
+[list]
+[*]First, reading the city in a form an AI can understand.
+[*]Then, AI suggestions that you review before anything happens.
+[*]Later, carefully limited AI control that you switch on yourself.
+[*]Working with the other Modpack mods, such as AI Improve and Automated Public Transport Planning, instead of duplicating them.
+[/list]
+
+[list]
+[*]Testing builds are published as the [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3823740277]Development Version[/url] – never subscribe to both.
+[*][url=https://spacesquare640.github.io/Cities_Skylines_1_Modpack/ai-gaming/]Project page[/url]
+[*][url=https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/tree/AI_Gaming]Source code (GPL-3.0)[/url]
+[/list]
+
+Part of the Cities: Skylines 1 Modpack by Kingsley.
