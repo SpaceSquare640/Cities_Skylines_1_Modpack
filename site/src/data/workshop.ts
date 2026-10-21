@@ -6,15 +6,15 @@ export interface WorkshopItem { id: string; public: boolean; }
 export const workshop: Record<string, Record<Edition, WorkshopItem>> = {
 	'ai-improve': {
 		release: { id: '3782858610', public: true },
-		development: { id: '3823575900', public: false },
+		development: { id: '3823575900', public: true },
 	},
 	transport: {
 		release: { id: '3823739383', public: false },
-		development: { id: '3823739653', public: false },
+		development: { id: '3823739653', public: true },
 	},
 	'ai-gaming': {
 		release: { id: '3823740106', public: false },
-		development: { id: '3823740277', public: false },
+		development: { id: '3823740277', public: true },
 	},
 };
 
