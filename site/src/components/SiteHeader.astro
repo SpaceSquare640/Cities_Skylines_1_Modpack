@@ -1,0 +1,52 @@
+---
+interface Props { locale: 'en' | 'zh-tw'; path: string; active: string; }
+const { locale, path, active } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const prefix = locale === 'zh-tw' ? 'zh-tw/' : '';
+const href = (slug: string) => base + prefix + slug;
+const otherPath = locale === 'zh-tw' ? base + path.replace(/^\//, '') : base + 'zh-tw/' + path.replace(/^\//, '');
+const text = locale === 'zh-tw';
+---
+
+<header class="site-header">
+	<a class="brand" href={href('')} aria-label={text ? '回到首頁' : 'Modpack home'}>
+		<img src={base + 'icons/favicon-32.png'} alt="" width="38" height="38" />
+		<span><strong>Cities: Skylines 1</strong><small>Modpack / {text ? '城市規劃展' : 'Project atlas'}</small></span>
+	</a>
+	<nav aria-label={text ? '主要導覽' : 'Primary navigation'}>
+		<a class:list={{ current: active === 'home' }} href={href('')}>{text ? '首頁' : 'Home'}</a>
+		<details class="mods-menu">
+			<summary>{text ? '模組' : 'Mods'}</summary>
+			<div class="mods-options">
+				<a href={href('ai-improve/')}>AI Improve</a>
+				<a href={href('automated-public-transport-planning/')}>{text ? '公共運輸自動規劃' : 'Automated Public Transport Planning'}</a>
+				<a href={href('ai-gaming/')}>AI Gaming</a>
+			</div>
+		</details>
+		<a class:list={{ current: active === 'wiki' }} href={href('wiki/')}>Wiki</a>
+		<a class:list={{ current: active === 'change-log' }} href={href('change-log/')}>{text ? '更新紀錄' : 'Change Log'}</a>
+		<a href="https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack" target="_blank" rel="noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+	</nav>
+	<div class="preferences">
+		<a class="language-switch" href={otherPath} lang={text ? 'en' : 'zh-TW'} aria-label={text ? 'Switch to Traditional Chinese' : '切換至 English'}>{text ? '繁中' : '繁體中文'}</a>
+		<button class="theme-toggle" type="button" aria-pressed="false" aria-label={text ? '切換淺色主題' : 'Switch to light theme'}>{text ? '淺色' : 'Light'}</button>
+	</div>
+</header>
+
+<script>
+	const button = document.querySelector<HTMLButtonElement>('.theme-toggle');
+	function applyTheme(theme: 'light' | 'dark') {
+		document.documentElement.dataset.theme = theme;
+		try { localStorage.setItem('starlight-theme', theme); } catch { /* Theme still applies for this visit. */ }
+		if (button) {
+			const isLight = theme === 'light';
+			button.setAttribute('aria-pressed', String(isLight));
+			button.textContent = isLight ? (document.documentElement.lang === 'zh-TW' ? '深色' : 'Dark') : (document.documentElement.lang === 'zh-TW' ? '淺色' : 'Light');
+			button.setAttribute('aria-label', isLight ? (document.documentElement.lang === 'zh-TW' ? '切換深色主題' : 'Switch to dark theme') : (document.documentElement.lang === 'zh-TW' ? '切換淺色主題' : 'Switch to light theme'));
+		}
+	}
+	if (button) {
+		applyTheme(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
+		button.addEventListener('click', () => applyTheme(document.documentElement.dataset.theme === 'light' ? 'dark' : 'light'));
+	}
+</script>

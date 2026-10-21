@@ -1,0 +1,57 @@
+---
+import '../styles/site.css';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+
+interface Props {
+	title: string;
+	description: string;
+	locale?: 'en' | 'zh-tw';
+	path?: string;
+	active?: string;
+}
+
+const { title, description, locale = 'en', path = '', active = '' } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const localPath = (locale === 'zh-tw' ? 'zh-tw/' : '') + path.replace(/^\//, '');
+const canonical = 'https://spacesquare640.github.io' + base + localPath;
+const alternate = 'https://spacesquare640.github.io' + base + (locale === 'zh-tw' ? path.replace(/^\//, '') : 'zh-tw/' + path.replace(/^\//, ''));
+const pageTitle = title + ' — Cities: Skylines 1 Modpack';
+const lang = locale === 'zh-tw' ? 'zh-TW' : 'en';
+---
+
+<!doctype html>
+<html lang={lang} data-theme="dark">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="description" content={description} />
+		<meta name="theme-color" content="#191d20" />
+		<link rel="canonical" href={canonical} />
+		<link rel="alternate" hreflang={locale === 'en' ? 'zh-TW' : 'en'} href={alternate} />
+		<link rel="alternate" hreflang="x-default" href={'https://spacesquare640.github.io' + base + path.replace(/^\//, '')} />
+		<link rel="icon" type="image/png" sizes="32x32" href={base + 'icons/favicon-32.png'} />
+		<link rel="apple-touch-icon" sizes="180x180" href={base + 'icons/apple-touch-icon.png'} />
+		<link rel="manifest" href={base + 'site.webmanifest'} />
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content={pageTitle} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonical} />
+		<meta property="og:image" content={'https://spacesquare640.github.io' + base + 'social-preview.webp'} />
+		<meta name="twitter:card" content="summary_large_image" />
+		<title>{pageTitle}</title>
+		<script is:inline>
+			try {
+				let saved = localStorage.getItem('starlight-theme');
+				if (!saved) { saved = 'dark'; localStorage.setItem('starlight-theme', saved); }
+				document.documentElement.dataset.theme = saved === 'light' ? 'light' : 'dark';
+			} catch { document.documentElement.dataset.theme = 'dark'; }
+		</script>
+	</head>
+	<body data-page={active}>
+		<a class="skip-link" href="#main-content">{locale === 'zh-tw' ? '跳至主要內容' : 'Skip to main content'}</a>
+		<SiteHeader locale={locale} path={path} active={active} />
+		<main id="main-content"><slot /></main>
+		<SiteFooter locale={locale} />
+	</body>
+</html>

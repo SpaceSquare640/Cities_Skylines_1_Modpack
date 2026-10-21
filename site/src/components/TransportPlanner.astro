@@ -1,0 +1,69 @@
+---
+interface Props { locale?: 'en' | 'zh-tw'; }
+const { locale = 'en' } = Astro.props;
+const zh = locale === 'zh-tw';
+const stages = zh
+	? [{ id: 'survey', label: '調查', caption: '讀取道路與交通資料' }, { id: 'demand', label: '需求', caption: '估算乘客需求熱區' }, { id: 'stops', label: '站點', caption: '提出候選站點' }, { id: 'route', label: '路線', caption: '預覽候選路線' }, { id: 'review', label: '確認', caption: '由玩家檢視與決定' }]
+	: [{ id: 'survey', label: 'Survey', caption: 'Read road and transport data' }, { id: 'demand', label: 'Demand', caption: 'Estimate passenger demand areas' }, { id: 'stops', label: 'Stops', caption: 'Suggest candidate stops' }, { id: 'route', label: 'Route', caption: 'Preview a candidate line' }, { id: 'review', label: 'Review', caption: 'Player reviews and decides' }];
+---
+
+<section class="transport-planner" data-transport-planner data-ready="false">
+	<p class="planned-label">{zh ? '規劃中功能示意' : 'Planned feature illustration'}</p>
+	<p>{zh ? '目前 0.2.0 Early Preview 只提供唯讀調查和診斷；可供玩家使用的自動路線規劃尚未提供。下圖是路線規劃概念流程，不是目前功能。' : 'The 0.2.0 early preview provides read-only surveys and diagnostics. Player-facing automatic route planning is not available yet. This diagram illustrates the planned workflow, not current behaviour.'}</p>
+	<div class="planner-flow" role="tablist" aria-label={zh ? '規劃流程示意' : 'Illustrated planning steps'}>
+		{stages.map((stage, index) => <button type="button" role="tab" data-stage-tab={stage.id} aria-selected={index === 0 ? 'true' : 'false'} tabindex={index === 0 ? 0 : -1}>{index + 1}. {stage.label}</button>)}
+	</div>
+	<div class="city-map">
+		<svg viewBox="0 0 720 310" role="img" aria-label={zh ? '城市網格、需求熱區、候選站點和公車路線示意圖' : 'Illustration of a city grid, demand areas, candidate stops and bus route'}>
+			<rect width="720" height="310" fill="var(--city-ground)" />
+			<path d="M0 62h720M0 154h720M0 246h720M80 0v310M206 0v310M332 0v310M458 0v310M584 0v310" stroke="var(--city-road)" stroke-width="24" />
+			<circle cx="202" cy="106" r="40" fill="#d94b5480" /><circle cx="516" cy="201" r="52" fill="#d94b5470" />
+			<path d="M80 154h126v-48h126v140h126V154h126v92h56" fill="none" stroke="var(--route)" stroke-width="8" stroke-linejoin="round" />
+			<g fill="var(--ink)" stroke="var(--route)" stroke-width="5"><circle cx="80" cy="154" r="9" /><circle cx="206" cy="106" r="9" /><circle cx="332" cy="246" r="9" /><circle cx="458" cy="201" r="9" /><circle cx="584" cy="154" r="9" /></g>
+			<text x="24" y="292" fill="var(--ink)" font-size="14" data-map-caption>{stages[0].caption}</text>
+		</svg>
+	</div>
+	<ol class="planner-static">{stages.map((stage) => <li><strong>{stage.label}:</strong> {stage.caption}</li>)}</ol>
+	<noscript><p class="notice">{zh ? 'JavaScript 已關閉：流程各步驟仍列於上方。' : 'JavaScript is off: all proposed workflow steps are listed above.'}</p></noscript>
+</section>
+
+<script>
+	const root = document.querySelector<HTMLElement>('[data-transport-planner]');
+	if (root) {
+		root.dataset.ready = 'true';
+		const tabs = [...root.querySelectorAll<HTMLButtonElement>('[data-stage-tab]')];
+		const captions = [...root.querySelectorAll<HTMLElement>('.planner-static li')].map((item) => item.textContent || '');
+		const mapCaption = root.querySelector<SVGTextElement>('[data-map-caption]');
+		function select(index: number, focus = false) {
+			tabs.forEach((tab, i) => { tab.setAttribute('aria-selected', String(i === index)); tab.tabIndex = i === index ? 0 : -1; });
+			if (mapCaption) mapCaption.textContent = captions[index];
+			if (focus) tabs[index].focus();
+		}
+		tabs.forEach((tab, index) => {
+			tab.addEventListener('click', () => select(index));
+			tab.addEventListener('keydown', (event) => {
+				let next = index;
+				if (event.key === 'ArrowRight') next = (index + 1) % tabs.length;
+				else if (event.key === 'ArrowLeft') next = (index - 1 + tabs.length) % tabs.length;
+				else if (event.key === 'Home') next = 0;
+				else if (event.key === 'End') next = tabs.length - 1;
+				else return;
+				event.preventDefault(); select(next, true);
+			});
+		});
+	}
+</script>
+
+<style>
+	.transport-planner { margin-top: 20px; }
+	.planned-label { margin-bottom: 6px; color: var(--route) !important; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+	.transport-planner > p:not(.planned-label) { max-width: 68ch; color: var(--muted); font-size: 14px; }
+	.planner-flow { display: none; flex-wrap: wrap; gap: 7px; margin: 18px 0; }
+	[data-ready='true'] .planner-flow { display: flex; }
+	.planner-flow button { min-height: 42px; padding: 8px 12px; border: 0; background: var(--ground); }
+	.planner-flow button[aria-selected='true'] { background: var(--ink); color: var(--ground); }
+	.city-map { margin-top: 18px; overflow: hidden; background: var(--city-ground); }
+	.city-map svg { width: 100%; }
+	.planner-static { display: flex; flex-wrap: wrap; gap: 8px 25px; margin: 17px 0 0; padding-left: 1.2rem; color: var(--muted); font-size: 13px; }
+	@media(max-width: 640px) { .planner-static { display: grid; } }
+</style>

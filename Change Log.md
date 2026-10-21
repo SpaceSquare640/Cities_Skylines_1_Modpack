@@ -2,6 +2,14 @@
 
 Author: OpenAI-Codex
 
+## 2026-10-21 — New website and wiki (preview, not yet live)
+
+- Rebuilt the website with Astro and Starlight as a product site plus a bilingual (English and Traditional Chinese) wiki with search, kept in the `site/` folder. The current site stays live until the switch.
+- Mod pages explain what each mod does for players, show Workshop buttons (hidden items are marked coming soon), and include a feature browser, a collapsible settings preview, a planned bus-planning walkthrough and an AI Gaming mode explainer.
+- The wiki covers getting started, every AI Improve feature and setting, in-game use with UnifiedUI, compatibility, FAQ, roadmap and contributing.
+- Corrected the AI Improve compatibility description: it does not change vehicle capacity, and it defers fire dispatch choices to Transfer Manager CE.
+- Authors: OpenAI-Codex (initial build), Anthropic-Claude_Code (build fixes and redesign).
+
 ## 2026-10-21 — Release and Development Workshop pipeline
 
 - All six Workshop items are registered: AI Improve (3782858610, 3823575900), Automated Public Transport Planning (3823739383, 3823739653) and AI Gaming (3823740106, 3823740277). The AI Gaming upload workflows are no longer blocked.

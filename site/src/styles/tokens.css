@@ -1,0 +1,34 @@
+:root {
+	color-scheme: dark;
+	--ground: #191d20;
+	--surface: #22282c;
+	--field: #2d3438;
+	--ink: #f4f5f2;
+	--muted: #bdc6c8;
+	--accent: #d94b54;
+	--accent-ink: #fff;
+	--feature: #8a1826;
+	--feature-ink: #fff;
+	--city-ground: #38464a;
+	--city-road: #20282c;
+	--route: #ec6970;
+	--focus: #ffc2c4;
+	--margin: clamp(20px, 3vw, 48px);
+	--display: 'Bahnschrift', 'Arial Narrow', 'Microsoft JhengHei', sans-serif;
+	--text: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+	--content-width: 1320px;
+}
+:root[data-theme='light'] {
+	color-scheme: light;
+	--ground: #f0f2ef;
+	--surface: #e5e9e5;
+	--field: #d9dfda;
+	--ink: #17282e;
+	--muted: #44575c;
+	--accent: #a92535;
+	--feature: #911d2c;
+	--city-ground: #ced8d3;
+	--city-road: #a5b5b2;
+	--route: #a92535;
+	--focus: #8a1826;
+}

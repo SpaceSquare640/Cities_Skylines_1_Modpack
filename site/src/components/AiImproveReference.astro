@@ -1,0 +1,37 @@
+---
+import catalog from '../data/ai-improve.json';
+interface Props { mode: 'features' | 'settings'; locale?: 'en' | 'zh-tw'; }
+const { mode, locale = 'en' } = Astro.props;
+const zh = locale === 'zh-tw';
+const text = (value) => value?.[zh ? 'zhTW' : 'en'] ?? '';
+const sections = catalog.sections.filter((section) => section.features.length);
+---
+
+<div class="reference-data">
+	<p class="source-note">{zh ? '本頁由網站隨附的 AI Improve 原始碼擷取資料驅動。' : 'This reference is driven by the AI Improve source data bundled with the site.'} <span>{zh ? '來源提交' : 'Source commit'}: <code>{catalog.metadata.sourceCommit}</code> · {catalog.metadata.extractedAt}</span></p>
+	{sections.map((section) => <section class="reference-section">
+		<h2>{text(section.title)}</h2>
+		{section.features.map((feature) => <article class="reference-feature">
+			<h3>{text(feature.name)}</h3>
+			{feature.description && <p>{text(feature.description)}{zh && feature.description.zhTWFallback && <small class="fallback-label">（此段暫以英文顯示）</small>}</p>}
+			{mode === 'features' && <p class="default-label">{feature.defaultEnabled === null ? (zh ? '此卡只包含調整數值。' : 'This card contains tuning values only.') : feature.defaultEnabled ? (zh ? '全新安裝時：預設開啟' : 'Fresh install: on by default') : (zh ? '全新安裝時：預設關閉' : 'Fresh install: off by default')}</p>}
+			{feature.status === 'known-limitation' && <p class="source-note">{zh ? '已知限制：原始碼註明此功能尚未能由現有訊號觸發。' : 'Known limitation: source comments explain that the current signal does not trigger this behaviour.'}</p>}
+			{feature.status === 'experimental' && <p class="source-note">{zh ? '原始碼將此項目列於 Experimental 分區。' : 'The source places this item in the Experimental section.'}</p>}
+			{feature.tunables.length > 0 && <ul>{feature.tunables.map((tunable) => <li><strong>{text(tunable.label)}:</strong> {tunable.defaultValue} <span>({zh ? '預設值' : 'default'}; {tunable.min}–{tunable.max}, {zh ? '步幅' : 'step'} {tunable.step})</span>{mode === 'settings' && <p>{text(tunable.description)}</p>}</li>)}</ul>}
+		</article>)}
+	</section>)}
+</div>
+
+<style>
+	.source-note { margin-block: 8px 18px; color: var(--muted); font-size: 13px; }
+	.source-note span { display: block; }
+	.reference-section { margin-top: 30px; }
+	.reference-section h2 { margin-bottom: 12px; }
+	.reference-feature { margin: 8px 0; padding: 14px 16px; background: var(--surface); }
+	.reference-feature h3 { font: 700 17px/1.35 var(--text); letter-spacing: 0; }
+	.reference-feature > p, .reference-feature li { margin-top: 7px; color: var(--muted); font-size: 13px; }
+	.reference-feature ul { margin: 10px 0 0; padding-left: 1.2rem; }
+	.reference-feature li p { margin-top: 4px; }
+	.reference-feature li span, .default-label { color: var(--route); }
+	.fallback-label { display: inline-block; margin-left: 4px; }
+</style>

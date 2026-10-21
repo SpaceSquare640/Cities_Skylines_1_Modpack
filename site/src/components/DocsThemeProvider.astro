@@ -1,0 +1,32 @@
+---
+import { Icon } from '@astrojs/starlight/components';
+---
+
+<script is:inline>
+	window.StarlightThemeProvider = (() => {
+		let storedTheme;
+		try {
+			storedTheme = localStorage.getItem('starlight-theme');
+			if (!storedTheme) { storedTheme = 'dark'; localStorage.setItem('starlight-theme', 'dark'); }
+		} catch { storedTheme = 'dark'; }
+		document.documentElement.dataset.theme = storedTheme === 'light' ? 'light' : 'dark';
+		return {
+			updatePickers(theme = storedTheme || 'dark') {
+				document.querySelectorAll('starlight-theme-select').forEach((picker) => {
+					const select = picker.querySelector('select');
+					if (select) select.value = theme;
+					const tmpl = document.querySelector('#theme-icons');
+					const icon = tmpl?.content.querySelector('.' + theme);
+					const oldIcon = picker.querySelector('svg.label-icon');
+					if (icon && oldIcon) oldIcon.replaceChildren(...icon.cloneNode(true).childNodes);
+				});
+			},
+		};
+	})();
+</script>
+
+<template id="theme-icons">
+	<Icon name="sun" class="light" />
+	<Icon name="moon" class="dark" />
+	<Icon name="laptop" class="auto" />
+</template>

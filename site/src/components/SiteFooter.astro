@@ -1,0 +1,19 @@
+---
+interface Props { locale: 'en' | 'zh-tw'; }
+const { locale } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const prefix = locale === 'zh-tw' ? 'zh-tw/' : '';
+const zh = locale === 'zh-tw';
+---
+
+<footer class="site-footer">
+	<div>
+		<p class="footer-mark">Cities: Skylines 1<br />Modpack</p>
+		<p>{zh ? '由 Kingsley 維護的模組集合與文件索引。' : 'A collection of mods and documentation maintained by Kingsley.'}</p>
+	</div>
+	<div class="footer-links">
+		<a href={base + prefix + 'wiki/project/contributing/'}>{zh ? '參與專案與授權' : 'Contributing & license'}</a>
+		<a href="https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack">{zh ? '檢視原始碼' : 'View source'}</a>
+		<small>GPL-3.0 · {zh ? '無追蹤分析' : 'No analytics'}</small>
+	</div>
+</footer>

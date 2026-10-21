@@ -1,0 +1,9 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import { changeEntries } from '../../lib/changelog';
+---
+
+<SiteLayout title="Change Log" description="Updates read from the website branch Change Log.md file." path="change-log/" active="change-log">
+	<section class="page-hero page-wrap"><p class="eyebrow">Project record</p><h1>Change Log</h1><p>This page is generated at build time from the website branch's <code>Change Log.md</code>, with entries sorted by date.</p></section>
+	<section class="section soft"><div class="page-wrap changelog-list">{changeEntries.map((entry) => <article class="changelog-entry"><h2>{entry.date} — {entry.title}</h2>{entry.bullets.length > 0 && <ul>{entry.bullets.map((bullet) => <li>{bullet}</li>)}</ul>}</article>)}</div></section>
+</SiteLayout>

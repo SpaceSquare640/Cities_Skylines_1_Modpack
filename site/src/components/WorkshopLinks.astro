@@ -1,0 +1,18 @@
+---
+import { workshop, workshopUrl } from '../data/workshop';
+interface Props { mod: 'ai-improve' | 'transport' | 'ai-gaming'; locale?: 'en' | 'zh-tw'; }
+const { mod, locale = 'en' } = Astro.props;
+const zh = locale === 'zh-tw';
+const items = workshop[mod];
+const labels = {
+	release: zh ? 'Release 版（穩定）' : 'Release Version',
+	development: zh ? 'Development 版（測試）' : 'Development Version',
+};
+---
+
+<div class="workshop-links">
+	{(['release', 'development'] as const).map((edition) => items[edition].public
+		? <a class={edition === 'release' ? 'button' : 'button secondary'} href={workshopUrl(items[edition].id)}>{labels[edition]} <span aria-hidden="true">↗</span></a>
+		: <span class="button pending" aria-disabled="true">{labels[edition]} · {zh ? '即將公開' : 'coming soon'}</span>)}
+</div>
+<p class="workshop-note">{zh ? 'Release 版適合一般遊玩；Development 版搶先收到修改並包含測試工具。兩者擇一訂閱，不要同時啟用。' : 'Release is for everyday play; Development gets changes first and includes testing tools. Subscribe to one, never both.'}</p>

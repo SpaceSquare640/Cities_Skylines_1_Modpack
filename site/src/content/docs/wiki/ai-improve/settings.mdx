@@ -1,0 +1,35 @@
+---
+title: AI Improve settings
+description: "How the AI Improve options page is organised, and what the general settings do."
+---
+
+import AiImproveReference from '../../../../components/AiImproveReference.astro';
+
+Open AI Improve's options from the game's **Options** menu, or from the in-game panel if you use UnifiedUI (see [Using AI Improve in game](/Cities_Skylines_1_Modpack/wiki/ai-improve/in-game/)).
+
+## Page layout
+
+- **Header** — the mod's status and version, a **Changelog** button, a **Search settings** box and **Reset to defaults**.
+- **General** — language, verbose logging and *Show advanced tuning values*.
+- **One section per area** — Citizens, Emergency, Sanitation, Road Traffic, Rail, Aviation, Shipping & Cargo, Advanced and Experimental. Each feature is a card with its own switch.
+- **About** — links to the source code, this guide, the Steam Workshop page and the issue forms.
+
+## General settings
+
+| Setting | What it does |
+| --- | --- |
+| Language | Uses the game's language by default. Pick another to override it; the page redraws immediately. |
+| Verbose logging | Logs every individual decision, not just summaries. Only useful when reproducing a bug for a report; it slows the game and writes a lot to disk. Off by default. |
+| Show advanced tuning values | Reveals the number sliders inside each feature card. Hidden by default, because changing them can stop a feature working without any visible sign. |
+
+**Reset to defaults** restores every switch and value to a fresh install. Your language choice is kept.
+
+## Search
+
+Type in **Search settings** to filter every section at once. Clear the box to return to the section list.
+
+## All sections at a glance
+
+<AiImproveReference mode="settings" locale="en" />
+
+For the full description of each feature, see [All features](/Cities_Skylines_1_Modpack/wiki/ai-improve/features/).

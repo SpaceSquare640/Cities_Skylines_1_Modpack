@@ -1,0 +1,20 @@
+{
+  "name": "cs1-modpack-site-offline-prep",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@astrojs/starlight": "0.42.6",
+    "astro": "7.4.1",
+    "sharp": "0.35.5"
+  },
+  "devDependencies": {
+    "playwright": "1.64.1"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+		"extract:ai-improve": "node scripts/extract-ai-improve.mjs",
+		"prepare:assets": "node scripts/prepare-brand-assets.mjs"
+  }
+}

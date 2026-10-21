@@ -1,0 +1,85 @@
+---
+import catalog from '../data/ai-improve.json';
+interface Props { locale?: 'en' | 'zh-tw'; }
+const { locale = 'en' } = Astro.props;
+const zh = locale === 'zh-tw';
+const text = (value) => value?.[zh ? 'zhTW' : 'en'] ?? '';
+---
+
+<section class="settings-preview">
+	<p class="demo-note">{zh ? '網頁示範 · 不會影響你的遊戲' : 'Web demonstration · no effect on your game'}</p>
+	<details class="settings-group general-settings" open>
+		<summary><h3>{zh ? '一般' : 'General'}</h3><span class="count">{catalog.generalSettings.length}</span></summary>
+		<div class="settings-cards">
+		{catalog.generalSettings.map((setting) => <article class="settings-card general-card">
+			<div class="settings-card-heading">
+				<div><h4>{text(setting.label)}</h4>{setting.description && <p>{text(setting.description)}</p>}</div>
+				{setting.kind === 'select' && <select aria-label={text(setting.label)} value={setting.defaultValue}>{setting.options.map((option) => <option value={option.value} selected={option.value === setting.defaultValue}>{option.label}</option>)}</select>}
+				{setting.kind === 'toggle' && <label class="switch"><span class="sr-only">{text(setting.label)}</span><input type="checkbox" checked={setting.defaultValue} /><span aria-hidden="true"></span></label>}
+			</div>
+		</article>)}
+		</div>
+	</details>
+	{catalog.sections.filter((section) => section.features.length && !['nav.general', 'nav.about'].includes(section.key)).map((section) => <details class="settings-group">
+		<summary><h3>{text(section.title)}</h3><span class="count">{section.features.length}</span></summary>
+		<div class="settings-cards">
+			{section.features.map((feature) => <article class="settings-card">
+				<div class="settings-card-heading">
+					<div><h4>{text(feature.name)}</h4><p>{text(feature.description) || (zh ? '暫無說明。' : 'No description yet.')}</p></div>
+					{feature.defaultEnabled !== null && <label class="switch"><span class="sr-only">{text(feature.name)}</span><input type="checkbox" checked={feature.defaultEnabled} /><span aria-hidden="true"></span></label>}
+				</div>
+				{feature.tunables.length > 0 && <details class="tunable-details">
+					<summary>{zh ? '進階數值' : 'Advanced values'}</summary>
+					<div class="range-list">{feature.tunables.map((tunable) => <label class="range-control">
+						<span>{text(tunable.label)} <output data-range-output>{tunable.defaultValue}</output></span>
+						<input type="range" min={tunable.min} max={tunable.max} step={tunable.step} value={tunable.defaultValue} aria-label={text(tunable.label)} />
+						<small>{text(tunable.description)}</small>
+					</label>)}</div>
+				</details>}
+			</article>)}
+		</div>
+	</details>)}
+</section>
+
+<script>
+	document.querySelectorAll<HTMLInputElement>('.range-control input[type="range"]').forEach((input) => {
+		const output = input.closest('.range-control')?.querySelector<HTMLOutputElement>('[data-range-output]');
+		const update = () => { if (output) output.value = input.value; };
+		input.addEventListener('input', update);
+		input.addEventListener('change', update);
+	});
+</script>
+
+<style>
+	.settings-preview { display: grid; gap: 8px; }
+	.demo-note { margin: 0 0 6px !important; color: var(--muted); font-size: 13px; }
+	.settings-group { background: var(--ground); }
+	.settings-group > summary { display: flex; align-items: center; gap: 10px; padding: 14px 17px; cursor: pointer; list-style: none; }
+	.settings-group > summary::-webkit-details-marker { display: none; }
+	.settings-group > summary::after { margin-left: auto; color: var(--muted); content: '+'; font-size: 20px; line-height: 1; }
+	.settings-group[open] > summary::after { content: '−'; }
+	.settings-group > summary h3 { font-size: 19px; letter-spacing: -.02em; }
+	.settings-group .count { padding: 1px 8px; background: var(--field); color: var(--muted); font-size: 12px; font-weight: 700; }
+	.settings-group > .settings-cards { padding: 0 17px 17px; }
+	.settings-cards { display: grid; gap: 8px; }
+	.settings-card { padding: 14px; background: var(--surface); }
+	.settings-card-heading { display: flex; justify-content: space-between; gap: 14px; }
+	.settings-card h4 { font-size: 15px; line-height: 1.35; }
+	.general-card select { max-width: 190px; min-height: 38px; padding: 6px 9px; border: 1px solid var(--field); background: var(--ground); color: var(--ink); }
+	.settings-card p { margin-top: 5px; color: var(--muted); font-size: 12px; }
+	.switch { position: relative; flex: 0 0 44px; height: 25px; }
+	.switch input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+	.switch span:last-child { position: absolute; inset: 0; border: 1px solid var(--muted); border-radius: 20px; background: var(--field); cursor: pointer; }
+	.switch span:last-child::before { position: absolute; top: 3px; left: 3px; width: 17px; height: 17px; border-radius: 50%; background: var(--muted); content: ''; transition: transform 140ms ease; }
+	.switch input:checked + span:last-child { border-color: var(--route); background: var(--feature); }
+	.switch input:checked + span:last-child::before { transform: translateX(19px); background: white; }
+	.switch input:focus-visible + span:last-child { outline: 3px solid var(--focus); outline-offset: 3px; }
+	.tunable-details { margin-top: 12px; padding-top: 9px; border-top: 1px solid var(--field); }
+	.tunable-details summary { width: fit-content; cursor: pointer; color: var(--route); font-size: 13px; font-weight: 700; }
+	.range-list { display: grid; gap: 15px; margin-top: 12px; }
+	.range-control { display: grid; gap: 6px; font-size: 13px; }
+	.range-control span { display: flex; justify-content: space-between; gap: 12px; }
+	.range-control output { color: var(--route); font-weight: 700; }
+	.range-control input { width: 100%; accent-color: var(--route); }
+	.range-control small { color: var(--muted); font-size: 11px; }
+</style>

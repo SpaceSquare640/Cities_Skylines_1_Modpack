@@ -1,2 +1,5 @@
 # Local verification artifacts (screenshots, reports) are not published
 .taste-skill/
+site/node_modules/
+site/dist/
+site/.astro/

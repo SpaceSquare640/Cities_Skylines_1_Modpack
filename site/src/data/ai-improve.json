@@ -1,0 +1,1264 @@
+{
+  "metadata": {
+    "sourceCommit": "d1cecad",
+    "extractedAt": "2026-10-21",
+    "sourceFiles": [
+      "Localization.cs",
+      "ModSettings.cs",
+      "SettingsPageUI.cs"
+    ],
+    "languages": [
+      "en",
+      "zh-tw"
+    ],
+    "featureCount": 25
+  },
+  "generalSettings": [
+    {
+      "property": "LanguageOverride",
+      "key": "LanguageOverride",
+      "kind": "select",
+      "label": {
+        "en": "Language",
+        "zhTW": "語言 (Language)",
+        "zhTWFallback": false
+      },
+      "description": null,
+      "defaultValue": "auto",
+      "options": [
+        {
+          "value": "auto",
+          "label": "Auto"
+        },
+        {
+          "value": "en",
+          "label": "English"
+        },
+        {
+          "value": "zh-tw",
+          "label": "繁體中文"
+        },
+        {
+          "value": "zh-cn",
+          "label": "简体中文"
+        },
+        {
+          "value": "de",
+          "label": "Deutsch"
+        },
+        {
+          "value": "fr",
+          "label": "Français"
+        },
+        {
+          "value": "ru",
+          "label": "Русский"
+        },
+        {
+          "value": "es",
+          "label": "Español"
+        },
+        {
+          "value": "ja",
+          "label": "日本語"
+        },
+        {
+          "value": "ko",
+          "label": "한국어"
+        }
+      ]
+    },
+    {
+      "property": "VerboseLogging",
+      "key": "VerboseLogging",
+      "kind": "toggle",
+      "label": {
+        "en": "Verbose logging (only for bug reports - slows the game)",
+        "zhTW": "詳細記錄 (只在回報問題時開啟，會拖慢遊戲)",
+        "zhTWFallback": false
+      },
+      "description": {
+        "en": "Logs every individual dispatch/reroute/redirect decision, not just summaries. Only useful when reproducing a bug for a report - writes a lot to disk.",
+        "zhTW": "記錄每一個派遣/改道/重新導向的細節，不只是摘要。只有在為了回報問題而重現時才需要開啟，會大量寫入硬碟。",
+        "zhTWFallback": false
+      },
+      "defaultValue": false
+    },
+    {
+      "property": "ShowAdvancedTuning",
+      "key": "ShowAdvancedTuning",
+      "kind": "toggle",
+      "label": {
+        "en": "Show advanced tuning values",
+        "zhTW": "顯示進階參數",
+        "zhTWFallback": false
+      },
+      "description": {
+        "en": "Reveals the numeric sliders inside each feature card. They are hidden by default because these values are calibrated against measurements from real play; changing them can stop a feature working without any visible sign.",
+        "zhTW": "顯示每個功能卡片內的數值滑桿。預設隱藏，因為這些數值是依實機量測校準的；改動它們可能讓功能完全失效，而且不會有任何提示。",
+        "zhTWFallback": false
+      },
+      "defaultValue": false
+    }
+  ],
+  "sections": [
+    {
+      "key": "nav.general",
+      "title": {
+        "en": "General",
+        "zhTW": "一般",
+        "zhTWFallback": false
+      },
+      "features": []
+    },
+    {
+      "key": "nav.citizens",
+      "title": {
+        "en": "Citizens",
+        "zhTW": "市民",
+        "zhTWFallback": false
+      },
+      "features": [
+        {
+          "key": "feature.citizenCar",
+          "id": "citizenCar",
+          "setting": "CitizenCarProbabilityEnabled",
+          "property": "CitizenCarProbabilityEnabled",
+          "name": {
+            "en": "Congestion-aware driving",
+            "zhTW": "依壅塞調整開車機率",
+            "zhTWFallback": false
+          },
+          "description": {
+            "en": "Citizens are less likely to drive toward an already-congested destination.",
+            "zhTW": "市民較不傾向開車前往已壅塞的目的地。",
+            "zhTWFallback": false
+          },
+          "defaultEnabled": true,
+          "sectionKey": "nav.citizens",
+          "section": {
+            "en": "Citizens",
+            "zhTW": "市民",
+            "zhTWFallback": false
+          },
+          "group": "citizens",
+          "status": "implemented",
+          "tunables": [
+            {
+              "key": "tune.citizenCarDensity",
+              "label": {
+                "en": "Congestion threshold",
+                "zhTW": "壅塞判定閾值",
+                "zhTWFallback": false
+              },
+              "description": {
+                "en": "How congested a destination has to be (0-100) before citizens start becoming less likely to drive there.",
+                "zhTW": "目的地的壅塞度要達到多少（0-100）才會開始降低市民開車過去的機率。",
+                "zhTWFallback": false
+              },
+              "setting": "CitizenCarDensityThreshold",
+              "property": "CitizenCarDensityThreshold",
+              "type": "int",
+              "defaultValue": 70,
+              "min": 20,
+              "max": 100,
+              "step": 5
+            },
+            {
+              "key": "tune.citizenCarReduction",
+              "label": {
+                "en": "Max probability reduction (%)",
+                "zhTW": "最大機率降幅 (%)",
+                "zhTWFallback": false
+              },
+              "description": {
+                "en": "The largest share of a citizen's drive-probability that congestion is allowed to remove, even at maximum congestion.",
+                "zhTW": "即使在最壅塞的情況下，壅塞最多可以降低市民開車機率的百分比上限。",
+                "zhTWFallback": false
+              },
+              "setting": "CitizenCarMaxReductionPercent",
+              "property": "CitizenCarMaxReductionPercent",
+              "type": "int",
+              "defaultValue": 60,
+              "min": 0,
+              "max": 100,
+              "step": 5
+            }
+          ]
+        },
+        {
+          "key": "feature.citizenTaxi",
+          "id": "citizenTaxi",
+          "setting": "CitizenTaxiProbabilityEnabled",
+          "property": "CitizenTaxiProbabilityEnabled",
+          "name": {
+            "en": "Boosted taxi usage",
+            "zhTW": "提升計程車使用率",
+            "zhTWFallback": false
+          },
+          "description": {
+            "en": "Increases taxi usage as an alternative to driving.",
+            "zhTW": "提升計程車作為開車的替代選項。",
+            "zhTWFallback": false
+          },
+          "defaultEnabled": true,
+          "sectionKey": "nav.citizens",
+          "section": {
+            "en": "Citizens",
+            "zhTW": "市民",
+            "zhTWFallback": false
+          },
+          "group": "citizens",
+          "status": "implemented",
+          "tunables": [
+            {
+              "key": "tune.taxiMultiplier",
+              "label": {
+                "en": "Taxi probability multiplier (%)",
+                "zhTW": "計程車機率倍率 (%)",
+                "zhTWFallback": false
+              },
+              "description": {
+                "en": "Multiplies citizens' base taxi-usage probability (150 = 1.5x).",
+                "zhTW": "把市民搭計程車的基礎機率乘上這個倍率（150 = 1.5 倍）。",
+                "zhTWFallback": false
+              },
+              "setting": "CitizenTaxiMultiplierPercent",
+              "property": "CitizenTaxiMultiplierPercent",
+              "type": "int",
+              "defaultValue": 150,
+              "min": 100,
+              "max": 400,
+              "step": 10
+            },
+            {
+              "key": "tune.taxiFlatBonus",
+              "label": {
+                "en": "Taxi probability flat bonus",
+                "zhTW": "計程車機率固定加成",
+                "zhTWFallback": false
+              },
+              "description": {
+                "en": "A flat percentage-point bonus added on top of the multiplier above, so taxis stay a real option even where the base probability starts near zero.",
+                "zhTW": "在上面的倍率之外再加上的固定百分點加成，讓計程車在基礎機率接近零的情況下仍然是個實際選項。",
+                "zhTWFallback": false
+              },
+              "setting": "CitizenTaxiFlatBonus",
+              "property": "CitizenTaxiFlatBonus",
+              "type": "int",
+              "defaultValue": 2,
+              "min": 0,
+              "max": 20,
+              "step": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "nav.emergency",
+      "title": {
+        "en": "Emergency",
+        "zhTW": "緊急服務",
+        "zhTWFallback": false
+      },
+      "features": [
+        {
+          "key": "feature.fireResponseCap",
+          "id": "fireResponseCap",
+          "setting": "FireResponseCapEnabled",
+          "property": "FireResponseCapEnabled",
+          "name": {
+            "en": "Per-building responder cap",
+            "zhTW": "每棟建築派遣上限",
+            "zhTWFallback": false
+          },
+          "description": {
+            "en": "Caps how many fire trucks/helicopters respond to one burning building.",
+            "zhTW": "限制單一起火建築最多可派遣多少消防車/直升機。",
+            "zhTWFallback": false
+          },
+          "defaultEnabled": true,
+          "sectionKey": "nav.emergency",
+          "section": {
+            "en": "Emergency",
+            "zhTW": "緊急服務",
+            "zhTWFallback": false
+          },
+          "group": "emergency",
+          "status": "implemented",
+          "tunables": [
+            {
+              "key": "tune.fireResponders",
+              "label": {
+                "en": "Max fire responders per building",
+                "zhTW": "消防車/直升機每棟建築派遣上限",
+                "zhTWFallback": false
+              },
+              "description": {
+                "en": "How many trucks/helicopters may respond to the same burning building before extras get redirected elsewhere.",
+                "zhTW": "同一棟燃燒中的建築最多可以有幾台消防車/直升機同時前往，超過的會被改派到其他地方。",
+                "zhTWFallback": false
+              },
+              "setting": "FireMaxRespondersPerBuilding",
+              "property": "FireMaxRespondersPerBuilding",
+              "type": "int",
+              "defaultValue": 20,
+              "min": 5,
+              "max": 50,
+              "step": 1
+            },
+            {
+              "key": "tune.fireUncapMinutes",
+              "label": {
+                "en": "Minutes burning before cap lifts",
+                "zhTW": "燃燒幾分鐘後解除上限",
+                "zhTWFallback": false
+              },
+              "description": {
+                "en": "After a building has been burning this long, the responder cap stops applying to it - a long-running fire keeps getting help instead of staying stuck at the cap.",
+                "zhTW": "一棟建築燃燒超過這麼久之後，派遣上限就不再套用在它身上——長時間的火災會持續獲得支援，不會卡在上限。",
+                "zhTWFallback": false
+              },
+              "setting": "FireUncapAfterMinutes",
+              "property": "FireUncapAfterMinutes",
+              "type": "int",
+              "defaultValue": 15,
+              "min": 5,
+              "max": 60,
+              "step": 1
+            }
+          ]
+        },
+        {
+          "key": "feature.fireIdleSeek",
+          "id": "fireIdleSeek",
+          "setting": "FireIdleSeekEnabled",
+          "property": "FireIdleSeekEnabled",
+          "name": {
+            "en": "Idle vehicles seek nearby fires",
+            "zhTW": "閒置車輛尋找附近火場",
+            "zhTWFallback": false
+          },
+          "description": {
+            "en": "Idle/returning fire vehicles check for a nearby still-burning building first.",
+            "zhTW": "閒置/返程中的消防車輛會優先檢查附近是否還有火場。",
+            "zhTWFallback": false
+          },
+          "defaultEnabled": true,
+          "sectionKey": "nav.emergency",
+          "section": {
+            "en": "Emergency",
+            "zhTW": "緊急服務",
+            "zhTWFallback": false
+          },
+          "group": "emergency",
+          "status": "implemented",
+          "tunables": []
+        },
+        {
+          "key": "feature.helicopterWeatherHalt",
+          "id": "helicopterWeatherHalt",
+          "setting": "HelicopterWeatherHaltEnabled",
+          "property": "HelicopterWeatherHaltEnabled",
+          "name": {
+            "en": "Ground helicopters in storms",
+            "zhTW": "雷暴雨時停飛直升機",
+            "zhTWFallback": false
+          },
+          "description": {
+            "en": "Emergency helicopters stay grounded during a thunderstorm.",
+            "zhTW": "雷暴雨期間緊急直升機停留在地面。",
+            "zhTWFallback": false
+          },
+          "defaultEnabled": true,
+          "sectionKey": "nav.emergency",
+          "section": {
+            "en": "Emergency",
+            "zhTW": "緊急服務",
+            "zhTWFallback": false
+          },
+          "group": "emergency",
+          "status": "implemented",
+          "tunables": []
+        }
+      ]
+    },
+    {
+      "key": "nav.sanitation",
+      "title": {
+        "en": "Sanitation",
+        "zhTW": "環境清潔",
+        "zhTWFallback": false
+      },
+      "features": [
+        {
+          "key": "feature.garbageIdleSeek",
+          "id": "garbageIdleSeek",
+          "setting": "GarbageIdleSeekEnabled",
+          "property": "GarbageIdleSeekEnabled",
+          "name": {
+            "en": "Idle garbage trucks seek nearby buildings",
+            "zhTW": "閒置垃圾車主動尋找附近建築",
+            "zhTWFallback": false
+          },
+          "description": {
+            "en": "A truck with room to spare checks for a nearby building that still needs collection first, instead of waiting on the game's own priority/distance-weighted matching to maybe offer it something farther away.",
+            "zhTW": "垃圾車還有空間時，會先檢查附近有沒有還需要收運的建築，而不是等遊戲自己的優先度／距離加權配對，配到更遠的地方。",
+            "zhTWFallback": false
+          },
+          "defaultEnabled": true,
+          "sectionKey": "nav.sanitation",
+          "section": {
+            "en": "Sanitation",
+            "zhTW": "環境清潔",
+            "zhTWFallback": false
+          },
+          "group": "sanitation",
+          "status": "implemented",
+          "tunables": []
+        },
+        {
+          "key": "feature.hearseIdleSeek",
+          "id": "hearseIdleSeek",
+          "setting": "HearseIdleSeekEnabled",
+          "property": "HearseIdleSeekEnabled",
+          "name": {
+            "en": "Idle hearses seek nearby buildings",
+            "zhTW": "閒置殯儀車主動尋找附近建築",
+            "zhTWFallback": false
+          },
+          "description": {
+            "en": "A hearse with room to spare checks for a nearby building that still needs a body removed first, instead of waiting on the game's own priority/distance-weighted matching to maybe offer it something farther away.",
+            "zhTW": "殯儀車還有空間時，會先檢查附近有沒有還需要移走遺體的建築，而不是等遊戲自己的優先度／距離加權配對，配到更遠的地方。",
+            "zhTWFallback": false
+          },
+          "defaultEnabled": true,
+          "sectionKey": "nav.sanitation",
+          "section": {
+            "en": "Sanitation",
+            "zhTW": "環境清潔",
+            "zhTWFallback": false
+          },
+          "group": "sanitation",
+          "status": "implemented",
+          "tunables": []
+        }
+      ]
+    },
+    {
+      "key": "nav.road",
+      "title": {
+        "en": "Road Traffic",
+        "zhTW": "道路交通",
+        "zhTWFallback": false
+      },
+      "features": [
+        {
+          "key": "feature.trafficReroute",
+          "id": "trafficReroute",
+          "setting": "OrdinaryTrafficRerouteEnabled",
+          "property": "OrdinaryTrafficRerouteEnabled",
+          "name": {
+            "en": "Ordinary traffic rerouting",
+            "zhTW": "一般交通改道",
+            "zhTWFallback": false
+          },
+          "description": {
+            "en": "Private cars/taxis/trucks reroute around real-time congestion.",
+            "zhTW": "私家車/計程車/貨車依即時壅塞情況改道。",
+            "zhTWFallback": false
+          },
+          "defaultEnabled": true,
+          "sectionKey": "nav.road",
+          "section": {
+            "en": "Road Traffic",
+            "zhTW": "道路交通",
+            "zhTWFallback": false
+          },
+          "group": "road",
+          "status": "implemented",
+          "tunables": [
+            {
+              "key": "tune.rerouteDensity",
+              "label": {
+                "en": "Reroute density threshold",
+                "zhTW": "改道壅塞閾值",
+                "zhTWFallback": false
+              },
+              "description": {
+                "en": "How congested the road/track/lane ahead has to be (0-100) before a vehicle mid-trip reroutes around it. Lower = reroutes more eagerly.",
+                "zhTW": "前方道路/軌道/車道的壅塞度要達到多少（0-100）才會觸發車輛行駛途中改道。數值越低，改道越積極。",
+                "zhTWFallback": false
+              },
+              "setting": "OrdinaryTrafficRerouteDensityThreshold",
+              "property": "OrdinaryTrafficRerouteDensityThreshold",
+              "type": "int",
+              "defaultValue": 50,
+              "min": 30,
+              "max": 70,
+              "step": 5
+            }
+          ]
+        },
+        {
+          "key": "feature.localBusReroute",
+          "id": "localBusReroute",
+          "setting": "LocalBusRerouteEnabled",
+          "property": "LocalBusRerouteEnabled",
+          "name": {
+            "en": "Local bus rerouting",
+            "zhTW": "市內巴士改道",
+            "zhTWFallback": false
+          },
+          "description": {
+            "en": "Local city buses reroute around real-time congestion.",
+            "zhTW": "市內巴士依即時壅塞情況改道。",
+            "zhTWFallback": false
+          },
+          "defaultEnabled": true,
+          "sectionKey": "nav.road",
+          "section": {
+            "en": "Road Traffic",
+            "zhTW": "道路交通",
+            "zhTWFallback": false
+          },
+          "group": "road",
+          "status": "implemented",
+          "tunables": [
+            {
+              "key": "tune.rerouteDensity",
+              "label": {
+                "en": "Reroute density threshold",
+                "zhTW": "改道壅塞閾值",
+                "zhTWFallback": false
+              },
+              "description": {
+                "en": "How congested the road/track/lane ahead has to be (0-100) before a vehicle mid-trip reroutes around it. Lower = reroutes more eagerly.",
+                "zhTW": "前方道路/軌道/車道的壅塞度要達到多少（0-100）才會觸發車輛行駛途中改道。數值越低，改道越積極。",
+                "zhTWFallback": false
+              },
+              "setting": "LocalBusRerouteDensityThreshold",
+              "property": "LocalBusRerouteDensityThreshold",
+              "type": "int",
+              "defaultValue": 50,
+              "min": 30,
+              "max": 70,
+              "step": 5
+            }
+          ]
+        },
+        {
+          "key": "feature.intercityBusReroute",
+          "id": "intercityBusReroute",
+          "setting": "IntercityBusRerouteEnabled",
+          "property": "IntercityBusRerouteEnabled",
+          "name": {
+            "en": "Intercity bus rerouting",
+            "zhTW": "城際巴士改道",
+            "zhTWFallback": false
+          },
+          "description": {
+            "en": "Intercity buses reroute around real-time congestion.",
+            "zhTW": "城際巴士依即時壅塞情況改道。",
+            "zhTWFallback": false
+          },
+          "defaultEnabled": true,
+          "sectionKey": "nav.road",
+          "section": {
+            "en": "Road Traffic",
+            "zhTW": "道路交通",
+            "zhTWFallback": false
+          },
+          "group": "road",
+          "status": "implemented",
+          "tunables": [
+            {
+              "key": "tune.rerouteDensity",
+              "label": {
+                "en": "Reroute density threshold",
+                "zhTW": "改道壅塞閾值",
+                "zhTWFallback": false
+              },
+              "description": {
+                "en": "How congested the road/track/lane ahead has to be (0-100) before a vehicle mid-trip reroutes around it. Lower = reroutes more eagerly.",
+                "zhTW": "前方道路/軌道/車道的壅塞度要達到多少（0-100）才會觸發車輛行駛途中改道。數值越低，改道越積極。",
+                "zhTWFallback": false
+              },
+              "setting": "IntercityBusRerouteDensityThreshold",
+              "property": "IntercityBusRerouteDensityThreshold",
+              "type": "int",
+              "defaultValue": 50,
+              "min": 30,
+              "max": 70,
+              "step": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "nav.rail",
+      "title": {
+        "en": "Rail",
+        "zhTW": "鐵路",
+        "zhTWFallback": false
+      },
+      "features": [
+        {
+          "key": "feature.metroPlatform",
+          "id": "metroPlatform",
+          "setting": "MetroPlatformAssignmentEnabled",
+          "property": "MetroPlatformAssignmentEnabled",
+          "name": {
+            "en": "Platform assignment",
+            "zhTW": "月台分配",
+            "zhTWFallback": false
+          },
+          "description": {
+            "en": "Occupancy-aware metro platform assignment.",
+            "zhTW": "依佔用情況分配地鐵月台。",
+            "zhTWFallback": false
+          },
+          "defaultEnabled": true,
+          "sectionKey": "nav.rail",
+          "section": {
+            "en": "Rail",
+            "zhTW": "鐵路",
+            "zhTWFallback": false
+          },
+          "group": "rail",
+          "status": "implemented",
+          "tunables": []
+        },
+        {
+          "key": "feature.metroReroute",
+          "id": "metroReroute",
+          "setting": "MetroRerouteEnabled",
+          "property": "MetroRerouteEnabled",
+          "name": {
+            "en": "Mid-route rerouting",
+            "zhTW": "中途改道",
+            "zhTWFallback": false
+          },
+          "description": {
+            "en": "Metro trains reroute around real-time congestion.",
+            "zhTW": "地鐵依即時壅塞情況改道。",
+            "zhTWFallback": false
+          },
+          "defaultEnabled": true,
+          "sectionKey": "nav.rail",
+          "section": {
+            "en": "Rail",
+            "zhTW": "鐵路",
+            "zhTWFallback": false
+          },
+          "group": "rail",
+          "status": "implemented",
+          "tunables": [
+            {
+              "key": "tune.rerouteDensity",
+              "label": {
+                "en": "Reroute density threshold",
+                "zhTW": "改道壅塞閾值",
+                "zhTWFallback": false
+              },
+              "description": {
+                "en": "How congested the road/track/lane ahead has to be (0-100) before a vehicle mid-trip reroutes around it. Lower = reroutes more eagerly.",
+                "zhTW": "前方道路/軌道/車道的壅塞度要達到多少（0-100）才會觸發車輛行駛途中改道。數值越低，改道越積極。",
+                "zhTWFallback": false
+              },
+              "setting": "MetroRerouteDensityThreshold",
+              "property": "MetroRerouteDensityThreshold",
+              "type": "int",
+              "defaultValue": 50,
+              "min": 30,
+              "max": 70,
+              "step": 5
+            }
+          ]
+        },
+        {
+          "key": "feature.trainPlatform",
+          "id": "trainPlatform",
+          "setting": "IntercityTrainPlatformAssignmentEnabled",
+          "property": "IntercityTrainPlatformAssignmentEnabled",
+          "name": {
+            "en": "Platform assignment",
+            "zhTW": "月台分配",
+            "zhTWFallback": false
+          },
+          "description": {
+            "en": "Occupancy-aware intercity train platform assignment.",
+            "zhTW": "依佔用情況分配城際火車月台。",
+            "zhTWFallback": false
+          },
+          "defaultEnabled": true,
+          "sectionKey": "nav.rail",
+          "section": {
+            "en": "Rail",
+            "zhTW": "鐵路",
+            "zhTWFallback": false
+          },
+          "group": "rail",
+          "status": "implemented",
+          "tunables": [
+            {
+              "key": "tune.stationSaturation",
+              "label": {
+                "en": "Station saturation threshold",
+                "zhTW": "車站飽和閾值",
+                "zhTWFallback": false
+              },
+              "description": {
+                "en": "When the least-busy candidate platform is already at or above this occupancy, the station is treated as saturated and vanilla's own choice is left alone instead of forcing a still-crowded platform.",
+                "zhTW": "當佔用量最低的候選月台已經達到或超過這個值時，就視為該車站已飽和，改為保留原版自己的選擇，不強制塞進還很擁擠的月台。",
+                "zhTWFallback": false
+              },
+              "setting": "TrainStationSaturationThreshold",
+              "property": "TrainStationSaturationThreshold",
+              "type": "int",
+              "defaultValue": 25,
+              "min": 5,
+              "max": 60,
+              "step": 1
+            },
+            {
+              "key": "tune.platformCandidates",
+              "label": {
+                "en": "Platform candidates searched",
+                "zhTW": "月台搜尋候選數",
+                "zhTWFallback": false
+              },
+              "description": {
+                "en": "How many candidate points are probed around a station when spreading trains across its platforms. Higher covers a bigger station more thoroughly but costs more to compute.",
+                "zhTW": "在車站周圍探測幾個候選點來分散火車到各月台。數字越大涵蓋範圍越完整，但運算量也越高。",
+                "zhTWFallback": false
+              },
+              "setting": "TrainPlatformCandidateCount",
+              "property": "TrainPlatformCandidateCount",
+              "type": "int",
+              "defaultValue": 24,
+              "min": 8,
+              "max": 40,
+              "step": 1
+            }
+          ]
+        },
+        {
+          "key": "feature.trainReroute",
+          "id": "trainReroute",
+          "setting": "IntercityTrainRerouteEnabled",
+          "property": "IntercityTrainRerouteEnabled",
+          "name": {
+            "en": "Mid-route rerouting",
+            "zhTW": "中途改道",
+            "zhTWFallback": false
+          },
+          "description": {
+            "en": "Intercity trains reroute around real-time congestion.",
+            "zhTW": "城際火車依即時壅塞情況改道。",
+            "zhTWFallback": false
+          },
+          "defaultEnabled": true,
+          "sectionKey": "nav.rail",
+          "section": {
+            "en": "Rail",
+            "zhTW": "鐵路",
+            "zhTWFallback": false
+          },
+          "group": "rail",
+          "status": "implemented",
+          "tunables": [
+            {
+              "key": "tune.rerouteDensity",
+              "label": {
+                "en": "Reroute density threshold",
+                "zhTW": "改道壅塞閾值",
+                "zhTWFallback": false
+              },
+              "description": {
+                "en": "How congested the road/track/lane ahead has to be (0-100) before a vehicle mid-trip reroutes around it. Lower = reroutes more eagerly.",
+                "zhTW": "前方道路/軌道/車道的壅塞度要達到多少（0-100）才會觸發車輛行駛途中改道。數值越低，改道越積極。",
+                "zhTWFallback": false
+              },
+              "setting": "IntercityTrainRerouteDensityThreshold",
+              "property": "IntercityTrainRerouteDensityThreshold",
+              "type": "int",
+              "defaultValue": 50,
+              "min": 30,
+              "max": 70,
+              "step": 5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "nav.aviation",
+      "title": {
+        "en": "Aviation",
+        "zhTW": "航空",
+        "zhTWFallback": false
+      },
+      "features": [
+        {
+          "key": "feature.aircraftGate",
+          "id": "aircraftGate",
+          "setting": "AircraftGateAssignmentEnabled",
+          "property": "AircraftGateAssignmentEnabled",
+          "name": {
+            "en": "Gate assignment",
+            "zhTW": "登機門分配",
+            "zhTWFallback": false
+          },
+          "description": {
+            "en": "Occupancy-aware airport gate assignment.",
+            "zhTW": "依佔用情況分配機場登機門。",
+            "zhTWFallback": false
+          },
+          "defaultEnabled": true,
+          "sectionKey": "nav.aviation",
+          "section": {
+            "en": "Aviation",
+            "zhTW": "航空",
+            "zhTWFallback": false
+          },
+          "group": "aviationShipping",
+          "status": "implemented",
+          "tunables": [
+            {
+              "key": "tune.gateCandidates",
+              "label": {
+                "en": "Gate candidates searched",
+                "zhTW": "登機門搜尋候選數",
+                "zhTWFallback": false
+              },
+              "description": {
+                "en": "How many candidate points are probed around an airport when spreading aircraft across its gates. Higher covers a bigger airport more thoroughly but costs more to compute.",
+                "zhTW": "在機場周圍探測幾個候選點來分散飛機到各登機門。數字越大涵蓋範圍越完整，但運算量也越高。",
+                "zhTWFallback": false
+              },
+              "setting": "AircraftGateCandidateCount",
+              "property": "AircraftGateCandidateCount",
+              "type": "int",
+              "defaultValue": 26,
+              "min": 8,
+              "max": 50,
+              "step": 1
+            },
+            {
+              "key": "tune.perGateCapacity",
+              "label": {
+                "en": "Aircraft per gate",
+                "zhTW": "每個登機門可容納飛機數",
+                "zhTWFallback": false
+              },
+              "description": {
+                "en": "Roughly how many aircraft each real gate found at an airport can hold before the whole airport is judged saturated (scaled by how many gates were actually found there).",
+                "zhTW": "機場找到的每個真實登機門大約可以容納多少架飛機，超過就視為整個機場飽和（會依實際找到的登機門數量按比例調整）。",
+                "zhTWFallback": false
+              },
+              "setting": "AircraftPerGateCapacity",
+              "property": "AircraftPerGateCapacity",
+              "type": "int",
+              "defaultValue": 6,
+              "min": 1,
+              "max": 20,
+              "step": 1
+            }
+          ]
+        },
+        {
+          "key": "feature.aircraftThunderstorm",
+          "id": "aircraftThunderstorm",
+          "setting": "AircraftThunderstormRefusalEnabled",
+          "property": "AircraftThunderstormRefusalEnabled",
+          "name": {
+            "en": "Thunderstorm landing refusal",
+            "zhTW": "雷暴雨拒絕起降",
+            "zhTWFallback": false
+          },
+          "description": {
+            "en": "Airports refuse landings and departures during a thunderstorm.",
+            "zhTW": "雷暴雨期間機場拒絕起降。",
+            "zhTWFallback": false
+          },
+          "defaultEnabled": true,
+          "sectionKey": "nav.aviation",
+          "section": {
+            "en": "Aviation",
+            "zhTW": "航空",
+            "zhTWFallback": false
+          },
+          "group": "aviationShipping",
+          "status": "implemented",
+          "tunables": []
+        },
+        {
+          "key": "feature.helicopterGate",
+          "id": "helicopterGate",
+          "setting": "PassengerHelicopterGateAssignmentEnabled",
+          "property": "PassengerHelicopterGateAssignmentEnabled",
+          "name": {
+            "en": "Passenger helicopter gate assignment",
+            "zhTW": "客運直升機登機點分配",
+            "zhTWFallback": false
+          },
+          "description": {
+            "en": "Occupancy-aware landing-point assignment for passenger helicopters.",
+            "zhTW": "依佔用情況分配客運直升機登機點。",
+            "zhTWFallback": false
+          },
+          "defaultEnabled": true,
+          "sectionKey": "nav.aviation",
+          "section": {
+            "en": "Aviation",
+            "zhTW": "航空",
+            "zhTWFallback": false
+          },
+          "group": "aviationShipping",
+          "status": "implemented",
+          "tunables": []
+        },
+        {
+          "key": "feature.helicopterReroute",
+          "id": "helicopterReroute",
+          "setting": "PassengerHelicopterRerouteEnabled",
+          "property": "PassengerHelicopterRerouteEnabled",
+          "name": {
+            "en": "Passenger helicopter rerouting",
+            "zhTW": "客運直升機改道",
+            "zhTWFallback": false
+          },
+          "description": {
+            "en": "Passenger helicopters reroute around real-time congestion.",
+            "zhTW": "客運直升機依即時壅塞情況改道。",
+            "zhTWFallback": false
+          },
+          "defaultEnabled": true,
+          "sectionKey": "nav.aviation",
+          "section": {
+            "en": "Aviation",
+            "zhTW": "航空",
+            "zhTWFallback": false
+          },
+          "group": "aviationShipping",
+          "status": "implemented",
+          "tunables": []
+        }
+      ]
+    },
+    {
+      "key": "nav.shipping",
+      "title": {
+        "en": "Shipping & Cargo",
+        "zhTW": "船運與貨運",
+        "zhTWFallback": false
+      },
+      "features": [
+        {
+          "key": "feature.shipDock",
+          "id": "shipDock",
+          "setting": "ShipDockAssignmentEnabled",
+          "property": "ShipDockAssignmentEnabled",
+          "name": {
+            "en": "Ship dock assignment",
+            "zhTW": "船運碼頭分配",
+            "zhTWFallback": false
+          },
+          "description": {
+            "en": "Occupancy-aware dock assignment for cargo ships and passenger ferries - spreads traffic across a harbor's real dock capacity instead of vanilla's blind pathfind.",
+            "zhTW": "依佔用情況分配貨輪與客運渡輪的碼頭，把船運流量分散到港口真正的碼頭容量上，而不是擠在原版盲目挑中的同一個碼頭。",
+            "zhTWFallback": false
+          },
+          "defaultEnabled": true,
+          "sectionKey": "nav.shipping",
+          "section": {
+            "en": "Shipping & Cargo",
+            "zhTW": "船運與貨運",
+            "zhTWFallback": false
+          },
+          "group": "aviationShipping",
+          "status": "implemented",
+          "tunables": [
+            {
+              "key": "tune.dockCandidates",
+              "label": {
+                "en": "Dock candidates searched",
+                "zhTW": "碼頭搜尋候選數",
+                "zhTWFallback": false
+              },
+              "description": {
+                "en": "How many candidate points are probed around a harbor when spreading ships across its docks. Higher covers a bigger harbor more thoroughly but costs more to compute.",
+                "zhTW": "在港口周圍探測幾個候選點來分散船隻到各碼頭。數字越大涵蓋範圍越完整，但運算量也越高。",
+                "zhTWFallback": false
+              },
+              "setting": "ShipDockCandidateCount",
+              "property": "ShipDockCandidateCount",
+              "type": "int",
+              "defaultValue": 24,
+              "min": 8,
+              "max": 50,
+              "step": 1
+            },
+            {
+              "key": "tune.harborSaturation",
+              "label": {
+                "en": "Harbor saturation threshold",
+                "zhTW": "港口飽和閾值",
+                "zhTWFallback": false
+              },
+              "description": {
+                "en": "When the least-busy candidate dock is already at or above this occupancy, the harbor is treated as saturated and vanilla's own choice is left alone instead of forcing a still-crowded dock.",
+                "zhTW": "當佔用量最低的候選碼頭已經達到或超過這個值時，就視為該港口已飽和，改為保留原版自己的選擇，不強制塞進還很擁擠的碼頭。",
+                "zhTWFallback": false
+              },
+              "setting": "ShipDockSaturationThreshold",
+              "property": "ShipDockSaturationThreshold",
+              "type": "int",
+              "defaultValue": 25,
+              "min": 5,
+              "max": 60,
+              "step": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "nav.advanced",
+      "title": {
+        "en": "Advanced",
+        "zhTW": "進階",
+        "zhTWFallback": false
+      },
+      "features": [
+        {
+          "key": "feature.rerouteTiming",
+          "id": "rerouteTiming",
+          "setting": null,
+          "property": null,
+          "name": {
+            "en": "Reroute timing",
+            "zhTW": "改道時機",
+            "zhTWFallback": false
+          },
+          "description": {
+            "en": "Shared by every rerouting feature - these control how often vehicles reconsider their route, not whether they do.",
+            "zhTW": "所有改道功能共用的設定——這些控制的是車輛多常重新考慮路線，而不是要不要改道。",
+            "zhTWFallback": false
+          },
+          "defaultEnabled": null,
+          "sectionKey": "nav.advanced",
+          "section": {
+            "en": "Advanced",
+            "zhTW": "進階",
+            "zhTWFallback": false
+          },
+          "group": "publicTransport",
+          "status": "implemented",
+          "tunables": [
+            {
+              "key": "tune.rerouteCooldown",
+              "label": {
+                "en": "Reroute cooldown (seconds)",
+                "zhTW": "改道冷卻時間（秒）",
+                "zhTWFallback": false
+              },
+              "description": {
+                "en": "Minimum time a vehicle must wait after rerouting before it's allowed to reroute again, so it doesn't flip-flop between routes.",
+                "zhTW": "車輛改道後，至少要等這麼久才能再次改道，避免在兩條路線之間來回猶豫。",
+                "zhTWFallback": false
+              },
+              "setting": "RerouteCooldownSeconds",
+              "property": "RerouteCooldownSeconds",
+              "type": "int",
+              "defaultValue": 40,
+              "min": 5,
+              "max": 120,
+              "step": 5
+            },
+            {
+              "key": "tune.checkInterval",
+              "label": {
+                "en": "Check interval (frames)",
+                "zhTW": "檢查間隔（幀數）",
+                "zhTWFallback": false
+              },
+              "description": {
+                "en": "How often (in simulation frames) each vehicle's congestion is re-checked. Higher spreads the cost across more frames but reacts to new congestion more slowly.",
+                "zhTW": "每隔幾個模擬幀數重新檢查一次每台車的壅塞狀況。數值越大，運算量分散得越開，但對新壅塞的反應也越慢。",
+                "zhTWFallback": false
+              },
+              "setting": "RerouteCheckIntervalFrames",
+              "property": "RerouteCheckIntervalFrames",
+              "type": "int",
+              "defaultValue": 32,
+              "min": 1,
+              "max": 128,
+              "step": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "nav.experimental",
+      "title": {
+        "en": "Experimental",
+        "zhTW": "實驗功能",
+        "zhTWFallback": false
+      },
+      "features": [
+        {
+          "key": "feature.transitDwell",
+          "id": "transitDwell",
+          "setting": "TransitDwellShortenEnabled",
+          "property": "TransitDwellShortenEnabled",
+          "name": {
+            "en": "Shorten empty stop dwell",
+            "zhTW": "縮短空站停留時間",
+            "zhTWFallback": false
+          },
+          "description": {
+            "en": "A bus that reaches a stop with nobody waiting to board leaves sooner instead of idling for the full fixed dwell. The stop is still served and everyone present still boards - only the waiting time with nobody coming is cut. Has no effect while Improved Public Transport or Express Bus Services is installed - IPT bundles Express Bus Services and patches departure timing itself, so this stands down for either. Both mods already decide when vehicles depart, and two of them writing the same timer would fight.",
+            "zhTW": "巴士抵達沒有人等車的站點時提早離站，而不是固定停滿。仍然會停靠、仍然會載走現場所有乘客 —— 只縮短「沒有人再來」的那段等待。 安裝 Improved Public Transport 或 Express Bus Services 時本項無效 —— IPT 內含 Express Bus Services，本身也會改動離站時機，因此兩者任一存在時本項都會退讓。它們已經在決定車輛何時離站，兩邊同時寫同一個計時器會互相打架。",
+            "zhTWFallback": false
+          },
+          "defaultEnabled": false,
+          "sectionKey": "nav.experimental",
+          "section": {
+            "en": "Experimental",
+            "zhTW": "實驗功能",
+            "zhTWFallback": false
+          },
+          "group": "publicTransport",
+          "status": "experimental",
+          "tunables": []
+        },
+        {
+          "key": "feature.transitUnbunch",
+          "id": "transitUnbunch",
+          "setting": "TransitUnbunchEnabled",
+          "property": "TransitUnbunchEnabled",
+          "name": {
+            "en": "Unbunch vehicles on a line",
+            "zhTW": "疏散同線車輛聚集",
+            "zhTWFallback": false
+          },
+          "description": {
+            "en": "When a vehicle catches up with the one in front on the same line, it waits a little longer at the stop so the gap reopens - instead of the two running nose to tail with a long gap behind them. It holds back rather than skipping ahead, so no stop is ever passed and nobody is left behind. Has no effect while Improved Public Transport or Express Bus Services is installed - IPT bundles Express Bus Services and patches departure timing itself, so this stands down for either. Both mods already decide when vehicles depart, and two of them writing the same timer would fight.",
+            "zhTW": "同一條路線的車輛追上前車時，會在站點多停一會兒讓車距重新拉開，而不是兩輛首尾相接、後面留下一大段空窗。它採取「壓後」而非「超前」，所以不會有任何站被跳過，也不會有人被丟下。 安裝 Improved Public Transport 或 Express Bus Services 時本項無效 —— IPT 內含 Express Bus Services，本身也會改動離站時機，因此兩者任一存在時本項都會退讓。它們已經在決定車輛何時離站，兩邊同時寫同一個計時器會互相打架。",
+            "zhTWFallback": false
+          },
+          "defaultEnabled": false,
+          "sectionKey": "nav.experimental",
+          "section": {
+            "en": "Experimental",
+            "zhTW": "實驗功能",
+            "zhTWFallback": false
+          },
+          "group": "publicTransport",
+          "status": "experimental",
+          "tunables": []
+        },
+        {
+          "key": "feature.aircraftReroute",
+          "id": "aircraftReroute",
+          "setting": "AircraftRerouteEnabled",
+          "property": "AircraftRerouteEnabled",
+          "name": {
+            "en": "Mid-route rerouting",
+            "zhTW": "中途改道",
+            "zhTWFallback": false
+          },
+          "description": {
+            "en": "Aircraft reroute around real-time congestion while taxiing. Known not to work yet: measured taxiway congestion never comes close to the level that would trigger it, so this needs a different signal rather than a different setting.",
+            "zhTW": "飛機滑行時依即時壅塞情況改道。 已知目前無效：實測滑行道的壅塞程度從未接近觸發所需的水準，因此它需要的是別的判斷訊號，而不是別的設定值。",
+            "zhTWFallback": false
+          },
+          "defaultEnabled": false,
+          "sectionKey": "nav.experimental",
+          "section": {
+            "en": "Experimental",
+            "zhTW": "實驗功能",
+            "zhTWFallback": false
+          },
+          "group": "aviationShipping",
+          "status": "known-limitation",
+          "tunables": [
+            {
+              "key": "tune.rerouteDensity",
+              "label": {
+                "en": "Reroute density threshold",
+                "zhTW": "改道壅塞閾值",
+                "zhTWFallback": false
+              },
+              "description": {
+                "en": "How congested the road/track/lane ahead has to be (0-100) before a vehicle mid-trip reroutes around it. Lower = reroutes more eagerly.",
+                "zhTW": "前方道路/軌道/車道的壅塞度要達到多少（0-100）才會觸發車輛行駛途中改道。數值越低，改道越積極。",
+                "zhTWFallback": false
+              },
+              "setting": "AircraftRerouteDensityThreshold",
+              "property": "AircraftRerouteDensityThreshold",
+              "type": "int",
+              "defaultValue": 50,
+              "min": 30,
+              "max": 70,
+              "step": 5
+            }
+          ]
+        },
+        {
+          "key": "feature.emergencyReroute",
+          "id": "emergencyReroute",
+          "setting": "EmergencyRerouteEnabled",
+          "property": "EmergencyRerouteEnabled",
+          "name": {
+            "en": "Emergency vehicles reroute around jams",
+            "zhTW": "緊急車輛繞開壅塞",
+            "zhTWFallback": false
+          },
+          "description": {
+            "en": "Lets ambulances, fire trucks and police cars change route mid-journey when the road ahead is congested - the same thing every other road vehicle here already does. They were excluded until now. Off by default because it changes how emergency vehicles behave; turn it on if you see them queueing in traffic.",
+            "zhTW": "讓救護車、消防車、警車在前方路段壅塞時中途改道——這件事本模組對其他所有道路車輛早就在做，只有緊急車輛先前被排除在外。預設關閉，因為它改變緊急車輛的行為；若你看到它們卡在車陣中就打開它。",
+            "zhTWFallback": false
+          },
+          "defaultEnabled": false,
+          "sectionKey": "nav.experimental",
+          "section": {
+            "en": "Experimental",
+            "zhTW": "實驗功能",
+            "zhTWFallback": false
+          },
+          "group": "emergency",
+          "status": "experimental",
+          "tunables": []
+        },
+        {
+          "key": "feature.laneBottleneck",
+          "id": "laneBottleneck",
+          "setting": "LaneBottleneckDetectionEnabled",
+          "property": "LaneBottleneckDetectionEnabled",
+          "name": {
+            "en": "Detect lane-connectivity bottlenecks (log only)",
+            "zhTW": "偵測車道連接瓶頸（僅記錄）",
+            "zhTWFallback": false
+          },
+          "description": null,
+          "defaultEnabled": false,
+          "sectionKey": "nav.experimental",
+          "section": {
+            "en": "Experimental",
+            "zhTW": "實驗功能",
+            "zhTWFallback": false
+          },
+          "group": "road",
+          "status": "experimental",
+          "tunables": []
+        }
+      ]
+    }
+  ]
+}

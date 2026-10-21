@@ -1,0 +1,131 @@
+---
+import catalog from '../data/ai-improve.json';
+interface Props { locale?: 'en' | 'zh-tw'; }
+const { locale = 'en' } = Astro.props;
+const zh = locale === 'zh-tw';
+const text = (value) => value?.[zh ? 'zhTW' : 'en'] ?? '';
+const allFeatures = catalog.sections.flatMap((section) => section.features).filter((feature) => feature.group);
+const groups = [
+	{ id: 'road', label: zh ? '道路' : 'Road' },
+	{ id: 'rail', label: zh ? '鐵路' : 'Rail' },
+	{ id: 'aviationShipping', label: zh ? '航空與海運' : 'Aviation & Shipping' },
+	{ id: 'emergency', label: zh ? '緊急服務' : 'Emergency' },
+	{ id: 'sanitation', label: zh ? '環境衛生' : 'Sanitation' },
+	{ id: 'citizens', label: zh ? '市民' : 'Citizens' },
+	{ id: 'publicTransport', label: zh ? '公共運輸' : 'Public transport' },
+];
+const firstFeature = allFeatures.find((feature) => feature.group === 'road') ?? allFeatures[0];
+const enabledLabel = (enabled) => enabled === null ? (zh ? '數值設定' : 'Tuning only') : enabled ? (zh ? '預設開啟' : 'On by default') : (zh ? '預設關閉' : 'Off by default');
+---
+
+<section class="explorer" data-feature-explorer data-ready="false">
+	<p class="demo-note">{zh ? '功能資料直接由 AI Improve 原始碼擷取。動畫為示意，並非遊戲畫面。' : 'Feature labels and defaults come from AI Improve source. The animation is an illustration, not a game screenshot.'}</p>
+	<div class="feature-filter" role="tablist" aria-label={zh ? '按類別瀏覽功能' : 'Browse features by category'}>
+		{groups.map((group, index) => <button type="button" role="tab" id={'feature-tab-' + group.id} aria-controls={'feature-panel-' + group.id} aria-selected={index === 0 ? 'true' : 'false'} tabindex={index === 0 ? 0 : -1} data-group-tab={group.id}>{group.label}</button>)}
+	</div>
+	<div class="explorer-layout">
+		<div class="feature-groups">
+			{groups.map((group) => {
+				const features = allFeatures.filter((feature) => feature.group === group.id);
+				return <section id={'feature-panel-' + group.id} class="feature-group" role="tabpanel" aria-labelledby={'feature-tab-' + group.id} data-feature-group={group.id} tabindex="0">
+					<h3>{group.label}</h3>
+					{features.length ? features.map((feature) => <details class="feature-card" data-feature-card data-group={group.id} data-feature-key={feature.key}>
+						<summary><span>{text(feature.name)}</span><small>{enabledLabel(feature.defaultEnabled)}</small></summary>
+						<p>{text(feature.description) || (zh ? '原始碼沒有提供說明。' : 'No description is present in the source localization.')}</p>
+						{feature.status === 'known-limitation' && <p class="feature-status warning">{zh ? '已知限制：目前測得的滑行道壅塞訊號不足以觸發改道。' : 'Known limitation: the measured taxiway congestion signal is not sufficient to trigger this behaviour.'}</p>}
+						{feature.status === 'experimental' && <p class="feature-status">{zh ? '實驗性功能：原始碼將此項目列於 Experimental。' : 'Experimental: the source places this item in the Experimental section.'}</p>}
+						{feature.tunables.length > 0 && <ul class="tuning-list">{feature.tunables.map((item) => <li><strong>{text(item.label)}:</strong> {item.defaultValue}{item.type === 'int' && item.key.includes('Percent') ? '%' : ''} <span>({zh ? '預設值' : 'default'})</span></li>)}</ul>}
+					</details>) : <p class="empty-note">{zh ? '目前沒有獨立功能項目。' : 'No individual feature is listed in this group.'}</p>}
+				</section>;
+			})}
+		</div>
+		<aside class="feature-illustration" aria-live="polite">
+			<p class="section-label">{zh ? '功能示意' : 'Feature illustration'}</p>
+			<svg viewBox="0 0 560 250" role="img" aria-label={zh ? '城市路網與紅色替代路線示意' : 'Illustration of a city road grid with a red alternate route'}>
+				<rect x="0" y="0" width="560" height="250" fill="var(--city-ground)" />
+				<path d="M0 44h560M0 128h560M0 212h560M72 0v250M196 0v250M322 0v250M448 0v250" stroke="var(--city-road)" stroke-width="30" />
+				<path d="M0 128h184l62-84h108l64 84h142" fill="none" stroke="var(--route)" stroke-width="8" stroke-linecap="round" stroke-dasharray="18 12" class="route-dash" />
+				<circle cx="184" cy="128" r="9" fill="var(--ink)" /><circle cx="418" cy="128" r="9" fill="var(--ink)" />
+				<path d="M252 34l14 10-14 10" fill="none" stroke="var(--route)" stroke-width="5" />
+			</svg>
+			<h3 data-selected-title>{text(firstFeature?.name)}</h3>
+			<p data-selected-description>{text(firstFeature?.description)}</p>
+			<p class="art-note">{zh ? '紅線是抽象路線示意，不代表特定遊戲結果。' : 'The red line is an abstract route illustration, not a recorded game result.'}</p>
+		</aside>
+	</div>
+	<noscript><p class="notice">{zh ? 'JavaScript 已關閉：以下所有類別和功能說明仍可直接展開閱讀。' : 'JavaScript is off: every category and feature description remains available below.'}</p></noscript>
+</section>
+
+<script>
+	const root = document.querySelector<HTMLElement>('[data-feature-explorer]');
+	if (root) {
+		root.dataset.ready = 'true';
+		const tabs = [...root.querySelectorAll<HTMLButtonElement>('[data-group-tab]')];
+		const groups = [...root.querySelectorAll<HTMLElement>('[data-feature-group]')];
+		const cards = [...root.querySelectorAll<HTMLDetailsElement>('[data-feature-card]')];
+		const title = root.querySelector<HTMLElement>('[data-selected-title]');
+		const description = root.querySelector<HTMLElement>('[data-selected-description]');
+		const textKey = document.documentElement.lang === 'zh-TW' ? 'zhTW' : 'en';
+		function selectTab(tab: HTMLButtonElement, focus = false) {
+			tabs.forEach((item) => { const active = item === tab; item.setAttribute('aria-selected', String(active)); item.tabIndex = active ? 0 : -1; });
+			groups.forEach((group) => { group.hidden = group.dataset.featureGroup !== tab.dataset.groupTab; });
+			const first = cards.find((card) => card.dataset.group === tab.dataset.groupTab);
+			if (first) showCard(first);
+			if (focus) tab.focus();
+		}
+		function showCard(card: HTMLDetailsElement) {
+			const summary = card.querySelector('summary span');
+			const body = card.querySelector('summary + p');
+			if (title && summary) title.textContent = summary.textContent || '';
+			if (description && body) description.textContent = body.textContent || '';
+			cards.forEach((item) => item.classList.toggle('is-selected', item === card));
+		}
+		tabs.forEach((tab, index) => {
+			tab.addEventListener('click', () => selectTab(tab));
+			tab.addEventListener('keydown', (event) => {
+				let next = index;
+				if (event.key === 'ArrowRight') next = (index + 1) % tabs.length;
+				else if (event.key === 'ArrowLeft') next = (index - 1 + tabs.length) % tabs.length;
+				else if (event.key === 'Home') next = 0;
+				else if (event.key === 'End') next = tabs.length - 1;
+				else return;
+				event.preventDefault(); selectTab(tabs[next], true);
+			});
+		});
+		cards.forEach((card) => card.querySelector('summary')?.addEventListener('click', () => showCard(card)));
+		const active = tabs.find((tab) => tab.getAttribute('aria-selected') === 'true');
+		if (active) selectTab(active);
+	}
+</script>
+
+<style>
+	.explorer { margin-top: 24px; }
+	.demo-note, .empty-note { color: var(--muted); font-size: 14px; }
+	.feature-filter { display: none; flex-wrap: wrap; gap: 7px; margin: 18px 0 14px; }
+	[data-ready='true'] .feature-filter { display: flex; }
+	.feature-filter button { min-height: 42px; padding: 8px 13px; border: 0; background: var(--surface); }
+	.feature-filter button[aria-selected='true'] { background: var(--ink); color: var(--ground); }
+	.explorer-layout { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(240px, .9fr); gap: 14px; align-items: start; }
+	.feature-groups { min-width: 0; }
+	.feature-group { display: grid; gap: 8px; }
+	[data-ready='true'] .feature-group:not([hidden]) { padding-top: 9px; }
+	.feature-group > h3 { margin: 5px 0 6px; font-size: 22px; }
+	[data-ready='true'] .feature-group[hidden] { display: none; }
+	.feature-card { padding: 0 14px 12px; background: var(--ground); }
+	.feature-card summary { display: flex; justify-content: space-between; gap: 12px; padding: 13px 0 8px; cursor: pointer; font-weight: 700; }
+	.feature-card summary small { flex: none; color: var(--muted); font-size: 11px; font-weight: 600; }
+	.feature-card p, .feature-status { color: var(--muted); font-size: 13px; }
+	.feature-card .warning { margin-top: 8px; color: var(--route); }
+	.tuning-list { margin: 10px 0 0; padding-left: 1.2rem; font-size: 12px; }
+	.tuning-list span { color: var(--muted); }
+	.feature-illustration { position: sticky; top: 20px; padding: 15px; background: var(--ground); }
+	.feature-illustration svg { width: 100%; margin: 12px 0; }
+	.feature-illustration h3 { font: 700 18px/1.3 var(--text); letter-spacing: 0; }
+	.feature-illustration > p:not(.section-label):not(.art-note) { margin-top: 7px; color: var(--muted); font-size: 13px; }
+	.feature-illustration .art-note { margin-top: 12px; font-size: 11px; }
+	.route-dash { animation: route-flow 10s linear infinite; }
+	.feature-card.is-selected { outline: 1px solid var(--route); }
+	@keyframes route-flow { to { stroke-dashoffset: -120; } }
+	@media (max-width: 760px) { .explorer-layout { grid-template-columns: 1fr; } .feature-illustration { position: static; grid-row: 1; } }
+	@media (prefers-reduced-motion: reduce) { .route-dash { animation: none; } }
+</style>
