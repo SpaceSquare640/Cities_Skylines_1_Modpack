@@ -1,10 +1,10 @@
 [h1]Automated Public Transport Planning – Development Version[/h1]
-[b]This is the testing build.[/b] It is updated automatically with every change, before the [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3823739383]Release Version[/url]. It may be unstable. For normal play, use the Release Version.
+[b]This is a public testing build and may change your save.[/b] Back up your save before using any Spike test tools. It is updated automatically with every change, before the [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3823739383]Release Version[/url]. It may be unstable. For normal play, use the Release Version.
 
 [b]Never subscribe to both versions.[/b] They are the same mod and will conflict.
 
 [h2]Developer tools are included[/h2]
-Besides the read-only diagnostics, this build contains a save round-trip test that [b]creates and removes test bus lines in the loaded city[/b]. Its buttons stay disabled until you tick the confirmation box in the mod settings. Only use it on a copy of your save.
+Besides the read-only diagnostics, this build contains a save round-trip test that [b]creates test bus lines in the loaded city[/b]. The create button stays disabled until you arm it in the mod settings, then shows a separate confirmation dialog on every click. The dialog explains the change and reminds you to back up first. The remove button is disabled because deleting a route cannot be undone by this tool. Only use the test tools on a backup copy of your save.
 
 Automatic bus line planning is not available yet.
 

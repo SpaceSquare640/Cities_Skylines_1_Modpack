@@ -148,16 +148,15 @@ namespace AutomatedPublicTransportPlanning
 #endif
 
 #if DEVTOOLS
-            // Throwaway controls for the save round-trip spike. These write to the
-            // loaded city, so they are kept in their own clearly labelled group and
-            // will be removed once the spike has served its purpose.
+            // Throwaway controls for the save round-trip spike. Creating a test line
+            // changes the loaded city and requires a fresh confirmation on every
+            // click. The destructive remove operation is disabled because deleted
+            // routes cannot be restored by this tool.
             //
-            // Buttons 1 and 3 change the player's city, and this settings page is
-            // reachable by anyone who merely opens the content manager. They are
-            // therefore disarmed until the checkbox below is ticked, so that no single
-            // stray click can alter a save. The arming resets every time the page is
-            // opened; it is deliberately not remembered.
+            // The create button also remains disarmed until the checkbox is ticked.
+            // Arming resets every time the page is opened and is not remembered.
             s_spikeArmed = false;
+            s_spikeCreateButton = null;
 
             UIHelperBase spike = helper.AddGroup(Loc.Get(Strings.GroupSpike));
 
@@ -166,15 +165,30 @@ namespace AutomatedPublicTransportPlanning
                                    Strings.CheckSpikeArm);
             TrackGroupTitle(arm, Strings.GroupSpike);
 
-            Track(spike.AddButton(Loc.Get(Strings.ButtonSpikeCreate),
-                  Guarded("create test line", ArmedOnly(SaveRoundTripSpike.CreateTestLine))) as UIButton,
-                  Strings.ButtonSpikeCreate);
+            s_spikeCreateButton = Track(spike.AddButton(Loc.Get(Strings.ButtonSpikeCreate),
+                Guarded("create test line confirmation",
+                    ConfirmedEveryClick(Strings.SpikeConfirmTitle, Strings.SpikeConfirmCreate,
+                        Guarded("create test line", ArmedOnly(SaveRoundTripSpike.CreateTestLine))))) as UIButton,
+                Strings.ButtonSpikeCreate);
+            if (s_spikeCreateButton != null)
+            {
+                s_spikeCreateButton.isEnabled = false;
+            }
+
             Track(spike.AddButton(Loc.Get(Strings.ButtonSpikeReport),
                   Guarded("report test lines", SaveRoundTripSpike.ReportTestLines)) as UIButton,
                   Strings.ButtonSpikeReport);
-            Track(spike.AddButton(Loc.Get(Strings.ButtonSpikeRemove),
-                  Guarded("remove test lines", ArmedOnly(SaveRoundTripSpike.RemoveTestLines))) as UIButton,
-                  Strings.ButtonSpikeRemove);
+
+            UIButton removeTestLines = Track(spike.AddButton(Loc.Get(Strings.ButtonSpikeRemove),
+                Guarded("disabled test line removal", delegate
+                {
+                    Log.Warning("Test line removal is disabled because deleted routes cannot be restored by this tool.");
+                })) as UIButton, Strings.ButtonSpikeRemove);
+            if (removeTestLines != null)
+            {
+                removeTestLines.isEnabled = false;
+            }
+
 #endif
         }
 
@@ -290,14 +304,20 @@ namespace AutomatedPublicTransportPlanning
         /// because OnSettingsUI hands the game delegates that outlive this call.
         /// </summary>
         private static bool s_spikeArmed;
+        private static UIButton s_spikeCreateButton;
 
         private static void OnSpikeArmedChanged(bool isChecked)
         {
             Log.Guard("spike arming", delegate
             {
                 s_spikeArmed = isChecked;
+                if (s_spikeCreateButton != null)
+                {
+                    s_spikeCreateButton.isEnabled = isChecked;
+                }
+
                 Log.Info(isChecked
-                    ? "Spike buttons armed. Buttons 1 and 3 will now change the loaded city."
+                    ? "Spike create button armed. Every click still requires confirmation."
                     : "Spike buttons disarmed.");
             });
         }
@@ -317,6 +337,26 @@ namespace AutomatedPublicTransportPlanning
                 }
 
                 handler();
+            };
+        }
+
+        /// <summary>
+        /// Shows a new confirmation dialog for every click. The action runs only
+        /// from the affirmative callback; cancellation has no side effects.
+        /// </summary>
+        private static OnButtonClicked ConfirmedEveryClick(string titleKey, string messageKey,
+                                                           OnButtonClicked onConfirm)
+        {
+            return delegate
+            {
+                ConfirmPanel.ShowModal(Loc.Get(titleKey), Loc.Get(messageKey),
+                    delegate(UIComponent component, int result)
+                    {
+                        if (result == 1)
+                        {
+                            onConfirm();
+                        }
+                    });
             };
         }
 #endif

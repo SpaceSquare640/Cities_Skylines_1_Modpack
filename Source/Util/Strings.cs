@@ -63,6 +63,8 @@ namespace AutomatedPublicTransportPlanning.Util
         public const string ButtonSpikeCreate = "btn.spikeCreate";
         public const string ButtonSpikeReport = "btn.spikeReport";
         public const string ButtonSpikeRemove = "btn.spikeRemove";
+        public const string SpikeConfirmTitle = "spike.confirm.title";
+        public const string SpikeConfirmCreate = "spike.confirm.create";
 #endif
 
         internal static Dictionary<string, Dictionary<string, string>> BuildTables()
@@ -105,10 +107,12 @@ namespace AutomatedPublicTransportPlanning.Util
 #endif
 #if DEVTOOLS
             d[GroupSpike] = "Spike 1 - save round trip (writes to your city)";
-            d[CheckSpikeArm] = "Enable these buttons - they change the city you have loaded";
+            d[CheckSpikeArm] = "Arm the create button; every click still asks for confirmation";
             d[ButtonSpikeCreate] = "1. Create a test bus line";
             d[ButtonSpikeReport] = "2. Report test lines";
-            d[ButtonSpikeRemove] = "3. Remove test lines";
+            d[ButtonSpikeRemove] = "3. Remove test lines (disabled: cannot undo)";
+            d[SpikeConfirmTitle] = "Create test bus line?";
+            d[SpikeConfirmCreate] = "This creates one APTP Test bus line with 3 to 6 stops on existing roads. The line can later be deleted in the game's public transport controls, but simulation changes while it runs cannot be rolled back. Back up your save before continuing. Continue?";
 #endif
             return d;
         }
@@ -133,10 +137,12 @@ namespace AutomatedPublicTransportPlanning.Util
 #endif
 #if DEVTOOLS
             d[GroupSpike] = "Spike 1 - 存檔往返測試（會寫入你的城市）";
-            d[CheckSpikeArm] = "啟用這些按鈕 - 它們會變更你已載入的城市";
+            d[CheckSpikeArm] = "啟用建立按鈕；每次按下仍會再次要求確認";
             d[ButtonSpikeCreate] = "1. 建立測試公車路線";
             d[ButtonSpikeReport] = "2. 回報測試路線";
-            d[ButtonSpikeRemove] = "3. 移除測試路線";
+            d[ButtonSpikeRemove] = "3. 移除測試路線（已停用：無法還原）";
+            d[SpikeConfirmTitle] = "要建立測試公車路線嗎？";
+            d[SpikeConfirmCreate] = "這會在現有道路上建立一條有 3 至 6 個站點的 APTP Test 公車路線。稍後可在遊戲大眾運輸介面刪除該路線，但路線運行期間造成的模擬變化無法還原。繼續前請先備份存檔。要繼續嗎？";
 #endif
             return d;
         }
@@ -161,10 +167,12 @@ namespace AutomatedPublicTransportPlanning.Util
 #endif
 #if DEVTOOLS
             d[GroupSpike] = "Spike 1 - 存档往返测试（会写入你的城市）";
-            d[CheckSpikeArm] = "启用这些按钮 - 它们会更改你已载入的城市";
+            d[CheckSpikeArm] = "启用创建按钮；每次点击仍会再次要求确认";
             d[ButtonSpikeCreate] = "1. 创建测试公交线路";
             d[ButtonSpikeReport] = "2. 报告测试线路";
-            d[ButtonSpikeRemove] = "3. 移除测试线路";
+            d[ButtonSpikeRemove] = "3. 移除测试线路（已停用：无法还原）";
+            d[SpikeConfirmTitle] = "要创建测试公交线路吗？";
+            d[SpikeConfirmCreate] = "这会在现有道路上创建一条包含 3 至 6 个站点的 APTP Test 公交线路。之后可在游戏公共交通界面删除该线路，但线路运行期间造成的模拟变化无法还原。继续前请先备份存档。要继续吗？";
 #endif
             return d;
         }
@@ -189,10 +197,12 @@ namespace AutomatedPublicTransportPlanning.Util
 #endif
 #if DEVTOOLS
             d[GroupSpike] = "Spike 1 - セーブ往復テスト（都市に書き込みます）";
-            d[CheckSpikeArm] = "これらのボタンを有効にする - 読み込み中の都市が変更されます";
+            d[CheckSpikeArm] = "作成ボタンを有効にします。クリックするたびに確認が表示されます";
             d[ButtonSpikeCreate] = "1. テストバス路線を作成";
             d[ButtonSpikeReport] = "2. テスト路線を報告";
-            d[ButtonSpikeRemove] = "3. テスト路線を削除";
+            d[ButtonSpikeRemove] = "3. テスト路線を削除（復元不可のため無効）";
+            d[SpikeConfirmTitle] = "テスト用バス路線を作成しますか？";
+            d[SpikeConfirmCreate] = "既存の道路に3～6か所の停留所を持つ APTP Test のバス路線を1本作成します。路線は後でゲームの公共交通画面から削除できますが、運行中に起きたシミュレーションの変化は元に戻せません。続行する前にセーブデータをバックアップしてください。続行しますか？";
 #endif
             return d;
         }
@@ -217,10 +227,12 @@ namespace AutomatedPublicTransportPlanning.Util
 #endif
 #if DEVTOOLS
             d[GroupSpike] = "Spike 1 - 저장 왕복 테스트 (도시에 기록됩니다)";
-            d[CheckSpikeArm] = "이 버튼들을 활성화 - 불러온 도시가 변경됩니다";
+            d[CheckSpikeArm] = "생성 버튼을 활성화합니다. 클릭할 때마다 다시 확인합니다";
             d[ButtonSpikeCreate] = "1. 테스트 버스 노선 생성";
             d[ButtonSpikeReport] = "2. 테스트 노선 보고";
-            d[ButtonSpikeRemove] = "3. 테스트 노선 제거";
+            d[ButtonSpikeRemove] = "3. 테스트 노선 제거 (복구 불가로 비활성화)";
+            d[SpikeConfirmTitle] = "테스트 버스 노선을 생성할까요?";
+            d[SpikeConfirmCreate] = "기존 도로에 정류장 3~6개가 있는 APTP Test 버스 노선 한 개를 생성합니다. 노선은 게임의 대중교통 화면에서 나중에 삭제할 수 있지만, 운행 중 발생한 시뮬레이션 변화는 되돌릴 수 없습니다. 계속하기 전에 저장 파일을 백업하세요. 계속할까요?";
 #endif
             return d;
         }
@@ -245,10 +257,12 @@ namespace AutomatedPublicTransportPlanning.Util
 #endif
 #if DEVTOOLS
             d[GroupSpike] = "Spike 1 - Speicher-Rundlauf (schreibt in Ihre Stadt)";
-            d[CheckSpikeArm] = "Diese Schaltflächen aktivieren - sie verändern die geladene Stadt";
+            d[CheckSpikeArm] = "Erstellen-Schaltfläche aktivieren; jeder Klick erfordert erneut eine Bestätigung";
             d[ButtonSpikeCreate] = "1. Testbuslinie erstellen";
             d[ButtonSpikeReport] = "2. Testlinien melden";
-            d[ButtonSpikeRemove] = "3. Testlinien entfernen";
+            d[ButtonSpikeRemove] = "3. Testlinien entfernen (deaktiviert: nicht wiederherstellbar)";
+            d[SpikeConfirmTitle] = "Testbuslinie erstellen?";
+            d[SpikeConfirmCreate] = "Es wird eine APTP-Testbuslinie mit 3 bis 6 Haltestellen auf vorhandenen Straßen erstellt. Die Linie kann später in der ÖPNV-Ansicht des Spiels gelöscht werden, aber Simulationsänderungen während des Betriebs lassen sich nicht rückgängig machen. Sichern Sie Ihren Spielstand, bevor Sie fortfahren. Fortfahren?";
 #endif
             return d;
         }
@@ -273,10 +287,12 @@ namespace AutomatedPublicTransportPlanning.Util
 #endif
 #if DEVTOOLS
             d[GroupSpike] = "Spike 1 - aller-retour de sauvegarde (écrit dans votre ville)";
-            d[CheckSpikeArm] = "Activer ces boutons - ils modifient la ville chargée";
+            d[CheckSpikeArm] = "Activer le bouton de création ; chaque clic demandera une nouvelle confirmation";
             d[ButtonSpikeCreate] = "1. Créer une ligne de bus de test";
             d[ButtonSpikeReport] = "2. Signaler les lignes de test";
-            d[ButtonSpikeRemove] = "3. Supprimer les lignes de test";
+            d[ButtonSpikeRemove] = "3. Supprimer les lignes de test (désactivé : irréversible)";
+            d[SpikeConfirmTitle] = "Créer une ligne de bus de test ?";
+            d[SpikeConfirmCreate] = "Cela créera une ligne de bus APTP Test avec 3 à 6 arrêts sur des routes existantes. La ligne pourra être supprimée dans l'interface de transport du jeu, mais les changements de simulation survenus pendant son fonctionnement ne pourront pas être annulés. Sauvegardez votre partie avant de continuer. Continuer ?";
 #endif
             return d;
         }
@@ -301,10 +317,12 @@ namespace AutomatedPublicTransportPlanning.Util
 #endif
 #if DEVTOOLS
             d[GroupSpike] = "Spike 1 - ida y vuelta de guardado (escribe en tu ciudad)";
-            d[CheckSpikeArm] = "Activar estos botones - modifican la ciudad que tienes cargada";
+            d[CheckSpikeArm] = "Activar el botón de creación; cada clic volverá a pedir confirmación";
             d[ButtonSpikeCreate] = "1. Crear una línea de autobús de prueba";
             d[ButtonSpikeReport] = "2. Informar de las líneas de prueba";
-            d[ButtonSpikeRemove] = "3. Eliminar las líneas de prueba";
+            d[ButtonSpikeRemove] = "3. Eliminar líneas de prueba (desactivado: irreversible)";
+            d[SpikeConfirmTitle] = "¿Crear una línea de autobús de prueba?";
+            d[SpikeConfirmCreate] = "Esto creará una línea de autobús APTP Test con 3 a 6 paradas en carreteras existentes. Más tarde se puede eliminar desde la interfaz de transporte público del juego, pero no se pueden revertir los cambios de simulación producidos mientras funcione. Haz una copia de seguridad de la partida antes de continuar. ¿Continuar?";
 #endif
             return d;
         }
@@ -329,10 +347,12 @@ namespace AutomatedPublicTransportPlanning.Util
 #endif
 #if DEVTOOLS
             d[GroupSpike] = "Spike 1 - ida e volta de salvamento (escreve na sua cidade)";
-            d[CheckSpikeArm] = "Ativar estes botões - eles alteram a cidade carregada";
+            d[CheckSpikeArm] = "Ativar o botão de criação; cada clique pedirá confirmação novamente";
             d[ButtonSpikeCreate] = "1. Criar uma linha de ônibus de teste";
             d[ButtonSpikeReport] = "2. Relatar as linhas de teste";
-            d[ButtonSpikeRemove] = "3. Remover as linhas de teste";
+            d[ButtonSpikeRemove] = "3. Remover linhas de teste (desativado: irreversível)";
+            d[SpikeConfirmTitle] = "Criar uma linha de ônibus de teste?";
+            d[SpikeConfirmCreate] = "Isso criará uma linha de ônibus APTP Test com 3 a 6 paradas em vias existentes. Depois, ela poderá ser removida na interface de transporte público do jogo, mas as mudanças na simulação ocorridas enquanto ela funcionar não poderão ser revertidas. Faça backup do seu jogo salvo antes de continuar. Continuar?";
 #endif
             return d;
         }
@@ -357,10 +377,12 @@ namespace AutomatedPublicTransportPlanning.Util
 #endif
 #if DEVTOOLS
             d[GroupSpike] = "Spike 1 - цикл сохранения и загрузки (записывает в ваш город)";
-            d[CheckSpikeArm] = "Включить эти кнопки - они изменяют загруженный город";
+            d[CheckSpikeArm] = "Включить кнопку создания; каждое нажатие потребует нового подтверждения";
             d[ButtonSpikeCreate] = "1. Создать тестовый автобусный маршрут";
             d[ButtonSpikeReport] = "2. Отчёт по тестовым маршрутам";
-            d[ButtonSpikeRemove] = "3. Удалить тестовые маршруты";
+            d[ButtonSpikeRemove] = "3. Удалить тестовые маршруты (отключено: восстановление невозможно)";
+            d[SpikeConfirmTitle] = "Создать тестовый автобусный маршрут?";
+            d[SpikeConfirmCreate] = "Будет создан один автобусный маршрут APTP Test с 3–6 остановками на существующих дорогах. Позже маршрут можно удалить в меню транспорта игры, но изменения симуляции, произошедшие во время его работы, отменить нельзя. Перед продолжением создайте резервную копию сохранения. Продолжить?";
 #endif
             return d;
         }
@@ -385,10 +407,12 @@ namespace AutomatedPublicTransportPlanning.Util
 #endif
 #if DEVTOOLS
             d[GroupSpike] = "Spike 1 - test zapisu i wczytania (zapisuje w Twoim mieście)";
-            d[CheckSpikeArm] = "Włącz te przyciski - zmieniają wczytane miasto";
+            d[CheckSpikeArm] = "Aktywuj przycisk tworzenia; każde kliknięcie ponownie wyświetli prośbę o potwierdzenie";
             d[ButtonSpikeCreate] = "1. Utwórz testową linię autobusową";
             d[ButtonSpikeReport] = "2. Zgłoś linie testowe";
-            d[ButtonSpikeRemove] = "3. Usuń linie testowe";
+            d[ButtonSpikeRemove] = "3. Usuń linie testowe (wyłączone: brak możliwości przywrócenia)";
+            d[SpikeConfirmTitle] = "Czy utworzyć testową linię autobusową?";
+            d[SpikeConfirmCreate] = "Utworzona zostanie jedna linia autobusowa APTP Test z 3–6 przystankami na istniejących drogach. Później można ją usunąć w interfejsie transportu publicznego gry, ale zmian symulacji, które nastąpią podczas jej działania, nie można cofnąć. Przed kontynuowaniem wykonaj kopię zapasową zapisu gry. Kontynuować?";
 #endif
             return d;
         }
