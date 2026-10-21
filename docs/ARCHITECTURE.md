@@ -4,12 +4,12 @@
 
 **Evidence labels:** `[Verified]` means confirmed from this branch's files, the installed game assembly metadata, or the requested static build. `[Inferred]` means a design proposal or an assumption that still needs validation in the game and its Unity Mono runtime.
 
-## Current 0.1.0 Preview
+## Current 0.3.0 Preview
 
 - `[Verified]` The mod targets .NET Framework 3.5 and references `ICities.dll`, `ColossalManaged.dll`, `Assembly-CSharp.dll`, and `UnityEngine.dll` from the configured game installation. These references are not copied beside the mod DLL.
 - `[Verified]` The `IUserMod` entry point exposes the name, an honest early-preview description, and a settings page with English and Traditional Chinese strings. Missing or unsupported locale codes fall back to English.
-- `[Verified]` The optional city-summary action queues reads of population, player funds, and the in-game date through `SimulationManager.AddAction`. The callback catches exceptions and writes the summary only through the game's log API.
-- `[Verified]` The 0.1.0 source has no HTTP, socket, listener, API-key, save-file, Harmony, or game-state mutation code. The project has no target that copies the build into a Mods folder.
+- `[Verified]` The optional schemaVersion 1 snapshot queues reads of the HUD population, funds in cents, game date, and three demand values through `SimulationManager.AddAction`. The callback catches exceptions and writes one aggregate summary only through the game's log API.
+- `[Verified]` The 0.3.0 source has no model connection, network client or listener, API-key, save-file write, Harmony, or game-state mutation code. The project has no target that copies the build into a Mods folder.
 - `[Inferred]` Static compilation and assembly inspection cannot prove that the mod loads, that the callback runs on the expected thread in every game state, or that the chosen values match the in-game UI. Verify those behaviors in a disposable city before a public release.
 
 ## Bridge Options
@@ -52,6 +52,7 @@
 - `[Inferred]` Keep the default mode read-only. Require explicit consent before any data leaves the game process and before enabling any action. Show the destination, data categories, and action scope in the UI.
 - `[Inferred]` Keep API keys exclusively in the companion's protected credential store. Redact authorization headers, prompts containing secrets, and provider responses from logs. Apply request deadlines, response-size limits, and cancellation so a stalled model cannot stall the simulation.
 - `[Inferred]` Treat transport failure, malformed data, companion restarts, and model refusal as no-op outcomes. Fail closed: no response or invalid response must never create or repeat an action.
+- `[Verified]` The detailed future data allowlist, consent, retention, deletion, credential, and log-redaction proposal is documented in `docs/AI_DATA_BOUNDARY.md`. It does not enable a connection or authorize implementation.
 
 ## .NET 3.5 and Unity Mono Constraints
 
