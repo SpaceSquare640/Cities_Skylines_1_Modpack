@@ -2,6 +2,12 @@
 
 Author: OpenAI-Codex
 
+## 2026-10-21 — Workshop preview images per edition
+
+- Each Workshop item now has its own preview image: Release and Development Versions are marked with a version badge.
+- Upload workflows prefill the matching image for their edition. The images are JPG copies of the new artwork, each under Steam's 1 MB limit.
+- The new images appear on each Workshop page after that item's next upload.
+- Author: Anthropic-Claude_Code.
 ## 2026-10-21 — New website and wiki
 
 - Rebuilt the website with Astro and Starlight as a product site plus a bilingual (English and Traditional Chinese) wiki with search. It is built from the `site/` folder and deployed to GitHub Pages by a workflow on every change.

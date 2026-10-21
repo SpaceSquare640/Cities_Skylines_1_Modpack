@@ -28,7 +28,7 @@ on:
         description: Preview filename inside Resource/Icon/Uses_icon/JPG/
         type: string
         required: true
-        default: Cities_Skylines_1_AI_Improve_Icon_Kingsley.jpg
+        default: Cities_Skylines_1_AI_Improve_Development_Version.jpg
       change_note:
         description: Optional Workshop change note
         type: string

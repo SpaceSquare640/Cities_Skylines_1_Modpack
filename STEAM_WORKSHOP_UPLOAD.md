@@ -46,7 +46,7 @@ The mods compile against Cities: Skylines managed DLLs, and the upload needs Ste
 
 1. Install a Windows GitHub Actions runner for this repository with the cs1-workshop label. Do not add pull request triggers to any job that uses it.
 2. Provide pwsh, the .NET SDK (AI Improve, AI Gaming) and Visual Studio or Build Tools with MSBuild (Transport; found through vswhere when not on PATH). Set CITIES_SKYLINES_DIR to the game folder.
-3. Set MODPACK_ROOT to the local Cities_Skyline_1_Modpack folder. Preview images are read from `Resource/Icon/Uses_icon/JPG/` and must be at most 1 MB (Steam's preview limit); the PNG originals in `Uses_icon/PNG/` are larger and are not used. Preview images stay local and are not committed.
+3. Set MODPACK_ROOT to the local Cities_Skyline_1_Modpack folder. Preview images are read from `Resource/Icon/Uses_icon/JPG/` and must be at most 1 MB (Steam's preview limit). Each module has a Release and a Development image (for example `Cities_Skylines_1_AI_Improve_Release_Version.jpg`), converted from the PNG originals in `Uses_icon/PNG/`, which are larger and are not used. Each workflow prefills the image for its edition. Preview images stay local and are not committed.
 4. Install SteamCMD in a persistent folder; set STEAMCMD_EXE to its executable and STEAMCMD_USERNAME to the account name. Under the same Windows account that runs the runner, complete one interactive SteamCMD login with Steam Guard. Keep SteamCMD's `config/config.vdf`; never commit or upload it. If the saved login expires, uploads fail until it is renewed interactively.
 5. Builds never copy into the runner account's own Mods folder: AI Improve's copy goes to the job's package folder and Transport's deploy step is disabled with an empty ModsDir.
 

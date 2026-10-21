@@ -78,7 +78,7 @@ if (-not (Test-Path -LiteralPath $managedAssembly -PathType Leaf)) {
 }
 
 $modpackRoot = [IO.Path]::GetFullPath($env:MODPACK_ROOT)
-# Workshop previews come from the JPG set: the PNG originals in Uses_icon\PNG are 1.4-1.9 MB, over
+# Workshop previews come from the JPG set: the PNG originals in Uses_icon\PNG are 1.8-2.1 MB, over
 # Steam's 1 MB preview limit.
 $iconRoot = [IO.Path]::GetFullPath((Join-Path $modpackRoot 'Resource\Icon\Uses_icon\JPG'))
 if ($PreviewFileName -match '[\\/]' -or $PreviewFileName -notmatch '\.(png|jpe?g|gif)$') {
