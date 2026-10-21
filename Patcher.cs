@@ -882,13 +882,8 @@ namespace AIImprove
             return true;
         }
 
-        // Feasibility spike: with TMPE present, independently try no-op transpilers on two
-        // candidate methods. Without TMPE, retain the vanilla emergency congestion transpiler.
-        //
-        // The previous TMPE postfix failed during Harmony/Mono wrapper generation, while the
-        // vanilla PathFind fallback is not used when TMPE's CustomPathFind is active. During the
-        // feasibility spike, TMPE users receive two no-op transpiler attempts instead. The
-        // separate ignore-costs patch does not adjust emergency congestion priority.
+        // With TM:PE present, adjust only its TrafficCostFactor multiplier for emergency requests.
+        // Without TM:PE, retain the vanilla emergency congestion transpiler.
         private static void PatchEmergencyVehiclePriority(Harmony harmony)
         {
             Type customPathFindType = TmpeCompat.FindCustomPathFindType();
@@ -897,25 +892,77 @@ namespace AIImprove
                 LogTmpeAssemblyVersion(customPathFindType);
                 Debug.Log(
                     "[AIImprove] TMPE is installed, so its CustomPathFind replaces vanilla PathFind; " +
-                    "the vanilla emergency congestion patch is skipped. This no-op transpiler spike " +
-                    "does not change costs. The separate ignore-costs patch does not adjust congestion priority.");
+                    "the vanilla emergency congestion patch is skipped.");
 
-                // Run the two no-op tests independently so one Harmony/Mono failure does not
-                // prevent the other candidate from being evaluated.
-                TryPatchTmpeNoOpTranspilerSpike(
-                    harmony,
-                    customPathFindType,
-                    "CalculateAdvancedAiCostFactors",
-                    typeof(TmpeCalculateAdvancedAiCostFactorsSpike));
-                TryPatchTmpeNoOpTranspilerSpike(
-                    harmony,
-                    customPathFindType,
-                    "ProcessItemMain",
-                    typeof(TmpeProcessItemMainSpike));
+                TryPatchTmpeEmergencyCongestion(harmony, customPathFindType);
                 return;
             }
 
             TryPatchVanillaEmergencyCongestion(harmony);
+        }
+
+        private static bool TryPatchTmpeEmergencyCongestion(Harmony harmony, Type customPathFindType)
+        {
+            try
+            {
+                string reason;
+                MethodInfo original = TmpeCompat.FindUniqueInstanceMethod(
+                    customPathFindType,
+                    "CalculateAdvancedAiCostFactors",
+                    out reason);
+                if (original == null)
+                {
+                    Debug.LogWarning(
+                        "[AIImprove] TMPE emergency congestion patch failed closed for CalculateAdvancedAiCostFactors. Reason: " + reason);
+                    return false;
+                }
+
+                if (!TmpeEmergencyCongestionPatch.TryConfigure(customPathFindType, out reason))
+                {
+                    Debug.LogWarning(
+                        "[AIImprove] TMPE emergency congestion patch failed closed for CalculateAdvancedAiCostFactors. Reason: " + reason);
+                    return false;
+                }
+
+                MethodInfo transpiler = typeof(TmpeEmergencyCongestionPatch).GetMethod(
+                    nameof(TmpeEmergencyCongestionPatch.Transpiler),
+                    BindingFlags.Public | BindingFlags.Static);
+                if (transpiler == null)
+                {
+                    Debug.LogWarning(
+                        "[AIImprove] TMPE emergency congestion patch failed closed for CalculateAdvancedAiCostFactors. Reason: transpiler method was not found.");
+                    return false;
+                }
+
+                harmony.Patch(original, transpiler: new HarmonyMethod(transpiler));
+                if (!TmpeEmergencyCongestionPatch.WasApplied)
+                {
+                    reason = TmpeEmergencyCongestionPatch.FailureReason;
+                    try
+                    {
+                        harmony.Unpatch(original, transpiler);
+                    }
+                    catch (Exception unpatchException)
+                    {
+                        reason += " Unpatch after fail-closed result also failed: " + unpatchException.Message;
+                    }
+
+                    Debug.LogWarning(
+                        "[AIImprove] TMPE emergency congestion patch failed closed for CalculateAdvancedAiCostFactors. Reason: " + reason);
+                    return false;
+                }
+
+                TmpeEmergencyCongestionPatch.MarkPatchApplied();
+                Debug.Log(
+                    "[AIImprove] TMPE emergency congestion patch applied for CalculateAdvancedAiCostFactors; emergency TrafficCostFactor retention is 25%.");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning(
+                    "[AIImprove] TMPE emergency congestion patch failed closed for CalculateAdvancedAiCostFactors. Reason: " + ex.Message);
+                return false;
+            }
         }
 
         // Vehicle-level, TMPE-independent ignore-costs patch - see EmergencyIgnoreCostsPatch.cs.
@@ -968,51 +1015,8 @@ namespace AIImprove
             }
         }
 
-        private static bool TryPatchTmpeNoOpTranspilerSpike(
-            Harmony harmony,
-            Type customPathFindType,
-            string targetMethodName,
-            Type transpilerType)
-        {
-            try
-            {
-                string reason;
-                MethodInfo original = TmpeCompat.FindUniqueInstanceMethod(
-                    customPathFindType,
-                    targetMethodName,
-                    out reason);
-                if (original == null)
-                {
-                    Debug.LogWarning(
-                        "[AIImprove] TMPE no-op transpiler spike skipped for " + targetMethodName + ". Reason: " + reason);
-                    return false;
-                }
-
-                MethodInfo transpiler = transpilerType.GetMethod(
-                    "Transpiler",
-                    BindingFlags.Public | BindingFlags.Static);
-                if (transpiler == null)
-                {
-                    Debug.LogWarning(
-                        "[AIImprove] TMPE no-op transpiler spike skipped for " + targetMethodName + ": transpiler method not found.");
-                    return false;
-                }
-
-                harmony.Patch(original, transpiler: new HarmonyMethod(transpiler));
-                Debug.Log(
-                    "[AIImprove] TMPE no-op transpiler spike applied for " + targetMethodName + "; no IL instructions were changed.");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Debug.LogWarning(
-                    "[AIImprove] TMPE no-op transpiler spike failed for " + targetMethodName + ". Reason: " + ex.Message);
-                return false;
-            }
-        }
-
-        // Legacy postfix attempt retained for reference during the no-op transpiler spike.
-        // PatchEmergencyVehiclePriority no longer calls this method.
+        // Legacy postfix attempt retained for historical reference only. The active TM:PE path
+        // uses TmpeEmergencyCongestionPatch and does not call this method.
         //
         // KNOWN ISSUE (2026-08-12): currently fails at runtime with
         // "FormatException: ... cannot be patched. Reason: Invalid IL code".
@@ -1102,6 +1106,8 @@ namespace AIImprove
             {
                 return;
             }
+
+            TmpeEmergencyCongestionPatch.LogFinalCount();
 
             var harmony = new Harmony(HarmonyId);
             harmony.UnpatchAll(HarmonyId);
