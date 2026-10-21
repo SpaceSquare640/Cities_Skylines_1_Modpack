@@ -38,7 +38,9 @@
 
 ## Observation and Action Contracts
 
-- `[Verified]` Version 0.1.0 reads only the current population count, player funds, and game date when the player clicks the summary button. It does not export files or transmit data.
+- `[Verified]` Version 0.3.0 captures a schemaVersion 1 read-only snapshot after the player clicks the settings button. Its allowlist is gameDate (`yyyy-MM-dd`), HUD population (`uint`, `DistrictManager` district 0 `m_populationData.m_finalCount`), fundsCents (`long`, `EconomyManager.playerMoney`), and residentialDemand, commercialDemand, and workplaceDemand (`int`). The button queues capture with `SimulationManager.AddAction`; the callback writes one aggregate line to the game log and catches exceptions. It does not export files or transmit data.
+- `[Verified]` Static IL inspection confirms the HUD population path reads district 0 `m_populationData.m_finalCount`. The `EconomyManager.playerMoney` getter multiplies `LastCashAmount` by 100, so the snapshot labels this raw value as cents. This confirms the compiled API path; in-game HUD equality has not been tested.
+- `[Verified]` The 0.3.0 snapshot contains no city name, citizen identifiers, or object list. Traffic flow and service coverage are outside this schema.
 - `[Inferred]` A future `CitySnapshot` should be a versioned, read-only DTO with an explicit allowlist of aggregate values, a capture timestamp, game version, and monotonically increasing sequence number. Exclude citizen names, personal identifiers, raw save contents, and unrestricted object graphs.
 - `[Inferred]` AI suggestions should first use a proposal-only schema: a short explanation, the proposed typed action, affected object identifiers, expected effect, and expiry. Showing a suggestion must never invoke an action.
 - `[Inferred]` Any later control mode should require a visible per-session player opt-in, a separately confirmed start, and a clear stop control. Validate every action against a small typed whitelist, current game state, bounds, rate limits, and a maximum number of queued actions. Reject unknown or stale commands and log only a redacted action summary.
@@ -46,7 +48,7 @@
 
 ## Security and Reliability
 
-- `[Verified]` The 0.1.0 module contains no credential field or persistence, has no network client or listener, and has no code that writes to a save or changes simulation state.
+- `[Verified]` The 0.3.0 source contains no credential field or persistence, network client or listener, save-file write, or simulation-state mutation. It reads only the documented aggregate fields when the player requests a snapshot.
 - `[Inferred]` Keep the default mode read-only. Require explicit consent before any data leaves the game process and before enabling any action. Show the destination, data categories, and action scope in the UI.
 - `[Inferred]` Keep API keys exclusively in the companion's protected credential store. Redact authorization headers, prompts containing secrets, and provider responses from logs. Apply request deadlines, response-size limits, and cancellation so a stalled model cannot stall the simulation.
 - `[Inferred]` Treat transport failure, malformed data, companion restarts, and model refusal as no-op outcomes. Fail closed: no response or invalid response must never create or repeat an action.
@@ -61,9 +63,10 @@
 ## Roadmap
 
 1. `[Verified]` **0.1.0 — Read-only preview:** mod identity, localized settings page, version/status/site display, and a user-triggered city summary in the game log. No AI connection or control.
-2. `[Inferred]` **Observation output:** add a versioned aggregate snapshot and a user-selected export/IPC path after consent, path validation, and runtime threading checks.
-3. `[Inferred]` **AI suggestions:** connect the external companion to a local or cloud model; display proposals in game without executing them and let the player dismiss or copy them.
-4. `[Inferred]` **Restricted control:** add a separate opt-in mode with a typed action allowlist, current-state validation, explicit start/stop controls, per-action limits, and a tested recovery path.
+2. `[Verified]` **0.3.0 — Read-only city snapshot:** a versioned aggregate allowlist is captured through the simulation queue and written to the game log. No file export, network connection, model, or game control.
+3. `[Inferred]` **Observation export:** consider a user-selected export/IPC path only after consent, path validation, and runtime threading checks.
+4. `[Inferred]` **AI suggestions:** connect the external companion to a local or cloud model; display proposals in game without executing them and let the player dismiss or copy them.
+5. `[Inferred]` **Restricted control:** add a separate opt-in mode with a typed action allowlist, current-state validation, explicit start/stop controls, per-action limits, and a tested recovery path.
 
 ## Modpack interoperability (accepted contract v1.0)
 

@@ -14,12 +14,12 @@ namespace AIGaming
                 ["en"] = new Dictionary<string, string>
                 {
                     ["settings.title"] = "AI Gaming - Early Preview",
-                    ["settings.versionShort"] = "Version 0.2.0 - Early preview",
+                    ["settings.versionShort"] = "Version 0.3.0 - Early preview",
                     ["settings.status"] = "Status: AI control is not available in this version.",
-                    ["settings.description"] = "This preview reads basic city information and optional provider manifests only. It does not call provider capabilities or change the simulation.",
+                    ["settings.description"] = "This preview captures a small read-only city snapshot and discovers optional provider manifests. It does not call provider capabilities or change the simulation.",
                     ["settings.website"] = "Website: https://spacesquare640.github.io/Cities_Skylines_1_Modpack/ai-gaming/",
                     ["settings.interop.title"] = "Optional Modpack modules (discovery only):",
-                    ["settings.summaryButton"] = "Write city summary to log",
+                    ["settings.summaryButton"] = "Write city snapshot to log",
                     ["interop.unknown"] = "unknown",
                     ["interop.aiImprove.notInstalled"] = "AI Improve: not installed.",
                     ["interop.aiImprove.notEnabled"] = "AI Improve: installed but not enabled.",
@@ -43,12 +43,12 @@ namespace AIGaming
                 ["zh-tw"] = new Dictionary<string, string>
                 {
                     ["settings.title"] = "AI Gaming－早期預覽",
-                    ["settings.versionShort"] = "版本 0.2.0－早期預覽",
+                    ["settings.versionShort"] = "版本 0.3.0－早期預覽",
                     ["settings.status"] = "狀態：此版本尚未提供 AI 控制功能。",
-                    ["settings.description"] = "此預覽版只讀取基本城市資訊及選用模組的互通 manifest，不會呼叫能力或修改模擬狀態。",
+                    ["settings.description"] = "此預覽版只擷取精簡的唯讀城市快照，並探索選用模組的互通 manifest；不會呼叫能力或修改模擬狀態。",
                     ["settings.website"] = "網站：https://spacesquare640.github.io/Cities_Skylines_1_Modpack/ai-gaming/",
                     ["settings.interop.title"] = "選用 Modpack 模組（只探索狀態）：",
-                    ["settings.summaryButton"] = "將城市摘要寫入記錄",
+                    ["settings.summaryButton"] = "將城市快照寫入記錄",
                     ["interop.unknown"] = "未知",
                     ["interop.aiImprove.notInstalled"] = "AI Improve：未安裝。",
                     ["interop.aiImprove.notEnabled"] = "AI Improve：已安裝但未啟用。",

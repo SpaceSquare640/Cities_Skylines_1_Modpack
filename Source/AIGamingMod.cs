@@ -10,8 +10,8 @@ namespace AIGaming
 
         public string Description =>
             "Early preview of a mod that will let a local or cloud AI model play Cities: Skylines, " +
-            "or assist you while you play. This version reads basic city information and optional Modpack " +
-            "interop manifests only; it does not call other mod capabilities or control the game.";
+            "or assist you while you play. This version captures a small read-only city snapshot and " +
+            "discovers optional Modpack interop manifests; it does not call other mod capabilities or control the game.";
 
         public void OnEnabled()
         {

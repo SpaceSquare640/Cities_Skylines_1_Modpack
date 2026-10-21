@@ -22,24 +22,31 @@ namespace AIGaming
                 {
                     try
                     {
-                        CitizenManager citizens = Singleton<CitizenManager>.instance;
-                        if (citizens == null)
+                        DistrictManager districts = Singleton<DistrictManager>.instance;
+                        ZoneManager zones = Singleton<ZoneManager>.instance;
+                        if (districts == null || districts.m_districts.m_buffer == null || zones == null)
                         {
-                            Debug.LogWarning("[AI Gaming] City summary unavailable: no loaded city was found.");
+                            Debug.LogWarning("[AI Gaming] City snapshot unavailable: no loaded city was found.");
                             return;
                         }
 
-                        int population = citizens.m_citizenCount;
-                        long funds = EconomyManager.playerMoney;
+                        uint population = districts.m_districts.m_buffer[0].m_populationData.m_finalCount;
+                        long fundsCents = EconomyManager.playerMoney;
                         DateTime gameDate = simulation.m_currentGameTime;
-                        string summary = string.Format(
+                        int residentialDemand = zones.m_residentialDemand;
+                        int commercialDemand = zones.m_commercialDemand;
+                        int workplaceDemand = zones.m_workplaceDemand;
+                        string snapshot = string.Format(
                             CultureInfo.InvariantCulture,
-                            "[AI Gaming] City summary | Date: {0:yyyy-MM-dd} | Population: {1:N0} | Funds: {2:N0}",
+                            "[AI Gaming] City snapshot | schemaVersion=1 | gameDate={0:yyyy-MM-dd} | population={1} | fundsCents={2} | residentialDemand={3} | commercialDemand={4} | workplaceDemand={5}",
                             gameDate,
                             population,
-                            funds);
+                            fundsCents,
+                            residentialDemand,
+                            commercialDemand,
+                            workplaceDemand);
 
-                        Debug.Log(summary);
+                        Debug.Log(snapshot);
                     }
                     catch (Exception exception)
                     {
@@ -57,7 +64,7 @@ namespace AIGaming
         {
             try
             {
-                Debug.LogError("[AI Gaming] City summary failed: " + exception.GetType().Name + ": " + exception.Message);
+                Debug.LogError("[AI Gaming] City snapshot failed: " + exception.GetType().Name + ": " + exception.Message);
             }
             catch
             {
