@@ -16,8 +16,11 @@ These are directions, not release dates. Every step ships only when it is safe f
 | Stage | Status |
 | --- | --- |
 | Read-only network survey and diagnostics | **Now** · 0.2.0 |
-| Demand analysis and candidate stops for a proposed line | Next |
+| Demand analysis and candidate city-bus lines | Being tested in the Development Version |
 | Line previews that you review and accept before anything is built | Then |
+| Other public transport types (trams, metro, trains, ferries and more), one at a time | Later |
+
+It currently covers regular city buses only.
 
 ## AI Gaming
 

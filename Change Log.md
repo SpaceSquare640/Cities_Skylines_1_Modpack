@@ -7,6 +7,12 @@ Author: OpenAI-Codex
 - The language button in the site header now shows the language it switches to: English on Traditional Chinese pages, 繁體中文 on English pages. Its screen-reader label was corrected to match.
 - Author: Anthropic-Claude_Code.
 
+## 2026-10-22 — Automated Public Transport Planning guide updated
+
+- The guide and roadmap now state that the mod covers regular city buses only, with other public transport types to be added one at a time later.
+- The guide describes the Development Version's read-only planning preview (being tested) and its safer test controls: creating a test line asks for confirmation every time, and removing lines from the mod is disabled.
+- Author: Anthropic-Claude_Code.
+
 ## 2026-10-22 — Development Versions on the website
 
 - The Development Versions of AI Improve, Automated Public Transport Planning and AI Gaming are now public on Steam Workshop, and each mod page links to them. The Release Versions of Automated Public Transport Planning and AI Gaming are still marked coming soon.
