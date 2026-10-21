@@ -2,9 +2,9 @@
 
 Author: OpenAI-Codex
 
-## 2026-10-21 — New website and wiki (preview, not yet live)
+## 2026-10-21 — New website and wiki
 
-- Rebuilt the website with Astro and Starlight as a product site plus a bilingual (English and Traditional Chinese) wiki with search, kept in the `site/` folder. The current site stays live until the switch.
+- Rebuilt the website with Astro and Starlight as a product site plus a bilingual (English and Traditional Chinese) wiki with search. It is built from the `site/` folder and deployed to GitHub Pages by a workflow on every change.
 - Mod pages explain what each mod does for players, show Workshop buttons (hidden items are marked coming soon), and include a feature browser, a collapsible settings preview, a planned bus-planning walkthrough and an AI Gaming mode explainer.
 - The wiki covers getting started, every AI Improve feature and setting, in-game use with UnifiedUI, compatibility, FAQ, roadmap and contributing.
 - Corrected the AI Improve compatibility description: it does not change vehicle capacity, and it defers fire dispatch choices to Transfer Manager CE.
