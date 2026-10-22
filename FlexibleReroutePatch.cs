@@ -34,10 +34,19 @@ namespace AIImprove
         public static void ResetForNewLevel()
         {
             LoggedFirstCall.Clear();
+            int unresolvedDestinations = System.Threading.Interlocked.Exchange(
+                ref unresolvedAircraftDestinationCount, 0);
+            if (unresolvedDestinations > 0)
+            {
+                Debug.Log(
+                    "[AIImprove] Aircraft reroute skipped for unresolved destinations FINAL: " +
+                    unresolvedDestinations + ".");
+            }
         }
 
         private static readonly System.Collections.Generic.HashSet<string> LoggedFirstCall =
             new System.Collections.Generic.HashSet<string>();
+        private static int unresolvedAircraftDestinationCount;
 
         private static void TryReroute(
             string ownerTypeName,
@@ -91,20 +100,21 @@ namespace AIImprove
                 RerouteEffectDiagnostics.CheckAfter(ownerTypeName, vehicleID, ref vehicleData);
             }
 
-            // REVISED (2026-08-13): used to pick source vs target based on Vehicle.Flags.GoingBack,
-            // mirroring a pattern borrowed from the emergency-vehicle dispatch code. dnSpy showed
-            // that's not how the base VehicleAI.StartPathFind(ushort, ref Vehicle) - which TrainAI
-            // doesn't override, and which many vehicle AIs including AircraftAI's own equivalent
-            // built-in logic ultimately mirror - actually decides where to go: it unconditionally
-            // trusts vehicleData.m_targetBuilding, GoingBack or not. That flag toggling was never
-            // the right signal for "where is this vehicle currently headed."
+            // PassengerPlaneAI uses m_targetBuilding as a NetNode ID for ordinary line travel,
+            // but as a Building ID for DummyTraffic. Its GoingBack branch uses m_sourceBuilding.
+            // Resolve by the same flag order as the vanilla plane pathfinder and fail closed on
+            // invalid buffer data.
             ushort targetBuilding = vehicleData.m_targetBuilding;
+            bool hasDestinationId = ownerTypeName == nameof(AircraftAI) &&
+                                    (vehicleData.m_flags & Vehicle.Flags.GoingBack) != 0
+                ? vehicleData.m_sourceBuilding != 0
+                : targetBuilding != 0;
 
             // PERF (2026-08-15 audit): stagger (an integer modulo) now gates before the cooldown
             // dictionary lookup, and the first-call logging bookkeeping below moved down past all
             // of these - it was doing a string hash + HashSet probe for every vehicle in the city
             // every single tick, ahead of the very stagger check meant to make this path cheap.
-            if (targetBuilding == 0 || !SimulationStagger.ShouldRunThisFrame(vehicleID) ||
+            if (!hasDestinationId || !SimulationStagger.ShouldRunThisFrame(vehicleID) ||
                 StuckRerouteTracker.IsOnCooldown(vehicleID))
             {
                 return;
@@ -115,9 +125,23 @@ namespace AIImprove
                 Debug.Log("[AIImprove] FlexibleReroutePatch (" + ownerTypeName + ") is executing.");
             }
 
+            Vector3 endPos;
+            bool destinationResolved = ownerTypeName == nameof(AircraftAI)
+                ? TryResolveAircraftDestination(ref vehicleData, out endPos)
+                : TryResolveBuildingDestination(targetBuilding, out endPos);
+            if (!destinationResolved)
+            {
+                if (ownerTypeName == nameof(AircraftAI))
+                {
+                    System.Threading.Interlocked.Increment(ref unresolvedAircraftDestinationCount);
+                }
+
+                return;
+            }
+
             float aheadDensity = SegmentCongestionQuery.GetAverageAheadDensity(ref vehicleData);
             DensityDistributionDiagnostics.Record(ownerTypeName, aheadDensity, densityThreshold);
-            if (aheadDensity < 0f || !RerouteRateLimiter.TryConsumeBudget() ||
+            if (aheadDensity < 0f || aheadDensity < densityThreshold || !RerouteRateLimiter.TryConsumeBudget() ||
                 !StuckRerouteTracker.ShouldReroute(vehicleID, aheadDensity, densityThreshold))
             {
                 return;
@@ -128,7 +152,6 @@ namespace AIImprove
             // "the request was accepted" has never been an answer to that.
             RerouteEffectDiagnostics.RecordBefore(vehicleID, ref vehicleData);
 
-            Vector3 endPos = Singleton<BuildingManager>.instance.m_buildings.m_buffer[targetBuilding].m_position;
             Vector3 startPos = vehicleData.m_targetPos3;
 
             object[] args = { vehicleID, vehicleData, startPos, endPos, true, true };
@@ -147,6 +170,61 @@ namespace AIImprove
                     aheadDensity.ToString("F0") + " too high, requested reroute from current position: " +
                     (success ? "accepted" : "failed"));
             }
+        }
+
+        private static bool TryResolveAircraftDestination(
+            ref Vehicle vehicleData,
+            out Vector3 destination)
+        {
+            if ((vehicleData.m_flags & Vehicle.Flags.GoingBack) != 0)
+            {
+                return TryResolveBuildingDestination(vehicleData.m_sourceBuilding, out destination);
+            }
+
+            if ((vehicleData.m_flags & Vehicle.Flags.DummyTraffic) != 0)
+            {
+                return TryResolveBuildingDestination(vehicleData.m_targetBuilding, out destination);
+            }
+
+            NetManager netManager = Singleton<NetManager>.instance;
+            if (netManager == null)
+            {
+                destination = default(Vector3);
+                return false;
+            }
+
+            NetNode[] nodes = netManager.m_nodes.m_buffer;
+            ushort nodeId = vehicleData.m_targetBuilding;
+            if (nodes == null || nodeId == 0 || nodeId >= nodes.Length ||
+                (nodes[nodeId].m_flags & NetNode.Flags.Created) == 0)
+            {
+                destination = default(Vector3);
+                return false;
+            }
+
+            destination = nodes[nodeId].m_position;
+            return true;
+        }
+
+        private static bool TryResolveBuildingDestination(ushort destinationId, out Vector3 destination)
+        {
+            BuildingManager buildingManager = Singleton<BuildingManager>.instance;
+            if (buildingManager == null)
+            {
+                destination = default(Vector3);
+                return false;
+            }
+
+            Building[] buildings = buildingManager.m_buildings.m_buffer;
+            if (buildings == null || destinationId == 0 || destinationId >= buildings.Length ||
+                (buildings[destinationId].m_flags & Building.Flags.Created) == 0)
+            {
+                destination = default(Vector3);
+                return false;
+            }
+
+            destination = buildings[destinationId].m_position;
+            return true;
         }
 
         private static MethodInfo FindStartPathFind(Type vehicleAiType)
@@ -257,7 +335,8 @@ namespace AIImprove
 
             float aheadDensity = SegmentCongestionQuery.GetAverageAheadDensity(ref vehicleData);
             DensityDistributionDiagnostics.Record(ownerTypeName, aheadDensity, densityThreshold);
-            if (aheadDensity < 0f || !RerouteRateLimiter.TryConsumeBudget() || !StuckRerouteTracker.ShouldReroute(vehicleID, aheadDensity, densityThreshold))
+            if (aheadDensity < 0f || aheadDensity < densityThreshold || !RerouteRateLimiter.TryConsumeBudget() ||
+                !StuckRerouteTracker.ShouldReroute(vehicleID, aheadDensity, densityThreshold))
             {
                 return;
             }
@@ -383,21 +462,8 @@ namespace AIImprove
             }
         }
 
-        // STILL ON THE HAND-RESOLVED PATH, KNOWINGLY (2026-09-16). PassengerPlaneAI has the exact
-        // same three-way m_targetBuilding branching PassengerTrainAI does - decompiled, node id
-        // and all - so every word of Train.Postfix's note applies here too. Aircraft were not
-        // switched over with the trains for two reasons:
-        //
-        //   1. It would change nothing observable yet. Measured taxiway congestion peaks at 15.8
-        //      against a threshold of 30 - 99.8% of 62,500 samples sat in the 0-9 bucket - so this
-        //      reroute path does not fire at all. Fixing destination resolution for a feature that
-        //      never triggers buys no evidence, and 準則 5 wants evidence.
-        //   2. HoldingPatternPatch.TryUpdateHolding shares StartPathFindMethod with this call and
-        //      drives the holding-pattern behaviour off the same 6-arg overload. Rerouting aircraft
-        //      through the 2-arg overload would need that interaction worked out first, and there
-        //      is no reason to spend that risk on a path with no measurable output.
-        //
-        // So: a known defect, deliberately unfixed, recorded rather than left to be rediscovered.
+        // Aircraft continue to use the six-argument path overload because holding-pattern logic
+        // shares it. TryReroute resolves PassengerPlaneAI's building/node target branch safely.
         // If the threshold question is ever solved, fix this at the same time - not before.
         internal static class Aircraft
         {

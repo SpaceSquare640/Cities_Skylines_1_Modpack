@@ -91,18 +91,24 @@ namespace AIImprove
                 return;
             }
 
+            float densityThreshold = DensityThreshold;
+            if (densityThreshold >= 100f)
+            {
+                return;
+            }
+
             if (!Budget.TryConsume())
             {
                 return;
             }
 
             float density = CitizenCongestionQuery.GetNearbyRoadDensity(citizenData.m_targetPos);
-            if (density < DensityThreshold)
+            if (density < densityThreshold)
             {
                 return;
             }
 
-            float t = Mathf.Clamp01((density - DensityThreshold) / (100f - DensityThreshold));
+            float t = Mathf.Clamp01((density - densityThreshold) / (100f - densityThreshold));
             float reduction = t * MaxReductionFraction;
             int adjustedProbability = Mathf.Max(0, Mathf.RoundToInt(originalProbability * (1f - reduction)));
             if (adjustedProbability < originalProbability)

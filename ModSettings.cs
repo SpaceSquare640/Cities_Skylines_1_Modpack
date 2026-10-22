@@ -28,9 +28,9 @@ namespace AIImprove
     // Prefixes must `return true`, so that "off" is indistinguishable from the feature never
     // having been written.
     //
-    // KNOWN GAP: transpiler-based patches (EmergencyIgnoreCostsPatch,
-    // VanillaEmergencyCongestionPatch, TMPE's EmergencyVehiclePriorityPatch path) rewrite IL once
-    // at patch time and have no per-call entry point to gate, so no switch here affects them.
+    // The TM:PE emergency congestion transpiler is the exception to direct SavedBool reads: its
+    // pathfinding hot path reads a volatile static bool cache, refreshed at load, settings changes,
+    // and reset-to-defaults. This avoids calling SavedBool.value from injected IL.
     public static class ModSettings
     {
         private const string FileName = "AIImprove";
@@ -77,6 +77,10 @@ namespace AIImprove
         /// Caps how many fire trucks/helicopters respond to one burning building.
         public static readonly SavedBool FireResponseCapEnabled =
             new SavedBool("FireResponseCapEnabled", FileName, LegacyEmergency.value, true);
+
+        /// Retains 25% of TM:PE's normal congestion cost for emergency vehicle path requests.
+        public static readonly SavedBool TmpeEmergencyCostAdjustmentEnabled =
+            new SavedBool("TmpeEmergencyCostAdjustmentEnabled", FileName, true, true);
 
         public static readonly SavedInt FireMaxRespondersPerBuilding =
             new SavedInt("FireMaxRespondersPerBuilding", FileName, 20, true);
@@ -498,6 +502,8 @@ namespace AIImprove
             ShowAdvancedTuning.value = false;
 
             FireResponseCapEnabled.value = true;
+            TmpeEmergencyCostAdjustmentEnabled.value = true;
+            TmpeEmergencyCongestionPatch.SetAdjustmentEnabled(true);
             FireMaxRespondersPerBuilding.value = 20;
             FireUncapAfterMinutes.value = 15;
             FireIdleSeekEnabled.value = true;

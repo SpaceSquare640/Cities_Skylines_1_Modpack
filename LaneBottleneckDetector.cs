@@ -265,7 +265,9 @@ namespace AIImprove
 
             float speedLimit = info.m_lanes[busyIndex].m_speedLimit;
             float meanSpeed = busySamples > 0 ? busySpeedSum / busySamples : 0f;
-            if (speedLimit <= 0f || meanSpeed > speedLimit * BusyLaneMaxSpeedFraction)
+            if (float.IsNaN(speedLimit) || float.IsInfinity(speedLimit) || speedLimit <= 0f ||
+                float.IsNaN(meanSpeed) || float.IsInfinity(meanSpeed) ||
+                meanSpeed > speedLimit * BusyLaneMaxSpeedFraction)
             {
                 ClearSustained(segmentId);
                 return;

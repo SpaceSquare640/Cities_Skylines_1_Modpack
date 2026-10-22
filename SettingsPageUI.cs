@@ -110,6 +110,8 @@ namespace AIImprove
             public string Key;
             /// null for a card that is only tunables (the Advanced section).
             public SavedBool Toggle;
+            /// Optional callback for feature switches whose runtime value is cached separately.
+            public Action<bool> ToggleChanged;
             public readonly List<Tunable> Tunables = new List<Tunable>();
         }
 
@@ -121,9 +123,9 @@ namespace AIImprove
             public Action<UIPanel, UIComponent, UIHelperBase> CustomBuilder;
         }
 
-        private static Feature Toggle(string key, SavedBool setting)
+        private static Feature Toggle(string key, SavedBool setting, Action<bool> onChanged = null)
         {
-            return new Feature { Key = key, Toggle = setting };
+            return new Feature { Key = key, Toggle = setting, ToggleChanged = onChanged };
         }
 
         private static Feature With(this Feature feature, string labelKey, float min, float max, float step,
@@ -204,6 +206,8 @@ namespace AIImprove
                             v => ModSettings.FireUncapAfterMinutes.value = Mathf.RoundToInt(v)),
                     Toggle("feature.fireIdleSeek", ModSettings.FireIdleSeekEnabled),
                     Toggle("feature.helicopterWeatherHalt", ModSettings.HelicopterWeatherHaltEnabled),
+                    Toggle("feature.tmpeEmergencyCost", ModSettings.TmpeEmergencyCostAdjustmentEnabled,
+                        TmpeEmergencyCongestionPatch.SetAdjustmentEnabled),
                 },
             });
 
@@ -864,7 +868,10 @@ namespace AIImprove
 
             if (feature.Toggle != null)
             {
-                AddPillToggle(card, card.width - CardPadding - 44f, y - 2f, feature.Toggle);
+                Action onChanged = feature.ToggleChanged == null
+                    ? null
+                    : new Action(() => feature.ToggleChanged(feature.Toggle.value));
+                AddPillToggle(card, card.width - CardPadding - 44f, y - 2f, feature.Toggle, onChanged);
             }
 
             y += Mathf.Max(title.height, 20f) + 4f;
@@ -1229,7 +1236,9 @@ namespace AIImprove
             AddFlatGroup(helper, "nav.emergency",
                 T("feature.fireResponseCap", ModSettings.FireResponseCapEnabled),
                 T("feature.fireIdleSeek", ModSettings.FireIdleSeekEnabled),
-                T("feature.helicopterWeatherHalt", ModSettings.HelicopterWeatherHaltEnabled));
+                T("feature.helicopterWeatherHalt", ModSettings.HelicopterWeatherHaltEnabled),
+                T("feature.tmpeEmergencyCost", ModSettings.TmpeEmergencyCostAdjustmentEnabled,
+                    TmpeEmergencyCongestionPatch.SetAdjustmentEnabled));
 
             AddFlatGroup(helper, "nav.sanitation",
                 T("feature.garbageIdleSeek", ModSettings.GarbageIdleSeekEnabled),
@@ -1269,11 +1278,12 @@ namespace AIImprove
         {
             public string LabelKey;
             public SavedBool Setting;
+            public Action<bool> OnChanged;
         }
 
-        private static FallbackToggle T(string labelKey, SavedBool setting)
+        private static FallbackToggle T(string labelKey, SavedBool setting, Action<bool> onChanged = null)
         {
-            return new FallbackToggle { LabelKey = labelKey, Setting = setting };
+            return new FallbackToggle { LabelKey = labelKey, Setting = setting, OnChanged = onChanged };
         }
 
         private static void AddFlatGroup(UIHelperBase helper, string groupKey, params FallbackToggle[] toggles)
@@ -1282,7 +1292,15 @@ namespace AIImprove
             for (int i = 0; i < toggles.Length; i++)
             {
                 SavedBool setting = toggles[i].Setting;
-                group.AddCheckbox(SafeLabel(toggles[i].LabelKey), setting.value, value => setting.value = value);
+                Action<bool> onChanged = toggles[i].OnChanged;
+                group.AddCheckbox(SafeLabel(toggles[i].LabelKey), setting.value, value =>
+                {
+                    setting.value = value;
+                    if (onChanged != null)
+                    {
+                        onChanged(value);
+                    }
+                });
             }
         }
 

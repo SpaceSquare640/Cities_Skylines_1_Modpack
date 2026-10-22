@@ -886,6 +886,9 @@ namespace AIImprove
         // Without TM:PE, retain the vanilla emergency congestion transpiler.
         private static void PatchEmergencyVehiclePriority(Harmony harmony)
         {
+            TmpeEmergencyCongestionPatch.SetAdjustmentEnabled(
+                ModSettings.TmpeEmergencyCostAdjustmentEnabled.value);
+
             Type customPathFindType = TmpeCompat.FindCustomPathFindType();
             if (customPathFindType != null)
             {
@@ -954,7 +957,9 @@ namespace AIImprove
 
                 TmpeEmergencyCongestionPatch.MarkPatchApplied();
                 Debug.Log(
-                    "[AIImprove] TMPE emergency congestion patch applied for CalculateAdvancedAiCostFactors; emergency TrafficCostFactor retention is 25%.");
+                    "[AIImprove] TMPE emergency congestion patch applied for CalculateAdvancedAiCostFactors; " +
+                    "emergency TrafficCostFactor retention is 25% when enabled (setting currently " +
+                    (TmpeEmergencyCongestionPatch.EmergencyCostAdjustmentEnabled ? "enabled" : "disabled") + ").");
                 return true;
             }
             catch (Exception ex)

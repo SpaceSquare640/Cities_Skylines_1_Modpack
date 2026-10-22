@@ -111,15 +111,18 @@ namespace AIImprove
             // only the positional xyz is meaningful for this comparison.
             Vector3 lookaheadTarget = vehicleData.m_targetPos3;
             float distance = Vector3.Distance(lookaheadTarget, vehicleData.GetLastFramePosition());
-            counters.FailedTargetPosDistanceSum += distance;
-            if (distance > counters.FailedTargetPosDistanceMax)
+            if (!float.IsNaN(distance) && !float.IsInfinity(distance))
             {
-                counters.FailedTargetPosDistanceMax = distance;
-            }
+                counters.FailedTargetPosDistanceSum += distance;
+                if (distance > counters.FailedTargetPosDistanceMax)
+                {
+                    counters.FailedTargetPosDistanceMax = distance;
+                }
 
-            if (distance > SnapRadius)
-            {
-                counters.FailedWithTargetPosBeyondSnapRadius++;
+                if (distance > SnapRadius)
+                {
+                    counters.FailedWithTargetPosBeyondSnapRadius++;
+                }
             }
 
             if ((vehicleData.m_flags & (Vehicle.Flags.Underground | Vehicle.Flags.Transition)) != 0)

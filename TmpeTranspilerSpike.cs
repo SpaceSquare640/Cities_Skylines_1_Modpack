@@ -15,11 +15,16 @@ namespace AIImprove
         private const BindingFlags InstanceFieldFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
         private const float EmergencyCongestionRetention = 0.25f;
 
+        // Written by startup/settings UI and read directly by the injected pathfinding IL.
+        // Keep this as a field so the transpiler never calls SavedBool.value on the hot path.
+        public static volatile bool EmergencyCostAdjustmentEnabled;
+
         private static FieldInfo globalConfigurationField;
         private static FieldInfo advancedVehicleAiField;
         private static FieldInfo trafficCostFactorField;
         private static FieldInfo queueItemField;
         private static FieldInfo vehicleTypeField;
+        private static FieldInfo emergencyCostAdjustmentEnabledField;
         private static MethodInfo recordAdjustmentMethod;
         private static int emergencyFlagValue;
         private static bool queueItemIsValueType;
@@ -27,6 +32,11 @@ namespace AIImprove
         private static string failureReason;
         private static long emergencyAdjustmentApplications;
         private static bool patchApplied;
+
+        public static void SetAdjustmentEnabled(bool enabled)
+        {
+            EmergencyCostAdjustmentEnabled = enabled;
+        }
 
         public static bool TryConfigure(Type customPathFindType, out string reason)
         {
@@ -88,6 +98,16 @@ namespace AIImprove
                     return Reject("ExtVehicleType.Emergency resolved to zero.", out reason);
                 }
 
+                emergencyCostAdjustmentEnabledField = typeof(TmpeEmergencyCongestionPatch).GetField(
+                    nameof(EmergencyCostAdjustmentEnabled),
+                    BindingFlags.Public | BindingFlags.Static);
+                if (emergencyCostAdjustmentEnabledField == null ||
+                    !emergencyCostAdjustmentEnabledField.IsStatic ||
+                    emergencyCostAdjustmentEnabledField.FieldType != typeof(bool))
+                {
+                    return Reject("EmergencyCostAdjustmentEnabled static bool cache was not found.", out reason);
+                }
+
                 recordAdjustmentMethod = typeof(TmpeEmergencyCongestionPatch).GetMethod(
                     nameof(RecordAdjustmentApplied),
                     BindingFlags.Public | BindingFlags.Static);
@@ -115,7 +135,7 @@ namespace AIImprove
             var code = new List<CodeInstruction>(instructions);
             if (generator == null || trafficCostFactorField == null || globalConfigurationField == null ||
                 advancedVehicleAiField == null || queueItemField == null || vehicleTypeField == null ||
-                recordAdjustmentMethod == null)
+                emergencyCostAdjustmentEnabledField == null || recordAdjustmentMethod == null)
             {
                 return RejectTranspiler(code, "Transpiler configuration was incomplete.");
             }
@@ -166,6 +186,9 @@ namespace AIImprove
                 new CodeInstruction(OpCodes.Ldfld, vehicleTypeField),
                 new CodeInstruction(OpCodes.Ldc_I4, emergencyFlagValue),
                 new CodeInstruction(OpCodes.And),
+                new CodeInstruction(OpCodes.Brfalse, skipAdjustment),
+                new CodeInstruction(OpCodes.Volatile),
+                new CodeInstruction(OpCodes.Ldsfld, emergencyCostAdjustmentEnabledField),
                 new CodeInstruction(OpCodes.Brfalse, skipAdjustment),
                 new CodeInstruction(OpCodes.Ldc_R4, EmergencyCongestionRetention),
                 new CodeInstruction(OpCodes.Mul),
@@ -251,6 +274,7 @@ namespace AIImprove
             trafficCostFactorField = null;
             queueItemField = null;
             vehicleTypeField = null;
+            emergencyCostAdjustmentEnabledField = null;
             recordAdjustmentMethod = null;
             emergencyFlagValue = 0;
             queueItemIsValueType = false;
