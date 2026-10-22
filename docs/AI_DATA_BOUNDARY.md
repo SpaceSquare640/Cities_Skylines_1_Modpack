@@ -35,7 +35,7 @@
 ## 3. Player consent and revocation
 
 - `[Inferred]` Require explicit consent for every individual request, including requests to a local model service. Consent must be off by default and must not be remembered as blanket permission for later requests.
-- `[Inferred]` Before sending, show the model destination and type (local or named cloud provider), purpose, exact snapshot fields, and the exact player-written question or prompt. Require a distinct confirmation for that request.
+- `[Inferred]` Before sending, show the selected source, player-selected model name, purpose, exact snapshot fields, and exact player-written question or prompt. Require a distinct confirmation for every request. For Ollama local, explicitly say that data remains on this computer and verify that the configured endpoint is loopback-only. For each cloud source, name the destination provider before confirmation.
 - `[Inferred]` Do not start a background request or retry after failure without a new, explicit confirmation. Do not send a later snapshot under consent given for an earlier snapshot.
 - `[Inferred]` If the player revokes consent before transmission, discard the pending request. If transmission has started, attempt cancellation, discard any later response, and do not initiate game actions. Explain that data already delivered to a provider cannot necessarily be recalled.
 - `[Inferred]` A returned answer is an untrusted suggestion only. Displaying, copying, or dismissing it must not change the simulation.
@@ -52,13 +52,15 @@
 - `[Inferred]` Cloud retention and deletion depend on the selected provider and account settings. Do not claim remote deletion unless the provider confirms it; surface the provider's retention and training terms before enabling that provider.
 - `[To decide]` Set the retention duration for any future local cache or temporary file and decide whether users may opt into saved conversations. Recommendation: no persistent cache or saved conversation in the first connected prototype.
 
-## 5. Credential boundary
+## 5. Credential boundary and storage options
 
 - `[Verified]` The current AI Gaming source has no API-key field or credential persistence.
-- `[Inferred]` A cloud credential must never enter the game mod, game save, mod settings, game log, project repository, source file, commit, prompt, or diagnostic bundle.
-- `[Inferred]` Keep any future cloud credential in the companion process, using an operating-system credential store where available. The game mod must not receive the credential; the companion must not return it in a response or error.
-- `[Inferred]` A local model may need no credential when its service is unauthenticated. If authentication is required, keep that credential within the companion's protected store and apply the same exclusions.
-- `[To decide]` Select the supported companion operating systems and their credential-store mechanism before implementing cloud access. Recommendation: do not add a cloud provider until protected storage and credential redaction are verified on each supported system.
+- `[Inferred]` Provider credentials must never enter the game mod, mod settings, game saves, game log, repository, source code, commits, prompts, or diagnostic bundles. The game mod must not receive a provider key from the companion.
+- `[Inferred]` Windows Credential Manager can retain a per-user credential outside the game and companion files. It reduces repeated entry, but persists the secret, is Windows-specific, and requires a separately reviewed credential-management implementation in the companion.
+- `[Inferred]` Companion-memory-only storage avoids persistence and clears the key when the companion exits, but requires re-entry after restart and cannot protect a key from inspection while the companion is running.
+- `[Inferred]` Recommendation for the first connected rollout: keep player-supplied cloud keys in companion memory only. Consider Windows Credential Manager later as an explicit opt-in persistence feature; never store keys in the mod.
+- `[Inferred]` OpenAI and Anthropic use player-supplied keys kept only by the companion. Ollama Cloud authentication requirements must be confirmed before implementation; if it requires a credential, apply the same boundary. Ollama Local needs no remote provider key in the default local setup; any local endpoint authentication secret also stays outside the mod.
+- `[To decide]` Confirm the companion operating systems and whether a later release may offer remembered keys through the operating system's credential store. Recommendation: memory-only first, with no key persistence until the user separately approves it.
 
 ## 6. Log and diagnostic redaction
 
@@ -68,38 +70,71 @@
 - `[Inferred]` Never upload the game log, crash report, or diagnostic bundle as part of a model request. Do not log model text as an executable or trusted instruction.
 - `[To decide]` Decide whether future operational diagnostics should be retained locally and for how long. Recommendation: keep them disabled by default and provide a one-click clear action if enabled.
 
-## 7. Model data flows and risks
+## 7. TLS findings, provider abstraction, and data flows
 
-### 7.1 Local model
+### 7.1 TLS 1.2 findings from installed managed assemblies
 
-- `[Inferred]` Proposed flow: the game captures the approved schema version 1 fields on the simulation queue; the UI presents the exact request; after per-request consent, a separate companion sends the bounded snapshot and player question to a model service on the same machine; the companion returns a suggestion for display. The game simulation thread never waits for the model.
-- `[Inferred]` Keep the model endpoint on loopback by default, do not bind to the LAN, authenticate the local IPC peer where practical, validate message shape and size, and enforce deadlines. Keep model SDKs and provider credentials outside the game process.
-- `[Inferred]` Local inference can reduce disclosure to a remote provider, but another local process may impersonate or inspect the endpoint, the model service may retain prompts, and malware or other users with access to the machine may read data. Local processing is not automatically private.
-- `[To decide]` Choose the first local model runtime and the companion-to-game transport. Recommendation: begin with one supported loopback companion and a narrow, bounded message contract after a runtime compatibility probe.
+#### Verified
 
-### 7.2 Cloud model
+- `[Verified]` Read-only metadata and IL inspection was performed on the installed game files in `C:\Program Files (x86)\Steam\steamapps\common\Cities_Skylines\Cities_Data\Managed`. The inspected DLLs were not executed, modified, or copied.
+- `[Verified]` The installed `System.dll` (assembly version 2.0.0.0) contains `HttpWebRequest`, including `BeginGetResponse`, `GetResponse`, and `Abort`, plus `ServicePointManager.SecurityProtocol`.
+- `[Verified]` In that `System.dll`, `SecurityProtocolType` exposes only `Ssl3=48` and `Tls=192`; it has no `Tls12` member. `SslProtocols` exposes `None=0`, `Ssl2=12`, `Ssl3=48`, `Tls=192`, and `Default=240`; it has no `Tls12` member. The inspected `SslStream.GetMonoSslProtocol` IL maps the legacy values and does not provide an explicit TLS 1.2 value mapping.
+- `[Verified]` `UnityWebRequest` is in the installed `UnityEngine.dll`. Its `InternalBegin` method is marked `InternalCall`, so the network implementation is in the native Unity engine and is not available for inspection in these managed DLLs. The inspected managed type exposes no TLS-version selector.
 
-- `[Inferred]` Proposed flow: the game captures the approved schema version 1 fields; after per-request consent, the companion sends only the approved snapshot and displayed player question to the named cloud provider over HTTPS; the companion validates the response and returns it as a suggestion for display.
-- `[Inferred]` The cloud credential remains in the companion's operating-system credential store. The game process does not make the provider request and never sees the credential.
-- `[Inferred]` A cloud provider receives the approved payload and may also receive account, network, timing, or service metadata. Retention, model-training use, jurisdiction, breach exposure, and account linkage depend on that provider and its settings.
-- `[Inferred]` Use a current HTTPS/TLS stack in the companion rather than assuming the game's .NET 3.5 / Unity Mono networking stack supports current provider requirements.
-- `[To decide]` Choose whether cloud models are allowed, which providers may be offered, and what retention, training, region, and account-linkage terms are acceptable. Recommendation: keep cloud mode disabled until the provider and its data terms are named in the consent screen and reviewed by the user.
+#### Inferred and not established by DLL inspection
+
+- `[Inferred]` The installed managed API does not provide a verified way for this mod to explicitly select TLS 1.2 through `HttpWebRequest`. A numeric enum cast is not evidence that the Mono SSL implementation will accept or negotiate TLS 1.2.
+- `[Inferred]` The DLL evidence cannot prove whether the native Unity networking backend or the host operating system may negotiate TLS 1.2 by default. No TLS handshake or live network request was run. Treat cloud HTTPS from the game process as unsupported until a separate runtime test proves otherwise.
+- `[Verified]` `HttpWebRequest` and asynchronous response methods exist in `System.dll`; using HTTP does not require TLS.
+- `[Inferred]` Direct module-to-Ollama-Local HTTP at the default `http://localhost:11434` is technically plausible at the API level, but Cities: Skylines runtime behavior has not been tested. If implemented, all network work must run off the simulation thread with cancellation, response limits, and timeouts.
+
+### 7.2 One provider-neutral request and response
+
+- `[Inferred]` Route provider-specific work through one provider-neutral request shape containing a protocol version, temporary request ID, source ID, player-selected model name, player-written prompt, and the explicitly consented schemaVersion 1 snapshot fields. Do not include credentials in this request object.
+- `[Inferred]` Normalize all four providers to one response shape containing the request ID, status, source ID, selected/actual model name when available, suggestion text, and a sanitized error category. The response must not contain executable instructions or game actions.
+- `[Inferred]` Keep provider adapters responsible for translating the common request and response to each provider's native API. Never hard-code model names; let the player choose a model from provider availability or enter a model name, then report a missing or unavailable model without silently substituting another.
+- `[Inferred]` The serialization and exact protocol version for the future companion boundary still need a separate implementation design; this proposal does not add a runtime API.
+
+### 7.3 Four source-specific data flows
+
+- `[Inferred]` **Ollama Local:** after per-request consent, send only the allowed snapshot and player prompt to the companion over the local bridge; the companion calls `http://localhost:11434`. Show that data stays on this computer, and enforce a loopback-only Ollama endpoint before showing that label. No cloud fallback is allowed. A direct module-to-Ollama HTTP call is technically plausible from the available `HttpWebRequest` API, but the recommended design routes it through the companion to share the provider adapter and keep networking outside the game process.
+- `[Inferred]` **Ollama Cloud:** after a fresh per-request confirmation that names Ollama Cloud as the destination, the companion sends only the approved snapshot and prompt to Ollama Cloud over HTTPS. Confirm its current authentication and data-retention terms before implementation.
+- `[Inferred]` **OpenAI:** after a fresh per-request confirmation that names OpenAI as the destination, the companion sends only the approved snapshot and prompt to the selected OpenAI model over HTTPS, using the player's key only inside the companion.
+- `[Inferred]` **Anthropic:** after a fresh per-request confirmation that names Anthropic as the destination, the companion sends only the approved snapshot and prompt to the selected Anthropic model over HTTPS, using the player's key only inside the companion.
+- `[Inferred]` No request may switch source, endpoint, or model provider automatically. A change of destination requires a new consent preview and confirmation.
+- `[To decide]` Confirm the first rollout sequence while retaining all four sources as the intended supported set. Recommendation: validate Ollama Local first; add the three cloud adapters only after the companion HTTPS and credential boundary are reviewed.
+
+### 7.4 Companion communication: loopback HTTP or named pipe
+
+- `[Verified]` The installed `System.dll` contains the `HttpWebRequest` API, and the installed `System.Core.dll` metadata contains `NamedPipeClientStream` and `NamedPipeServerStream`. These are API-presence findings only; neither transport was exercised in the game.
+- `[Inferred]` **Loopback HTTP:** reuses an HTTP request/response model and is easier to inspect and support across operating systems. Risks include port conflicts and access by other local processes. Bind the companion only to `127.0.0.1`/loopback, use a short-lived per-run pairing token, bound payload size and time, and never expose a LAN listener.
+- `[Inferred]` **Named pipe:** avoids a TCP listener and can use operating-system access controls, especially on Windows. It is less portable and its exact behavior under the game's Mono runtime remains unverified.
+- `[Inferred]` Recommendation: use a loopback-only HTTP bridge between mod and companion for the first design, protected with a short-lived in-memory pairing token and strict request limits. Revisit named pipes if a later runtime probe demonstrates reliable cross-process support and the supported platform is Windows-only.
+
+### 7.5 Local and cloud risks
+
+- `[Inferred]` Local Ollama avoids sending the approved payload to a cloud model only when the endpoint is verified as loopback. A misconfigured remote endpoint, another local process, or local malware can expose the request; local processing does not guarantee privacy.
+- `[Inferred]` Each cloud provider receives the approved prompt and snapshot and may also receive account, network, timing, or service metadata. Retention, training use, data region, and account linkage depend on the provider and the player's settings.
+- `[To decide]` Before enabling any cloud source, confirm its endpoint, authentication method, retention, training, region, and account-linkage terms and display the named destination before every request.
 
 ## 8. Failure and safe degradation
 
-- `[Inferred]` If the companion or model is unavailable, a request times out, consent is absent or revoked, the response is malformed or oversized, or the model refuses, show a concise status and return to the current read-only game state.
-- `[Inferred]` A failure must not block the UI or simulation thread, modify a save, change simulation state, or create an action. Discard stale responses and clear pending local payloads.
-- `[Inferred]` Do not silently retry, switch from local to cloud, or redirect to another provider. Any retry or destination change requires a fresh consent preview and confirmation.
-- `[Inferred]` Log only a redacted failure category and non-sensitive diagnostic metadata. Never log credentials, payloads, prompts, or raw provider error bodies.
+- `[Inferred]` **Ollama Local not started:** show that the local service is unavailable; do not switch to Ollama Cloud or another provider. If local authentication is configured and rejected, request correction without logging the credential. Local quota exhaustion is not applicable, but resource exhaustion should return a bounded local error.
+- `[Inferred]` **Ollama Cloud unavailable or key rejected:** show the provider and sanitized authentication/unavailable category. Confirm whether a credential is required before implementation; never log it.
+- `[Inferred]` **OpenAI or Anthropic key invalid:** keep the key inside the companion, report a sanitized authentication failure, and let the player re-enter it there. Never echo the key into the mod or logs.
+- `[Inferred]` **Cloud quota or usage limit reached:** report the provider limit and stop. Do not silently change providers or consume another provider's key.
+- `[Inferred]` **Request timeout:** abort when possible, clear pending local data, ignore late responses, and return to read-only play. A retry requires a new player confirmation.
+- `[Inferred]` **Model missing or unavailable:** identify the selected provider/model and ask the player to choose an available name or install/pull it themselves. Do not hard-code a replacement, run a shell command, or switch provider automatically.
+- `[Inferred]` All failures, including invalid or oversized responses, must leave the game simulation unchanged and must not block the UI or simulation thread. Log only a sanitized error category; never log credentials, request payloads, prompts, or provider error bodies.
 
 ## 9. Decisions before implementation
 
-- `[To decide]` Select the first supported model route: local only, cloud only, or a staged local-first rollout. Recommendation: local-only prototype first; consider cloud only after its provider and data terms are approved.
-- `[To decide]` Confirm the exact payload scope and whether any fields may be added after schema version 1. Recommendation: no additional city or player data in the first connected prototype.
+- `[To decide]` Confirm the rollout sequence for the four intended sources. Recommendation: connect Ollama Local first, then add Ollama Cloud, OpenAI, and Anthropic through the companion after cloud terms are reviewed.
+- `[To decide]` Confirm the exact payload scope and whether any fields may be added after schema version 1. Recommendation: no additional city or player data in the first connected prototype; any new snapshot field must be game-verified and require a schema-version increment.
 - `[To decide]` Select the player-facing UI location for the request preview, per-request confirmation, revocation, and suggestion display.
 - `[To decide]` Select the local companion runtime, IPC transport, supported operating systems, endpoint authentication, size limits, and request deadlines.
-- `[To decide]` If cloud access is later approved, select providers and approve their retention, training, data-region, account-linkage, and credential-storage terms.
-- `[To decide]` Set local retention and deletion behavior for any future temporary files or saved conversation feature. Recommendation: no persistence by default, with a clear action for deleting any explicitly retained local data.
+- `[To decide]` Confirm Ollama Cloud authentication requirements and approve retention, training, data-region, account-linkage, and credential-storage terms for each cloud provider.
+- `[To decide]` Set retention and deletion behavior for temporary request data. Recommendation: no persistent prompt, snapshot, or response history in the initial rollout.
 - `[To decide]` Define how a future action request is displayed and confirmed per operation, while keeping the accepted interop contract's Write rules as the maximum authority.
 
 ## 10. Approval boundary

@@ -32,8 +32,12 @@
 
 ## Model Connections
 
-- `[Inferred]` A local-model companion can call a model service already running on the player's machine. Keep that endpoint configurable in the companion, reject non-loopback endpoints by default, bound request size and duration, and make the game mod unaware of model-specific protocols.
-- `[Inferred]` A cloud-model companion can send only the approved snapshot and player-approved question to an HTTPS provider. Store credentials in the operating system's protected credential store where available; never place keys in saves, mod settings, prompts, crash reports, or logs. The game DLL should never receive the key.
+- `[Verified]` The installed game `System.dll` exposes `HttpWebRequest` and asynchronous response APIs, but its `SecurityProtocolType` and `SslProtocols` metadata contains no TLS 1.2 member. The installed `UnityEngine.dll` exposes `UnityWebRequest`, but its `InternalBegin` implementation is a native `InternalCall`; managed DLL inspection cannot verify its TLS behavior. See the verified/inferred split in `docs/AI_DATA_BOUNDARY.md`.
+- `[Inferred]` The intended source set is Ollama Local, Ollama Cloud, OpenAI, and Anthropic. Use one provider-neutral request/response model with adapters; the player selects the model name, which is not hard-coded in the mod.
+- `[Inferred]` Direct HTTP from the mod to Ollama Local at `http://localhost:11434` is technically plausible because the installed `HttpWebRequest` APIs exist and this path does not use TLS. It has not been tested in Cities: Skylines. Route local and cloud model requests through a separate companion in the recommended architecture so provider handling remains outside the game process.
+- `[Inferred]` Route the three cloud sources through the companion's HTTPS stack because TLS 1.2 support in the game's managed/native runtime is not established. The companion sends each request only after per-request consent and displays the selected cloud destination.
+- `[Inferred]` Prefer a loopback-only HTTP bridge between mod and companion, with short-lived in-memory pairing, strict payload limits, cancellation, and deadlines. Named pipes are an alternative with operating-system access controls but require runtime and platform validation.
+- `[Inferred]` Keep OpenAI and Anthropic player keys inside the companion. Use memory-only storage for the first connected rollout; evaluate an operating-system credential store only as an explicit later persistence option. Ollama Cloud's authentication requirement remains to be confirmed.
 - `[Inferred]` Treat city names, mod-provided text, workshop descriptions, and model output as untrusted input. They must not be interpreted as executable commands or as permission to bypass the action whitelist.
 
 ## Observation and Action Contracts
@@ -50,15 +54,16 @@
 
 - `[Verified]` The 0.3.0 source contains no credential field or persistence, network client or listener, save-file write, or simulation-state mutation. It reads only the documented aggregate fields when the player requests a snapshot.
 - `[Inferred]` Keep the default mode read-only. Require explicit consent before any data leaves the game process and before enabling any action. Show the destination, data categories, and action scope in the UI.
-- `[Inferred]` Keep API keys exclusively in the companion's protected credential store. Redact authorization headers, prompts containing secrets, and provider responses from logs. Apply request deadlines, response-size limits, and cancellation so a stalled model cannot stall the simulation.
+- `[Inferred]` Keep provider keys exclusively in the companion; never put them in the mod, saves, repository, prompts, or logs. Redact authorization headers and provider responses. Apply request deadlines, response-size limits, and cancellation so a stalled model cannot stall the simulation.
 - `[Inferred]` Treat transport failure, malformed data, companion restarts, and model refusal as no-op outcomes. Fail closed: no response or invalid response must never create or repeat an action.
 - `[Verified]` The detailed future data allowlist, consent, retention, deletion, credential, and log-redaction proposal is documented in `docs/AI_DATA_BOUNDARY.md`. It does not enable a connection or authorize implementation.
 
 ## .NET 3.5 and Unity Mono Constraints
 
-- `[Verified]` The mod is built against the .NET 3.5 target and the game-provided managed assemblies; this preview does not reference networking libraries.
-- `[Inferred]` Modern .NET APIs and TLS behavior can differ between .NET Framework 3.5, Unity Mono versions, operating systems, and installed security updates. Do not assume a particular TLS protocol or modern HTTP API is available in the game process.
-- `[Inferred]` Before selecting in-process networking or newer BCL APIs, compile and run a focused compatibility probe in the exact game runtime. Prefer keeping HTTPS and provider SDKs in a separately updated companion process that can use a current runtime and TLS stack.
+- `[Verified]` The mod targets .NET Framework 3.5 and uses game-provided managed assemblies. The current preview has no network implementation.
+- `[Verified]` Static inspection of the installed `System.dll` confirms that `HttpWebRequest` and asynchronous request APIs exist, but the exposed TLS protocol enums and Mono SSL mapping have no explicit TLS 1.2 value. Static inspection of the installed `UnityEngine.dll` cannot reveal the TLS behavior behind `UnityWebRequest.InternalBegin` because it is a native internal call.
+- `[Inferred]` A TLS 1.2 handshake may depend on the native Unity backend, Mono version, operating system, and security configuration. No handshake has been attempted; do not assume direct cloud HTTPS works in the game.
+- `[Inferred]` Before selecting a direct local HTTP route, validate it in the exact game runtime and keep all requests off the simulation thread. Route cloud HTTPS and provider SDKs through a separately updated companion using a current TLS stack.
 - `[Inferred]` Keep simulation-thread work bounded and synchronous only for local reads. Perform model requests, file polling, retries, and parsing outside the simulation thread; pass validated, small results back through the game's simulation queue.
 
 ## Roadmap
