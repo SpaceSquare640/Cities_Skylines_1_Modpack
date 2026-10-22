@@ -2,7 +2,7 @@
 
 **Scope:** This document describes a possible development path for the Cities: Skylines 1 mod. It does not claim that any future bridge, model connection, or control mechanism has been implemented.
 
-**Evidence labels:** `[Verified]` means confirmed from this branch's files, the installed game assembly metadata, or the requested static build. `[Inferred]` means a design proposal or an assumption that still needs validation in the game and its Unity Mono runtime.
+**Evidence labels:** `[Verified]` means confirmed from this branch's files, installed game assembly metadata, or dated source checks. `[Approved]` records a user-approved direction. `[Inferred]` means a proposal or assumption that still needs validation in the game and its Unity Mono runtime. `[To decide]` marks a choice awaiting user approval.
 
 ## Current 0.3.0 Preview
 
@@ -16,9 +16,10 @@
 
 ### In-game loopback bridge
 
-- `[Approved]` The selected design uses a separate local companion and loopback HTTP. Bind only to `127.0.0.1` on a fresh ephemeral port; never expose the listener to LAN or wildcard interfaces. The companion generates a new in-memory session token at each start, shares it with the mod through a reviewed bootstrap mechanism, and requires it on every request. Reject requests containing `Origin`; apply request/response size limits, rate limits, and deadlines. Exact limits and the bootstrap remain to be designed.
+- `[Approved]` The selected design uses a separate Windows companion and loopback HTTP bound only to `127.0.0.1` on an OS-assigned ephemeral port. Reject requests containing `Origin`. No request-size or request-frequency caps will be enforced; retain request deadlines and per-request consent.
+- `[Inferred]` The proposed session secret is 32 cryptographically random bytes, fresh for each companion process and valid only for that process lifetime. Transfer it from the child companion to the mod over a private redirected anonymous pipe after an opt-in launch; keep it out of files, logs, URLs, environment variables, and command-line arguments. Derive a per-request HMAC proof with sequence-based replay rejection and constant-time comparison instead of transmitting a reusable raw token.
 - `[Inferred]` A persistent connection can reduce polling and file coordination, but it adds port ownership, authentication, message framing, timeout, lifecycle, and game-thread scheduling concerns. The mod must never block the simulation thread waiting for a response.
-- `[Inferred]` Do not host cloud credentials or perform model inference inside the simulation callback. Send bounded snapshots to the companion and accept only versioned, size-limited messages.
+- `[Inferred]` Do not host cloud credentials or perform model inference inside the simulation callback. Send only consented, schema-validated snapshots to the companion; no application request-size or request-frequency caps are defined in this design.
 
 ### External process with files or IPC
 
@@ -37,7 +38,10 @@
 - `[Inferred]` Direct HTTP from the mod to Ollama Local at `http://localhost:11434` is technically plausible because the installed `HttpWebRequest` APIs exist and this path does not use TLS. It has not been tested in Cities: Skylines. Route local and cloud model requests through a separate companion in the recommended architecture so provider handling remains outside the game process.
 - `[Inferred]` Route the three cloud sources through the companion's HTTPS stack because TLS 1.2 support in the game's managed/native runtime is not established. The companion sends each request only after per-request consent and displays the selected cloud destination.
 - `[Approved]` Keep all provider keys in companion memory only for the initial version; clear them when the companion exits. Do not persist keys in the mod, saves, logs, repository, or companion storage.
-- `[Inferred]` The companion is not a Workshop item. The proposed distribution is a versioned official release with published checksums; installation, update, and code-signing decisions remain open. If it is not installed or running, keep the mod's read-only features available and report that model access is unavailable without trying another network route.
+- `[Approved]` Release and Development Workshop items each carry their matching companion build. The binary is unsigned; both item descriptions and the website must disclose this and publish that build's SHA-256 and source commit. The mod can start the installed companion only after player consent, and a settings preference can disable auto-start.
+- `[Inferred]` Steam updates the Workshop package independently of the running companion. To avoid replacing a locked Windows executable, copy the matching Workshop payload to an immutable per-user `%LOCALAPPDATA%` cache, verify its expected hash, and execute the cached copy. Never overwrite a running copy. Refuse the HTTP session unless edition, companion build, protocol version, and hash match the values pinned by the loaded mod; explain a mismatch and ask the player to update/restart.
+- `[Inferred]` If the companion is missing or not running, keep read-only features available and report that model access is unavailable. Do not use an alternate download path or direct model connection. The Workshop item is downloaded by Steam; the executable runs only after the player's opt-in.
+- `[Inferred]` No companion request-size or request-frequency limits are planned. Player-facing documentation should tell users to set provider-side usage/spending caps before cloud requests; local Ollama use is not covered by cloud account quotas.
 - `[Inferred]` Treat city names, mod-provided text, workshop descriptions, and model output as untrusted input. They must not be interpreted as executable commands or as permission to bypass the action whitelist.
 
 ## Observation and Action Contracts
@@ -54,7 +58,7 @@
 
 - `[Verified]` The 0.3.0 source contains no credential field or persistence, network client or listener, save-file write, or simulation-state mutation. It reads only the documented aggregate fields when the player requests a snapshot.
 - `[Inferred]` Keep the default mode read-only. Require explicit consent before any data leaves the game process and before enabling any action. Show the destination, data categories, and action scope in the UI.
-- `[Inferred]` Keep provider keys exclusively in the companion; never put them in the mod, saves, repository, prompts, or logs. Redact authorization headers and provider responses. Apply request deadlines, response-size limits, and cancellation so a stalled model cannot stall the simulation.
+- `[Inferred]` Keep provider keys exclusively in companion memory; never put them in the mod, saves, repository, prompts, or logs. Redact authorization headers and provider responses. Apply request deadlines and cancellation so a stalled model cannot stall the simulation.
 - `[Inferred]` Treat transport failure, malformed data, companion restarts, and model refusal as no-op outcomes. Fail closed: no response or invalid response must never create or repeat an action.
 - `[Verified]` The detailed future data allowlist, consent, retention, deletion, credential, and log-redaction proposal is documented in `docs/AI_DATA_BOUNDARY.md`. It does not enable a connection or authorize implementation.
 
