@@ -2,7 +2,7 @@
 
 **Status:** Proposal for a future milestone. This document does not authorize or implement an AI connection, data export, credential handling, or game control.
 
-**Evidence labels:** `[Verified]` describes facts confirmed from the current branch, static assembly inspection, or completed static build. `[Inferred]` marks a proposed design that still needs implementation review and runtime validation. `[To decide]` marks a choice for the user and Lead Architect.
+**Evidence labels:** `[Verified]` describes facts confirmed from the current branch, static assembly inspection, or completed static build. `[Approved]` records a design decision explicitly approved by the user. `[Inferred]` marks a proposal that still needs implementation review and runtime validation. `[To decide]` marks an unresolved choice for the user and Lead Architect.
 
 ## 1. Confirmed baseline and design gate
 
@@ -58,8 +58,8 @@
 - `[Inferred]` Provider credentials must never enter the game mod, mod settings, game saves, game log, repository, source code, commits, prompts, or diagnostic bundles. The game mod must not receive a provider key from the companion.
 - `[Inferred]` Windows Credential Manager can retain a per-user credential outside the game and companion files. It reduces repeated entry, but persists the secret, is Windows-specific, and requires a separately reviewed credential-management implementation in the companion.
 - `[Inferred]` Companion-memory-only storage avoids persistence and clears the key when the companion exits, but requires re-entry after restart and cannot protect a key from inspection while the companion is running.
-- `[Inferred]` Recommendation for the first connected rollout: keep player-supplied cloud keys in companion memory only. Consider Windows Credential Manager later as an explicit opt-in persistence feature; never store keys in the mod.
-- `[Inferred]` OpenAI and Anthropic use player-supplied keys kept only by the companion. Ollama Cloud authentication requirements must be confirmed before implementation; if it requires a credential, apply the same boundary. Ollama Local needs no remote provider key in the default local setup; any local endpoint authentication secret also stays outside the mod.
+- `[Approved]` For the initial companion, keep player-supplied cloud keys in companion memory only and clear them when it exits. Do not persist keys in the mod, game saves, logs, repository, or companion storage.
+- `[Approved]` OpenAI and Anthropic use player-supplied keys kept only by the companion. Check Ollama Cloud authentication requirements before starting that cloud integration; if it requires a credential, apply the same memory-only boundary. Ollama Local needs no remote provider key in the default local setup; any local endpoint authentication secret also stays outside the mod.
 - `[To decide]` Confirm the companion operating systems and whether a later release may offer remembered keys through the operating system's credential store. Recommendation: memory-only first, with no key persistence until the user separately approves it.
 
 ## 6. Log and diagnostic redaction
@@ -102,16 +102,31 @@
 - `[Inferred]` **OpenAI:** after a fresh per-request confirmation that names OpenAI as the destination, the companion sends only the approved snapshot and prompt to the selected OpenAI model over HTTPS, using the player's key only inside the companion.
 - `[Inferred]` **Anthropic:** after a fresh per-request confirmation that names Anthropic as the destination, the companion sends only the approved snapshot and prompt to the selected Anthropic model over HTTPS, using the player's key only inside the companion.
 - `[Inferred]` No request may switch source, endpoint, or model provider automatically. A change of destination requires a new consent preview and confirmation.
-- `[To decide]` Confirm the first rollout sequence while retaining all four sources as the intended supported set. Recommendation: validate Ollama Local first; add the three cloud adapters only after the companion HTTPS and credential boundary are reviewed.
+- `[Approved]` Implement Ollama Local first through the companion. Add Ollama Cloud, OpenAI, and Anthropic only in a later cloud phase, after checking the current authentication requirements and terms for each provider.
 
-### 7.4 Companion communication: loopback HTTP or named pipe
+### 7.4 Companion communication: loopback HTTP
 
 - `[Verified]` The installed `System.dll` contains the `HttpWebRequest` API, and the installed `System.Core.dll` metadata contains `NamedPipeClientStream` and `NamedPipeServerStream`. These are API-presence findings only; neither transport was exercised in the game.
-- `[Inferred]` **Loopback HTTP:** reuses an HTTP request/response model and is easier to inspect and support across operating systems. Risks include port conflicts and access by other local processes. Bind the companion only to `127.0.0.1`/loopback, use a short-lived per-run pairing token, bound payload size and time, and never expose a LAN listener.
-- `[Inferred]` **Named pipe:** avoids a TCP listener and can use operating-system access controls, especially on Windows. It is less portable and its exact behavior under the game's Mono runtime remains unverified.
-- `[Inferred]` Recommendation: use a loopback-only HTTP bridge between mod and companion for the first design, protected with a short-lived in-memory pairing token and strict request limits. Revisit named pipes if a later runtime probe demonstrates reliable cross-process support and the supported platform is Windows-only.
+- `[Approved]` Use HTTP between the mod and companion, with the companion bound only to IPv4 loopback address `127.0.0.1`. Do not bind to wildcard, LAN, or IPv6 interfaces. Select an unused ephemeral port at startup and share the selected endpoint with the mod through a separately reviewed bootstrap mechanism.
+- `[Approved]` Generate a fresh, unpredictable session token for every companion process start using a cryptographically secure random source. Keep it in memory, share it only with the paired mod process, and require it on every request in a dedicated HTTP header, never in a URL or query string. Do not write the token to logs or persistent configuration. Compare tokens without content-dependent timing where the runtime allows.
+- `[Approved]` Reject every request that contains an `Origin` header, regardless of its value. Do not enable CORS or expose a browser-based control surface on this listener.
+- `[Approved]` Apply explicit request-body and response-size bounds, per-session rate limits, and request deadlines. Reject oversized or over-limit requests before provider work begins. Exact numeric limits must be chosen before implementation.
+- `[Inferred]` Loopback HTTP is simpler to inspect and support than named pipes, but a local listener can still be targeted by another process on the same computer. The token reduces access by unauthenticated local clients; it does not protect against malware or a process that can read the mod or companion memory.
+- `[Inferred]` Named pipes avoid a TCP listener and can use operating-system access controls, especially on Windows, but are less portable and their behavior with the game's Mono runtime remains unverified. They are not the selected initial transport.
+- `[To decide]` Specify how the companion securely gives the random port and session token to the mod at startup. Do not use an unauthenticated discovery endpoint that reveals the token, and do not put the token in a URL, log, or persistent file. Recommendation: define and review a narrow local bootstrap handshake before implementing either process.
 
-### 7.5 Local and cloud risks
+### 7.5 Companion publication and trust
+
+- `[Approved]` The companion is a separate desktop application, not a Steam Workshop mod. Do not distribute it through Workshop.
+- `[Inferred]` Prefer an official GitHub Releases page for versioned companion installers and release notes, with a published SHA-256 checksum for each artifact. Keep the release source and checksum reachable from the project website without making the game mod download or launch the companion automatically.
+- `[Inferred]` Offer a manual install and update flow: the player downloads the release from the official project page, verifies the publisher signature when available or the published checksum, installs or replaces the companion, and starts it explicitly. Do not require administrator privileges unless a separately justified installer feature needs them. Keep provider credentials out of installer configuration and update metadata.
+- `[To decide]` Choose the final companion release channel and installer format. Recommendation: GitHub Releases, with Workshop excluded.
+- `[To decide]` Decide whether Windows builds will receive Authenticode code signing. Recommendation: sign releases when a maintainable certificate and signing process are available; otherwise publish checksums and build provenance, and clearly show that the binary is unsigned.
+- `[Inferred]` A new executable that opens a local listener may trigger antivirus or reputation warnings, especially before it has an established signing and distribution history. Publish source and checksums, document the limited loopback-only behavior, submit suspected false positives to the relevant vendor, and do not tell players to disable antivirus protections.
+- `[Approved]` If the companion is missing or not running, the mod must report that model access is unavailable and make no model request. Existing read-only snapshot and discovery features remain available; the mod must not download or install the companion automatically and must not fall back to a direct network connection.
+- `[To decide]` Confirm supported operating systems, installation/update ownership, and whether the player starts the companion manually or through an explicitly approved launcher integration. Recommendation: support Windows first and require the player to start and update it manually.
+
+### 7.6 Local and cloud risks
 
 - `[Inferred]` Local Ollama avoids sending the approved payload to a cloud model only when the endpoint is verified as loopback. A misconfigured remote endpoint, another local process, or local malware can expose the request; local processing does not guarantee privacy.
 - `[Inferred]` Each cloud provider receives the approved prompt and snapshot and may also receive account, network, timing, or service metadata. Retention, training use, data region, and account linkage depend on the provider and the player's settings.
@@ -119,6 +134,7 @@
 
 ## 8. Failure and safe degradation
 
+- `[Approved]` **Companion missing or not running:** report that model access is unavailable and make no model request. Keep read-only snapshot and interop-discovery features available; do not auto-download, install, or start the companion, and do not fall back to a direct provider connection.
 - `[Inferred]` **Ollama Local not started:** show that the local service is unavailable; do not switch to Ollama Cloud or another provider. If local authentication is configured and rejected, request correction without logging the credential. Local quota exhaustion is not applicable, but resource exhaustion should return a bounded local error.
 - `[Inferred]` **Ollama Cloud unavailable or key rejected:** show the provider and sanitized authentication/unavailable category. Confirm whether a credential is required before implementation; never log it.
 - `[Inferred]` **OpenAI or Anthropic key invalid:** keep the key inside the companion, report a sanitized authentication failure, and let the player re-enter it there. Never echo the key into the mod or logs.
@@ -129,11 +145,11 @@
 
 ## 9. Decisions before implementation
 
-- `[To decide]` Confirm the rollout sequence for the four intended sources. Recommendation: connect Ollama Local first, then add Ollama Cloud, OpenAI, and Anthropic through the companion after cloud terms are reviewed.
 - `[To decide]` Confirm the exact payload scope and whether any fields may be added after schema version 1. Recommendation: no additional city or player data in the first connected prototype; any new snapshot field must be game-verified and require a schema-version increment.
 - `[To decide]` Select the player-facing UI location for the request preview, per-request confirmation, revocation, and suggestion display.
-- `[To decide]` Select the local companion runtime, IPC transport, supported operating systems, endpoint authentication, size limits, and request deadlines.
-- `[To decide]` Confirm Ollama Cloud authentication requirements and approve retention, training, data-region, account-linkage, and credential-storage terms for each cloud provider.
+- `[To decide]` Select the companion runtime and supported operating systems; design the secure port/token bootstrap; and set numeric request/response size, rate, and deadline limits.
+- `[To decide]` Before the cloud phase, verify Ollama Cloud authentication and each provider's current retention, training, data-region, account-linkage, and credential requirements. Do not enable a cloud adapter until those findings are documented and reviewed.
+- `[To decide]` Confirm the companion release channel, installer/update flow, and code-signing decision described in section 7.5.
 - `[To decide]` Set retention and deletion behavior for temporary request data. Recommendation: no persistent prompt, snapshot, or response history in the initial rollout.
 - `[To decide]` Define how a future action request is displayed and confirmed per operation, while keeping the accepted interop contract's Write rules as the maximum authority.
 

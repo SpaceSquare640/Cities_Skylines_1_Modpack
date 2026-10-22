@@ -16,7 +16,7 @@
 
 ### In-game loopback bridge
 
-- `[Inferred]` A future mod could exchange messages with a separate local companion over a loopback-only transport. Keeping the companion on the same machine can avoid exposing a listener to the LAN, while the companion handles model access and credentials.
+- `[Approved]` The selected design uses a separate local companion and loopback HTTP. Bind only to `127.0.0.1` on a fresh ephemeral port; never expose the listener to LAN or wildcard interfaces. The companion generates a new in-memory session token at each start, shares it with the mod through a reviewed bootstrap mechanism, and requires it on every request. Reject requests containing `Origin`; apply request/response size limits, rate limits, and deadlines. Exact limits and the bootstrap remain to be designed.
 - `[Inferred]` A persistent connection can reduce polling and file coordination, but it adds port ownership, authentication, message framing, timeout, lifecycle, and game-thread scheduling concerns. The mod must never block the simulation thread waiting for a response.
 - `[Inferred]` Do not host cloud credentials or perform model inference inside the simulation callback. Send bounded snapshots to the companion and accept only versioned, size-limited messages.
 
@@ -28,16 +28,16 @@
 
 ### Recommendation
 
-- `[Inferred]` Prefer a separate companion process with a narrow, loopback-only IPC contract for the first connected prototype. Keep network clients and model SDKs out of the game process; choose a transport only after a small compatibility probe against the installed Unity Mono runtime.
+- `[Approved]` Use a separate companion process with a narrow loopback HTTP contract for the first connected prototype. Keep network clients and model SDKs out of the game process. A small compatibility probe is still required before implementation.
 
 ## Model Connections
 
 - `[Verified]` The installed game `System.dll` exposes `HttpWebRequest` and asynchronous response APIs, but its `SecurityProtocolType` and `SslProtocols` metadata contains no TLS 1.2 member. The installed `UnityEngine.dll` exposes `UnityWebRequest`, but its `InternalBegin` implementation is a native `InternalCall`; managed DLL inspection cannot verify its TLS behavior. See the verified/inferred split in `docs/AI_DATA_BOUNDARY.md`.
-- `[Inferred]` The intended source set is Ollama Local, Ollama Cloud, OpenAI, and Anthropic. Use one provider-neutral request/response model with adapters; the player selects the model name, which is not hard-coded in the mod.
+- `[Approved]` The intended source set is Ollama Local, Ollama Cloud, OpenAI, and Anthropic, implemented in that order: Ollama Local first, then the three cloud sources after provider authentication and terms are checked. Use one provider-neutral request/response model with adapters; the player selects the model name, which is not hard-coded in the mod.
 - `[Inferred]` Direct HTTP from the mod to Ollama Local at `http://localhost:11434` is technically plausible because the installed `HttpWebRequest` APIs exist and this path does not use TLS. It has not been tested in Cities: Skylines. Route local and cloud model requests through a separate companion in the recommended architecture so provider handling remains outside the game process.
 - `[Inferred]` Route the three cloud sources through the companion's HTTPS stack because TLS 1.2 support in the game's managed/native runtime is not established. The companion sends each request only after per-request consent and displays the selected cloud destination.
-- `[Inferred]` Prefer a loopback-only HTTP bridge between mod and companion, with short-lived in-memory pairing, strict payload limits, cancellation, and deadlines. Named pipes are an alternative with operating-system access controls but require runtime and platform validation.
-- `[Inferred]` Keep OpenAI and Anthropic player keys inside the companion. Use memory-only storage for the first connected rollout; evaluate an operating-system credential store only as an explicit later persistence option. Ollama Cloud's authentication requirement remains to be confirmed.
+- `[Approved]` Keep all provider keys in companion memory only for the initial version; clear them when the companion exits. Do not persist keys in the mod, saves, logs, repository, or companion storage.
+- `[Inferred]` The companion is not a Workshop item. The proposed distribution is a versioned official release with published checksums; installation, update, and code-signing decisions remain open. If it is not installed or running, keep the mod's read-only features available and report that model access is unavailable without trying another network route.
 - `[Inferred]` Treat city names, mod-provided text, workshop descriptions, and model output as untrusted input. They must not be interpreted as executable commands or as permission to bypass the action whitelist.
 
 ## Observation and Action Contracts
