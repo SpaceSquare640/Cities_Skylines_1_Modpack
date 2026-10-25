@@ -4,5 +4,11 @@ Visit the [Automated Public Transport Planning website page](https://spacesquare
 
 Author: Kingsley
 
+## Licensing
 
-Licensed under the GNU General Public License v3.0. See LICENSE.
+- This app is source-available; its source code is licensed under the PolyForm Noncommercial License 1.0.0. See LICENSE.
+- Website source code: PolyForm Noncommercial License 1.0.0.
+- Website content, including text and images: Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0).
+- Copyright Kingsley.
+
+<!-- Prepared by OpenAI-Codex. -->

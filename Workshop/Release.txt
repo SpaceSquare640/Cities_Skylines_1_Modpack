@@ -17,8 +17,9 @@ Automatic bus line planning is still in development. This preview lets the groun
 [*]Testing builds are published as the [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3823739653]Development Version[/url] – never subscribe to both.
 [*][url=https://spacesquare640.github.io/Cities_Skylines_1_Modpack/automated-public-transport-planning/]Project page and guide[/url]
 [*][url=https://spacesquare640.github.io/Cities_Skylines_1_Modpack/change-log/]Change log[/url]
-[*][url=https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/tree/Automated_Public_Transport_Planning]Source code (GPL-3.0)[/url]
+[*][url=https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/tree/Automated_Public_Transport_Planning]Source code (PolyForm Noncommercial License 1.0.0)[/url]
 [*][url=https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/issues/new/choose]Report a bug or suggest a feature[/url]
 [/list]
 
 Part of the Cities: Skylines 1 Modpack by Kingsley. The Modpack mods are built to work together without conflicting.
+<!-- Updated by OpenAI-Codex -->
