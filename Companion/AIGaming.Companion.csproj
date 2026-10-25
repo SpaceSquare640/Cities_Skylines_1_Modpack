@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>AIGaming.Companion</AssemblyName>
+    <RootNamespace>AIGaming.Companion</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <Version>0.4.0</Version>
+    <CompanionEdition Condition="'$(CompanionEdition)' == ''">release</CompanionEdition>
+    <CompanionProtocolVersion Condition="'$(CompanionProtocolVersion)' == ''">1</CompanionProtocolVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <CompanionBuildInfoLine Include="namespace AIGaming.Companion {" />
+    <CompanionBuildInfoLine Include="    internal static class CompanionBuildInfo {" />
+    <CompanionBuildInfoLine Include="        internal const string Edition = &quot;$(CompanionEdition)&quot;%3B" />
+    <CompanionBuildInfoLine Include="        internal const string Version = &quot;$(Version)&quot;%3B" />
+    <CompanionBuildInfoLine Include="        internal const string ProtocolVersion = &quot;$(CompanionProtocolVersion)&quot;%3B" />
+    <CompanionBuildInfoLine Include="    }" />
+    <CompanionBuildInfoLine Include="}" />
+  </ItemGroup>
+
+  <Target Name="GenerateCompanionBuildInfo" BeforeTargets="CoreCompile">
+    <WriteLinesToFile
+      File="$(IntermediateOutputPath)CompanionBuildInfo.g.cs"
+      Lines="@(CompanionBuildInfoLine)"
+      Overwrite="true"
+      Encoding="UTF-8" />
+    <ItemGroup>
+      <Compile Include="$(IntermediateOutputPath)CompanionBuildInfo.g.cs" />
+    </ItemGroup>
+  </Target>
+
+</Project>
+<!-- Implementation update signed by OpenAI-Codex. -->

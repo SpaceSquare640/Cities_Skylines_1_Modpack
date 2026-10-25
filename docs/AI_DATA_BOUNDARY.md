@@ -1,14 +1,14 @@
 # AI Gaming Data Boundary and Consent Design
 
-**Status:** Proposal for a future milestone. This document does not authorize or implement an AI connection, data export, credential handling, or game control.
+**Status:** Implementation record for the approved 0.4.0 Ollama Local companion milestone. The source implementation and framework-dependent Release builds have been completed; in-game behavior and the Windows x64 self-contained publish have not been verified. This status does not authorize cloud providers, credentials, extra data fields, or game control.
 
 **Evidence labels:** `[Verified]` describes facts confirmed from the current branch, static assembly inspection, or completed static build. `[Approved]` records a design decision explicitly approved by the user. `[Inferred]` marks a proposal that still needs implementation review and runtime validation. `[To decide]` marks an unresolved choice for the user and Lead Architect.
 
 ## 1. Confirmed baseline and design gate
 
-- `[Verified]` AI Gaming 0.3.0 captures a read-only `schemaVersion=1` city snapshot only after the player requests it. The data is written to the Cities: Skylines game log; it is not exported or transmitted.
+- `[Verified]` AI Gaming 0.3.0 added a read-only `schemaVersion=1` city snapshot log action. AI Gaming 0.4.0 adds a separate player-confirmed Ollama Local request path through the companion; it does not send request payloads or model responses to the game log.
 - `[Verified]` The current allowlist contains only `gameDate`, `population`, `fundsCents`, `residentialDemand`, `commercialDemand`, and `workplaceDemand`, in addition to the schema version.
-- `[Verified]` The current source has no model connection, network client or listener, API-key field or persistence, save-file write, or simulation-state mutation. The 0.3.0 game behavior has not been tested in Cities: Skylines.
+- `[Verified]` The 0.4.0 source connects only to an opt-in companion over authenticated IPv4 loopback HTTP, and the companion connects only to Ollama Local at `localhost:11434` through an IPv4 loopback socket. It has no cloud provider adapter, API-key field or persistence, save-file write, Harmony patch, or simulation-state mutation. Neither 0.3.0 nor 0.4.0 has been tested in Cities: Skylines.
 - `[Inferred]` Any future model request must use an explicit, versioned allowlist derived from schema version 1. A new field requires a documented source, type, unit, and in-game UI comparison, user approval, and a schema-version increment before it can be sent.
 - `[Inferred]` A future data-export milestone requires its own implementation plan and approval. This proposal alone does not approve transmission or model access.
 
@@ -21,21 +21,22 @@
 - `[Verified]` `population`: unsigned integer; sourced from the HUD population value at district 0, `m_populationData.m_finalCount`.
 - `[Verified]` `fundsCents`: 64-bit integer in cents; sourced from `EconomyManager.playerMoney`. Static IL inspection confirmed the getter multiplies `LastCashAmount` by 100. In-game HUD equality is not yet verified.
 - `[Verified]` `residentialDemand`, `commercialDemand`, and `workplaceDemand`: integer values sourced from the corresponding `ZoneManager` demand fields used by the game information panel and tooltips. In-game value and label matching is not yet verified.
-- `[Inferred]` For a first connected prototype, send only the fields needed for the specific player-approved request. Do not add an unapproved field merely because it exists in the game API.
+- `[Verified]` The 0.4.0 settings page exposes one checkbox per schemaVersion 1 field, all checked by default, plus a Select All control. The player may uncheck any subset; only selected values are serialized. The player-written question and selected model name are also shown in a preview and sent after a separate confirmation.
 
 ### 2.2 Prohibited data
 
-- `[Inferred]` Never send a city name, save file or save contents, citizen personal or identifying data, citizen or object lists, raw map data, or screenshots.
+- `[Verified]` The mod does not read or attach a city name, save file or save contents, citizen personal or identifying data, citizen or object lists, raw map data, screenshots, player account data, or arbitrary files to the request. The free-text player question is not automatically scanned or filtered; the player must review it and must not include prohibited data or secrets.
 - `[Inferred]` Never send player account data, Steam account names or identifiers, platform identifiers, device identifiers, or other account-linked identifiers.
 - `[Inferred]` Never send API keys, access tokens, authentication headers, passwords, private prompts containing credentials, or other secrets.
 - `[Inferred]` Never send game logs, crash reports, mod configuration files, arbitrary files, or data collected from another mod unless a separately approved schema explicitly defines the field and its provider has authorized that use.
 - `[Inferred]` Never treat model-generated code, commands, URLs, or text as permission to read files, run code, or change the game.
-- `[To decide]` Confirm whether any future schema may include fields beyond schema version 1. Recommendation: keep the first connected prototype limited to the six confirmed snapshot fields plus a player-written question that is shown in the consent preview.
+- `[Approved]` The 0.4.0 request is limited to player-selected schemaVersion 1 values, the entered model name, and the player-written question shown in the consent preview. Any additional game field requires source/type/unit verification, in-game UI verification, explicit approval, and a schema-version increment.
 
 ## 3. Player consent and revocation
 
-- `[Inferred]` Require explicit consent for every individual request, including requests to a local model service. Consent must be off by default and must not be remembered as blanket permission for later requests.
-- `[Inferred]` Before sending, show the selected source, player-selected model name, purpose, exact snapshot fields, and exact player-written question or prompt. Require a distinct confirmation for every request. For Ollama local, explicitly say that data remains on this computer and verify that the configured endpoint is loopback-only. For each cloud source, name the destination provider before confirmation.
+- `[Verified]` Every local request has a separate prepare-and-review step followed by a distinct confirm action. The preview identifies Ollama Local at `http://localhost:11434`, the model name, exact selected snapshot values, and the exact question. The mod captures selected values asynchronously on the simulation thread, then returns to the UI thread; it does not wait for capture in the UI.
+- `[Verified]` Companion auto-start permission defaults off and resets on game restart. Even when enabled, the companion starts only after the player confirms that request; this permission is not blanket consent to send future data.
+- `[Verified]` The companion transport is fixed to loopback. The Ollama connector accepts only `localhost:11434` and opens an IPv4 socket to `127.0.0.1`; it does not use a proxy or redirect. The selected model must also appear in the local model list with a positive local size; cloud model tags are rejected.
 - `[Inferred]` Do not start a background request or retry after failure without a new, explicit confirmation. Do not send a later snapshot under consent given for an earlier snapshot.
 - `[Inferred]` If the player revokes consent before transmission, discard the pending request. If transmission has started, attempt cancellation, discard any later response, and do not initiate game actions. Explain that data already delivered to a provider cannot necessarily be recalled.
 - `[Inferred]` A returned answer is an untrusted suggestion only. Displaying, copying, or dismissing it must not change the simulation.
@@ -45,9 +46,9 @@
 
 ## 4. Retention and deletion
 
-- `[Inferred]` Keep request snapshots and model responses in memory only for the active request and visible suggestion. Clear them when dismissed, when the request ends, or when the companion closes. Do not retain conversation history by default.
+- `[Verified]` The request snapshot and response are held in process memory for the active request/UI display. No conversation history, prompt, snapshot, or response is persisted by the mod or companion. The companion exits when its paired process closes the input pipe.
 - `[Inferred]` Do not write prompts, responses, snapshots, or credentials into game saves, the mod directory, project files, source control, or logs.
-- `[Inferred]` If a future transport requires temporary files, use a user-visible, explicitly selected location, a bounded format and size, and a documented expiry. Remove temporary data after completion, cancellation, or expiry; do not use the save directory.
+- `[Verified]` The only persistent data created by this implementation is the verified companion executable staged under `%LOCALAPPDATA%\SpaceSquare640\AI Gaming\Companion\<edition>\<version>-<sha256>\`. Request payloads are not written there. Old version directories are not automatically deleted; no cache cleanup is implemented.
 - `[Inferred]` Local deletion can clear in-memory data and any temporary companion files owned by the application. It cannot erase a copy another process or user has already made.
 - `[Inferred]` Cloud retention and deletion depend on the selected provider and account settings. Do not claim remote deletion unless the provider confirms it; surface the provider's retention and training terms before enabling that provider.
 - `[To decide]` Set the retention duration for any future local cache or temporary file and decide whether users may opt into saved conversations. Recommendation: no persistent cache or saved conversation in the first connected prototype.
@@ -64,7 +65,7 @@
 
 ## 6. Log and diagnostic redaction
 
-- `[Verified]` The current 0.3.0 button writes the aggregate schema version 1 snapshot to the local game log. That log output is not sent to an AI service by the current source.
+- `[Verified]` The separate 0.3.0 city-summary button writes an aggregate schema version 1 line to the local game log. The 0.4.0 AI request path does not write selected values, prompt text, model output, credentials, session tokens, or provider error bodies to the game log.
 - `[Inferred]` Future local diagnostics may record only allowlisted operational metadata such as a random request correlation value that is not sent to the provider, local/cloud mode, coarse duration, and success or failure category. They must not include snapshot values unless a separate, visible local diagnostic action explicitly requests them.
 - `[Inferred]` Redact or omit prompt text, model responses, account identifiers, credentials, authorization headers, full request URLs containing query secrets, raw payloads, and provider error bodies. Sanitize exception messages before logging.
 - `[Inferred]` Never upload the game log, crash report, or diagnostic bundle as part of a model request. Do not log model text as an executable or trusted instruction.
@@ -93,25 +94,33 @@
 - `[Inferred]` Route provider-specific work through one provider-neutral request shape containing a protocol version, temporary request ID, source ID, player-selected model name, player-written prompt, and the explicitly consented schemaVersion 1 snapshot fields. Do not include credentials in this request object.
 - `[Inferred]` Normalize all four providers to one response shape containing the request ID, status, source ID, selected/actual model name when available, suggestion text, and a sanitized error category. The response must not contain executable instructions or game actions.
 - `[Inferred]` Keep provider adapters responsible for translating the common request and response to each provider's native API. Never hard-code model names; let the player choose a model from provider availability or enter a model name, then report a missing or unavailable model without silently substituting another.
-- `[Inferred]` The serialization and exact protocol version for the future companion boundary still need a separate implementation design; this proposal does not add a runtime API.
+- `[Verified]` The local 0.4.0 bridge encoding and HMAC/session protocol are documented in `docs/COMPANION_PROTOCOL.md`. A shared request/response abstraction across all four model sources remains a future design item.
 
 ### 7.3 Four source-specific data flows
 
-- `[Inferred]` **Ollama Local:** after per-request consent, send only the allowed snapshot and player prompt to the companion over the local bridge; the companion calls `http://localhost:11434`. Show that data stays on this computer, and enforce a loopback-only Ollama endpoint before showing that label. No cloud fallback is allowed. A direct module-to-Ollama HTTP call is technically plausible from the available `HttpWebRequest` API, but the recommended design routes it through the companion to share the provider adapter and keep networking outside the game process.
+- `[Verified]` **Ollama Local:** after per-request consent, send only the selected snapshot fields and player question to the companion over the local bridge. The companion queries `http://localhost:11434/api/tags`, accepts only a selected model listed with a positive local size, rejects cloud-tagged names, then calls `/api/chat`. Its socket is forced to `127.0.0.1`; no provider fallback is implemented. Ollama documents that cloud features can be disabled with `OLLAMA_NO_CLOUD=1` or `disable_ollama_cloud=true`; the mod does not modify or inspect the player's Ollama configuration.
 - `[Inferred]` **Ollama Cloud:** after a fresh per-request confirmation that names Ollama Cloud as the destination, the companion sends only the approved snapshot and prompt to Ollama Cloud over HTTPS. Confirm its current authentication and data-retention terms before implementation.
 - `[Inferred]` **OpenAI:** after a fresh per-request confirmation that names OpenAI as the destination, the companion sends only the approved snapshot and prompt to the selected OpenAI model over HTTPS, using the player's key only inside the companion.
 - `[Inferred]` **Anthropic:** after a fresh per-request confirmation that names Anthropic as the destination, the companion sends only the approved snapshot and prompt to the selected Anthropic model over HTTPS, using the player's key only inside the companion.
 - `[Inferred]` No request may switch source, endpoint, or model provider automatically. A change of destination requires a new consent preview and confirmation.
 - `[Approved]` Implement Ollama Local first through the companion. Add Ollama Cloud, OpenAI, and Anthropic only in a later cloud phase, after checking the current authentication requirements and terms for each provider.
 
-### 7.4 Companion HTTP authentication and token handoff (approved design; implementation pending)
+#### Ollama local/cloud distinction checked 2026-10-25
+
+- `[Verified]` Ollama's cloud documentation distinguishes app/CLI cloud models from local API usage and states that cloud model inference runs on Ollama's servers. Its FAQ says cloud features can be disabled with `OLLAMA_NO_CLOUD=1` or `disable_ollama_cloud=true`, followed by an Ollama restart.
+- `[Verified]` The local `GET /api/tags` documentation returns installed model entries including a `size` field; the local `/api/chat` endpoint accepts a model name and message list. AI Gaming now requires a listed entry with a positive size and rejects cloud-tag suffixes before sending a prompt.
+- `[Inferred]` The local model list and suffix check are a practical guard against choosing documented cloud aliases, but they do not inspect the user's Ollama server configuration or prove behavior for every future Ollama version. The player-facing notice recommends disabling Ollama cloud features for additional assurance.
+- Official sources, checked 2026-10-25: https://docs.ollama.com/cloud ; https://docs.ollama.com/faq ; https://docs.ollama.com/api/tags ; https://docs.ollama.com/api/chat
+
+### 7.4 Companion HTTP authentication and token handoff (approved and implemented; runtime validation pending)
 
 - `[Approved]` Use HTTP bound only to IPv4 loopback address `127.0.0.1`, on an OS-assigned ephemeral port that remains bound for the listener's lifetime. Reject every request containing an `Origin` header; do not enable CORS. Never bind to wildcard, LAN, or IPv6 interfaces.
 - `[Approved]` Generate a fresh 32-byte (256-bit) session secret with an operating-system cryptographically secure random generator at every companion start. Keep it only in the companion and paired game process memory, rotate it on every start, and expire it when either process exits.
 - `[Approved]` Never send the reusable secret itself in HTTP. Each request carries a fixed-length HMAC-SHA-256 proof over a canonical message containing protocol version, edition, sequence number, HTTP method, route, and request-body hash. Compare proofs in constant time and reject repeated or out-of-order sequence numbers. Authenticate companion responses with the same session-bound approach. Never pass the secret through files, logs, URLs, environment variables, or command-line arguments.
-- `[Approved]` After explicit player consent and only when auto-start is enabled, AI Gaming starts the matching companion as a child process. Use a private redirected anonymous pipe for the startup handshake containing edition, companion build, protocol version, port, and secret. Do not mirror the handshake to console output. The companion accepts only the paired game process session established through that handshake. Verify the operating-system parent process and expected Cities: Skylines executable identity, then require exact edition/build/protocol/hash agreement before accepting the session.
+- `[Verified]` After request confirmation and only when the setting is enabled, AI Gaming starts the matching companion as a child process. Redirected standard input/output anonymous pipes carry a bootstrap and a readiness message containing edition, version, protocol, hash, ephemeral port, process identities, and the 32-byte secret. These streams are not attached to a visible console and the message is not logged. The companion checks its actual parent PID, the `Cities.exe` image path/name, its own executable SHA-256, and exact edition/version/protocol agreement. It refuses the session on a mismatch.
 - `[Approved]` Threat boundary: HMAC and sequence checks prevent guessing, request forgery without the secret, and replay of accepted requests; they do not encrypt loopback HTTP. The design does not defend against local privileged software that can read or inject into the game or companion process, inspect their memory, or control the game process. Such software may observe payloads, steal the in-memory secret, forge responses, or bypass the checks. The player must see this limitation before enabling a connection.
-- `[Inferred]` The .NET/Mono anonymous-pipe redirection and handshake behavior still requires a focused runtime probe before implementation. If it fails, stop and present a replacement handoff design for approval; never fall back to a file, URL, log, environment variable, or command-line secret.
+- `[Verified]` A Windows CLR probe verified a redirected pipe round trip with a small non-secret payload. The game's Unity Mono process startup and handshake behavior remains unverified. The source has no file, URL, log, environment-variable, or command-line token fallback.
+- `[Inferred]` PID/path checks are not publisher-signature authentication. A same-user process able to run the companion itself can establish its own session; it cannot obtain a game snapshot unless it can already inspect or control the game process. This residual identity boundary needs review before public distribution.
 
 ### 7.5 Workshop distribution and update lifecycle
 
@@ -120,10 +129,10 @@
 - `[Verified, checked 2026-10-22]` The Steam Subscriber Agreement allows app-specific Workshop terms and says Valve may restrict or remove Workshop contributions. I found no general executable-extension prohibition in the official Steamworks Workshop pages and Subscriber Agreement reviewed for this update. That absence is not affirmative permission; CS1/Paradox app-specific rules and approval to launch a Workshop-bundled executable remain to be confirmed before public release.
 - `[Approved]` The Release Workshop item must contain its matching Release companion, and the Development Workshop item must contain its matching Development companion. Steam subscription supplies and updates the files; Steam does not launch the companion. AI Gaming may launch it only after player consent.
 - `[Approved]` Before any public release, first upload the companion-bearing build to the hidden Development Workshop item and observe whether the upload is blocked or the item is removed. This is an empirical viability check, not policy approval. If Workshop distribution is blocked, removed, or otherwise not viable, publish the companion through GitHub Releases instead. Only the installation source changes: companion discovery, edition/version/hash validation, opt-in launch, authentication, and loopback connection behavior remain the same.
-- `[Approved]` Use a separate immutable, versioned per-user cache under `%LOCALAPPDATA%\SpaceSquare640\AI Gaming\Companion\<edition>\<version>-<sha256>\` for Release and Development. On a consented launch, verify the SHA-256 and execute the cached copy; never overwrite a running version. This avoids Steam updates replacing an executable that is in use.
-- `[Inferred]` Each mod build should pin its expected companion edition, companion build/version, protocol version, and SHA-256. The companion startup handshake must report those values, and the mod must refuse all HTTP requests if any value differs. If Steam has updated the Workshop package while the current game process still has an older mod loaded, use only a matching already-cached companion; otherwise report a version mismatch and ask the player to restart/update. Do not kill an unrelated or mismatched process automatically.
-- `[Approved]` Provide an explicit settings-page preference to disable automatic companion launch. Require an affirmative first-use consent before enabling launch; recommendation: the preference starts disabled. If disabled, AI Gaming never starts the executable.
-- `[Approved]` The versioned `%LOCALAPPDATA%` cache direction and mismatch/restart flow are approved. The implementation plan must define safe stale-cache identification and cleanup rules before any cleanup code is written; this document does not authorize deleting cache files.
+- `[Verified]` On a consented launch the mod checks the Workshop-side companion hash, stages it under the edition/version/hash cache path, rechecks the copied hash, and starts only the staged copy. It never overwrites a versioned cache file and does not delete old cache versions. Steam update behavior and locked-file recovery have not been tested in game.
+- `[Verified]` The mod build carries companion edition/version/protocol/hash values. A hash value of `UNCONFIGURED` deliberately fails closed. Packaging must publish the matching self-contained companion, calculate its SHA-256, and pass that exact value into the mod build; edition, version, protocol, or hash mismatch refuses launch.
+- `[Verified]` The settings page exposes a companion-start checkbox that defaults off and resets when the game restarts. If it is off, the mod never starts the executable. Each request still requires a separate preview and confirmation.
+- `[Approved]` The versioned `%LOCALAPPDATA%` cache is approved. Automatic stale-cache cleanup remains disabled; any cleanup implementation requires a separate plan and approval.
 
 #### Official-source references (checked 2026-10-22)
 
@@ -143,14 +152,14 @@
 
 - `[Approved]` The mod and companion will not enforce request-size or request-frequency limits. Before cloud use, tell players to configure usage/spending caps in the selected provider's account dashboard where available. These provider caps do not constrain local Ollama usage or protect the companion from unusually large local requests.
 - `[Inferred]` With no local size or frequency caps, large or repeated requests can consume memory, CPU, and provider usage. Provider quotas may limit cloud charges if correctly configured, but do not prevent local resource exhaustion and may not apply to every provider/account setup. Keep per-request consent, timeouts, schema validation, and no automatic retry; these do not replace usage caps.
-- `[Inferred]` Local Ollama avoids sending the approved payload to a cloud model only when the endpoint is verified as loopback. A misconfigured remote endpoint, another local process, or local malware can expose the request; local processing does not guarantee privacy.
+- `[Verified]` AI Gaming fixes the Ollama endpoint to local IPv4 loopback, requires the selected model to appear in `/api/tags` with a positive local size, and rejects names ending in `:cloud` or `-cloud`. It does not inspect or change Ollama's cloud configuration. The player may disable Ollama cloud features for an additional server-side guard; the UI explains this limitation.
 - `[Inferred]` Each cloud provider receives the approved prompt and snapshot and may also receive account, network, timing, or service metadata. Retention, training use, data region, and account linkage depend on the provider and the player's settings.
 - `[To decide]` Before enabling any cloud source, confirm its endpoint, authentication method, retention, training, region, and account-linkage terms and display the named destination before every request.
 
 ## 8. Failure and safe degradation
 
-- `[Approved]` **Companion missing or not running:** report that model access is unavailable and make no model request. Keep read-only snapshot and interop-discovery features available. Workshop is the preferred distribution source, with GitHub Releases as the approved fallback if Workshop is not viable; the player installs from the selected source. The mod may start the matching installed companion only after consent and while auto-start is enabled; it must not silently download it or fall back to a direct provider connection.
-- `[Inferred]` **Ollama Local not started:** show that the local service is unavailable; do not switch to Ollama Cloud or another provider. If local authentication is configured and rejected, request correction without logging the credential. Local quota exhaustion is not applicable, but resource exhaustion should return a bounded local error.
+- `[Verified]` **Companion missing, hash unconfigured/mismatched, cache unavailable, launch failure, or identity/version mismatch:** report a localized category and send no request. Keep snapshot logging and interop discovery available. No direct model fallback or retry is attempted.
+- `[Verified]` **Ollama Local not started:** return a sanitized `ollama_unavailable` result. **Cloud model name or model not installed locally:** return `local_model_required` or `model_not_found`. **Authentication rejected:** return `local_authentication_failed` without logging authentication details. **Timeout, malformed response, or other provider error:** return a category only and do not retry.
 - `[Inferred]` **Ollama Cloud unavailable or key rejected:** show the provider and sanitized authentication/unavailable category. Confirm whether a credential is required before implementation; never log it.
 - `[Inferred]` **OpenAI or Anthropic key invalid:** keep the key inside the companion, report a sanitized authentication failure, and let the player re-enter it there. Never echo the key into the mod or logs.
 - `[Inferred]` **Cloud quota or usage limit reached:** report the provider limit and stop. Do not silently change providers or consume another provider's key.
@@ -158,20 +167,25 @@
 - `[Inferred]` **Model missing or unavailable:** identify the selected provider/model and ask the player to choose an available name or install/pull it themselves. Do not hard-code a replacement, run a shell command, or switch provider automatically.
 - `[Inferred]` All failures, including malformed responses, must leave the game simulation unchanged and must not block the UI or simulation thread. Log only a sanitized error category; never log credentials, request payloads, prompts, or provider error bodies.
 
-## 9. Decisions before implementation
+## 9. Remaining decisions and release gates
 
-- `[To decide]` Confirm the exact payload scope and whether any fields may be added after schema version 1. Recommendation: no additional city or player data in the first connected prototype; any new snapshot field must be game-verified and require a schema-version increment.
-- `[To decide]` Select the player-facing UI location for the request preview, per-request confirmation, revocation, and suggestion display.
+- `[Approved]` The 0.4.0 request uses only player-selected schemaVersion 1 values, the entered model name, and the player-written question. The question is free text and is not scanned; the player must not enter secrets or prohibited data.
+- `[Verified]` Request preview, per-request confirmation, cancellation, and suggestion display are on the settings page. Cancellation aborts the current request where possible; data already accepted by Ollama cannot be recalled.
 - `[Approved]` Support Windows first. No built-in request-size or request-frequency limits; player-facing copy must tell users to configure provider-side cloud usage caps where available.
-- `[Approved]` The 32-byte CSPRNG secret, per-start rotation, anonymous-pipe handoff, per-request HMAC and sequence anti-replay checks, constant-time comparison, process/version identity checks, and versioned `%LOCALAPPDATA%` cache direction are approved. Runtime probes and implementation-plan details remain prerequisites to coding.
+- `[Approved]` The 32-byte CSPRNG secret, per-start rotation, anonymous-pipe handoff, per-request HMAC and sequence anti-replay checks, constant-time comparison, process/version identity checks, and versioned `%LOCALAPPDATA%` cache direction are approved and present in source. Only static builds and a Windows CLR pipe probe have been performed; game-runtime behavior remains pending.
 - `[To decide]` Before the cloud phase, verify Ollama Cloud authentication and each provider's current retention, training, data-region, account-linkage, and credential requirements. Do not enable a cloud adapter until those findings are documented and reviewed.
 - `[To decide]` Before public release, confirm CS1/Paradox app-specific rules for including and launching an executable. The hidden Development upload check is required but does not establish policy approval.
 - `[Approved]` Before public release, test the companion package on the hidden Development Workshop item. If Workshop is blocked, removed, or otherwise not viable, use GitHub Releases as the companion distribution source without changing the mod's detection and connection protocol.
 - `[To decide]` Define final player-facing usage-cap text for both Workshop items and the website; it must state that the companion is unsigned and include the edition-specific SHA-256 and source commit.
-- `[To decide]` Set retention and deletion behavior for temporary request data. Recommendation: no persistent prompt, snapshot, or response history in the initial rollout.
+- `[Verified]` No prompt, snapshot, or response history is persisted. The separate companion executable cache is versioned and immutable; old entries are not automatically deleted.
 - `[To decide]` Define how a future action request is displayed and confirmed per operation, while keeping the accepted interop contract's Write rules as the maximum authority.
 
 ## 10. Approval boundary
 
-- `[Verified]` This document is a design proposal only. AI Gaming 0.3.0 remains a local, read-only preview with no model connection or outbound data transfer.
-- `[Inferred]` Before implementation, resolve the decisions above, prepare a separate scoped plan, and obtain approval. Any future change to the accepted interop contract follows its governance rule and is outside this document's scope.
+- `[Verified]` AI Gaming 0.4.0 implements the approved Ollama Local-only request path. It has not been tested in Cities: Skylines, and the self-contained win-x64 publish has not been produced or verified in this environment.
+- `[Approved]` The approved implementation does not include cloud adapters, API-key entry/storage, credential persistence, gameplay actions, or interop capability calls. Those require later plans and approval; check Ollama Cloud authentication and each provider's terms before a cloud phase.
+
+
+---
+
+Implementation update signed by OpenAI-Codex.

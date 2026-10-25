@@ -8,13 +8,18 @@
     <LangVersion>latest</LangVersion>
     <Nullable>disable</Nullable>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-    <Version>0.3.0</Version>
-    <AssemblyVersion>0.3.0.0</AssemblyVersion>
-    <FileVersion>0.3.0.0</FileVersion>
-    <InformationalVersion>0.3.0 - Read-only city observation snapshot</InformationalVersion>
+    <Version>0.4.0</Version>
+    <AssemblyVersion>0.4.0.0</AssemblyVersion>
+    <FileVersion>0.4.0.0</FileVersion>
+    <InformationalVersion>0.4.0 - Ollama Local companion preview</InformationalVersion>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <CSInstallPath Condition="'$(CSInstallPath)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Cities_Skylines</CSInstallPath>
     <DevTools Condition="'$(DevTools)' == ''">false</DevTools>
+    <CompanionEdition Condition="'$(CompanionEdition)' == '' and '$(DevTools)' == 'true'">development</CompanionEdition>
+    <CompanionEdition Condition="'$(CompanionEdition)' == ''">release</CompanionEdition>
+    <CompanionVersion Condition="'$(CompanionVersion)' == ''">$(Version)</CompanionVersion>
+    <CompanionProtocolVersion Condition="'$(CompanionProtocolVersion)' == ''">1</CompanionProtocolVersion>
+    <CompanionSha256 Condition="'$(CompanionSha256)' == ''">UNCONFIGURED</CompanionSha256>
   </PropertyGroup>
 
   <ItemGroup>
@@ -38,7 +43,30 @@
 
   <ItemGroup>
     <Compile Remove="Source\Development\**\*.cs" />
+    <Compile Remove="Companion\**\*.cs" />
   </ItemGroup>
+
+  <ItemGroup>
+    <CompanionBuildInfoLine Include="namespace AIGaming {" />
+    <CompanionBuildInfoLine Include="    internal static class CompanionBuildInfo {" />
+    <CompanionBuildInfoLine Include="        internal const string Edition = &quot;$(CompanionEdition)&quot;%3B" />
+    <CompanionBuildInfoLine Include="        internal const string Version = &quot;$(CompanionVersion)&quot;%3B" />
+    <CompanionBuildInfoLine Include="        internal const string ProtocolVersion = &quot;$(CompanionProtocolVersion)&quot;%3B" />
+    <CompanionBuildInfoLine Include="        internal const string Sha256 = &quot;$(CompanionSha256)&quot;%3B" />
+    <CompanionBuildInfoLine Include="    }" />
+    <CompanionBuildInfoLine Include="}" />
+  </ItemGroup>
+
+  <Target Name="GenerateCompanionBuildInfo" BeforeTargets="CoreCompile">
+    <WriteLinesToFile
+      File="$(IntermediateOutputPath)CompanionBuildInfo.g.cs"
+      Lines="@(CompanionBuildInfoLine)"
+      Overwrite="true"
+      Encoding="UTF-8" />
+    <ItemGroup>
+      <Compile Include="$(IntermediateOutputPath)CompanionBuildInfo.g.cs" />
+    </ItemGroup>
+  </Target>
 
   <ItemGroup Condition="'$(DevTools)' == 'true'">
     <Compile Include="Source\Development\**\*.cs" />
@@ -49,3 +77,4 @@
   </Target>
 
 </Project>
+<!-- Implementation update signed by OpenAI-Codex. -->

@@ -6,20 +6,28 @@ namespace AIGaming
 {
     public sealed class AIGamingMod : IUserMod
     {
+        private LocalAiRequestController _localAiRequestController;
+
         public string Name => "AI Gaming";
 
         public string Description =>
             "Early preview of a mod that will let a local or cloud AI model play Cities: Skylines, " +
-            "or assist you while you play. This version captures a small read-only city snapshot and " +
-            "discovers optional Modpack interop manifests; it does not call other mod capabilities or control the game.";
+            "or assist you while you play. This version can send selected read-only city fields to a local Ollama " +
+            "model through an optional companion after per-request confirmation. It does not connect to cloud models " +
+            "or control the game.";
 
         public void OnEnabled()
         {
-            Debug.Log("[AI Gaming] Early preview loaded.");
+            Debug.Log("[AI Gaming] Early preview 0.4.0 loaded.");
         }
 
         public void OnDisabled()
         {
+            if (_localAiRequestController != null)
+            {
+                _localAiRequestController.Shutdown();
+                _localAiRequestController = null;
+            }
             Debug.Log("[AI Gaming] Mod disabled.");
         }
 
@@ -37,6 +45,13 @@ namespace AIGaming
             group.AddButton(Localization.Get("settings.website"), IgnoreInformationClick);
             AddInteropStatusRows(group);
             group.AddButton(Localization.Get("settings.summaryButton"), CitySummary.QueueWrite);
+
+            if (_localAiRequestController != null)
+            {
+                _localAiRequestController.Shutdown();
+            }
+            UIHelperBase localAiGroup = group.AddGroup(Localization.Get("localAi.title"));
+            _localAiRequestController = new LocalAiRequestController(localAiGroup);
         }
 
         private static void AddInteropStatusRows(UIHelperBase group)
@@ -114,3 +129,4 @@ namespace AIGaming
         }
     }
 }
+// Implementation update signed by OpenAI-Codex.
