@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace AIImprove.Dev
 {
+    // Signed: OpenAI-Codex (2026-10-25).
     // DEVELOPMENT ONLY. NOT COMPILED INTO THE RELEASED DLL.
     //
     // Excluded by default in AIImprove.csproj: the SDK's default `**/*.cs` glob has `dev/**/*.cs`
@@ -91,13 +92,20 @@ namespace AIImprove.Dev
                 "[AIImprove] *** DEVELOPMENT BUILD *** Dev trigger panel is active. This build was " +
                 "produced with -p:DevTools=true and must not be uploaded to the Workshop. " +
                 "Ctrl+Shift+R = force TrackerReset.ResetAll(). Ctrl+Shift+T = toggle the " +
-                "thunderstorm override.");
+                "thunderstorm override. Sanitation lifecycle events require Verbose logging.");
 
             // The probe applies its own Harmony patch rather than being registered by Patcher.cs,
             // for the same isolation reason this whole folder exists: the shipping build must not
             // name any type in here. It edits live vehicle paths on purpose - see LateMergeProbe.cs
             // before concluding anything from a session that ran with it armed.
             LateMergeProbe.Install();
+            SanitationLifecycleProbe.Install();
+        }
+
+        public override void OnReleased()
+        {
+            SanitationLifecycleProbe.Uninstall();
+            base.OnReleased();
         }
 
         public override void OnUpdate(float realTimeDelta, float simulationTimeDelta)

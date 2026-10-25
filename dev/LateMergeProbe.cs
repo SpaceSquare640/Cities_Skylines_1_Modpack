@@ -7,6 +7,7 @@ using UnityEngine;
 
 namespace AIImprove.Dev
 {
+    // Signed: OpenAI-Codex (2026-10-25).
     // DEVELOPMENT ONLY. NOT COMPILED INTO THE RELEASED DLL. See dev/DevTriggerPanel.cs for how the
     // exclusion works and why it is airtight.
     //
@@ -137,6 +138,15 @@ namespace AIImprove.Dev
 
         private static void TryStart(ushort vehicleID, ref Vehicle data)
         {
+            // Keep sanitation lifecycle observations isolated from this probe's intentional live-path
+            // edits. The sanitation probe observes GarbageTruckAI and HearseAI without modifying them.
+            VehicleInfo vehicleInfo = data.Info;
+            if (vehicleInfo == null || vehicleInfo.m_vehicleAI is GarbageTruckAI ||
+                vehicleInfo.m_vehicleAI is HearseAI)
+            {
+                return;
+            }
+
             if (data.m_path == 0U || (data.m_flags & Vehicle.Flags.WaitingPath) != 0)
             {
                 return;

@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace AIImprove
 {
+    // Signed: OpenAI-Codex (2026-10-25).
     // "垃圾車／殯儀車調度" (2026-08-17). Same idea as FireResponseTracker's idle-seek half, applied
     // to garbage trucks and hearses.
     //
@@ -21,7 +22,7 @@ namespace AIImprove
     //
     // Generic over TransferManager.TransferReason (Garbage or Dead) rather than one tracker per
     // vehicle type, since the logic is identical - only the material differs.
-    internal static class SanitationIdleSeekTracker
+    internal static partial class SanitationIdleSeekTracker
     {
         // Called by TrackerReset when a save is unloaded. Building, vehicle and node IDs are
         // recycled from fixed pools, so anything left here from the previous city would be read
