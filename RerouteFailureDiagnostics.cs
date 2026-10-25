@@ -82,6 +82,8 @@ namespace AIImprove
             public int FailedWhileUndergroundOrTransition;
             public int FailedWithTargetPosBeyondSnapRadius;
             public float FailedTargetPosDistanceSum;
+            // OpenAI-Codex 2026-10-25: Tracks finite distances included in the average.
+            public int FailedTargetPosDistanceSampleCount;
             public float FailedTargetPosDistanceMax;
         }
 
@@ -113,6 +115,7 @@ namespace AIImprove
             float distance = Vector3.Distance(lookaheadTarget, vehicleData.GetLastFramePosition());
             if (!float.IsNaN(distance) && !float.IsInfinity(distance))
             {
+                counters.FailedTargetPosDistanceSampleCount++;
                 counters.FailedTargetPosDistanceSum += distance;
                 if (distance > counters.FailedTargetPosDistanceMax)
                 {
@@ -148,8 +151,8 @@ namespace AIImprove
             float acceptedPercent = counters.Attempts > 0
                 ? counters.Accepted * 100f / counters.Attempts
                 : 0f;
-            float averageDistance = counters.Failed > 0
-                ? counters.FailedTargetPosDistanceSum / counters.Failed
+            float averageDistance = counters.FailedTargetPosDistanceSampleCount > 0
+                ? counters.FailedTargetPosDistanceSum / counters.FailedTargetPosDistanceSampleCount
                 : 0f;
 
             Log.Verbose(
@@ -158,7 +161,8 @@ namespace AIImprove
                 acceptedPercent.ToString("F0") + "%), " + counters.Failed + " failed. Of the failures: " +
                 counters.FailedWithTargetPosBeyondSnapRadius + " had m_targetPos3 beyond the " +
                 SnapRadius.ToString("F0") + "m snap radius (avg " + averageDistance.ToString("F0") +
-                "m, max " + counters.FailedTargetPosDistanceMax.ToString("F0") + "m), " +
+                "m across " + counters.FailedTargetPosDistanceSampleCount + " finite distance samples, max " +
+                counters.FailedTargetPosDistanceMax.ToString("F0") + "m), " +
                 counters.FailedWhileUndergroundOrTransition + " were underground/in transition, " +
                 counters.FailedUnderPoolPressure + " happened with the PathUnit pool over " +
                 (PoolPressureFraction * 100f).ToString("F0") + "% full.");

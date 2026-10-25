@@ -106,13 +106,14 @@
        ContinueOnError + the HasGit guard keep this working where git isn't usable at all (source
        zip, no git on PATH, build server without the .git folder) - it just falls back to the
        VersionPrefix above rather than failing the build. -->
+  <!-- OpenAI-Codex 2026-10-25: Scope Git's ownership exception to each invocation; do not change global config. -->
   <Target Name="SetVersionFromGit" BeforeTargets="GetAssemblyVersion;GenerateAssemblyInfo">
-    <Exec Command="git rev-list --count HEAD" ConsoleToMSBuild="true" StandardOutputImportance="low"
+    <Exec Command="git -c &quot;safe.directory=$(MSBuildProjectDirectory)&quot; rev-list --count HEAD" ConsoleToMSBuild="true" StandardOutputImportance="low"
           ContinueOnError="true" WorkingDirectory="$(MSBuildProjectDirectory)">
       <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitCount" />
       <Output TaskParameter="ExitCode" PropertyName="GitExitCode" />
     </Exec>
-    <Exec Command="git rev-parse --short HEAD" ConsoleToMSBuild="true" StandardOutputImportance="low"
+    <Exec Command="git -c &quot;safe.directory=$(MSBuildProjectDirectory)&quot; rev-parse --short HEAD" ConsoleToMSBuild="true" StandardOutputImportance="low"
           ContinueOnError="true" WorkingDirectory="$(MSBuildProjectDirectory)">
       <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitHash" />
     </Exec>
@@ -124,13 +125,13 @@
          variable reference and swallowing it (which left git with a format of just "cd", exit 128).
          Date mode is git's built in "short" rather than an explicit strftime string, so only this
          one percent needs escaping at all. -->
-    <Exec Command="git log -1 --format=%25%25cd --date=short" ConsoleToMSBuild="true" StandardOutputImportance="low"
+    <Exec Command="git -c &quot;safe.directory=$(MSBuildProjectDirectory)&quot; log -1 --format=%25%25cd --date=short" ConsoleToMSBuild="true" StandardOutputImportance="low"
           ContinueOnError="true" WorkingDirectory="$(MSBuildProjectDirectory)">
       <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitDate" />
       <Output TaskParameter="ExitCode" PropertyName="GitDateExitCode" />
     </Exec>
     <!-- Non-empty output here means tracked files differ from HEAD. -->
-    <Exec Command="git status --porcelain --untracked-files=no" ConsoleToMSBuild="true" StandardOutputImportance="low"
+    <Exec Command="git -c &quot;safe.directory=$(MSBuildProjectDirectory)&quot; status --porcelain --untracked-files=no" ConsoleToMSBuild="true" StandardOutputImportance="low"
           ContinueOnError="true" WorkingDirectory="$(MSBuildProjectDirectory)">
       <Output TaskParameter="ConsoleOutput" PropertyName="GitDirtyFiles" />
     </Exec>
