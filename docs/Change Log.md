@@ -6,5 +6,6 @@
 - Hardened companion startup failure handling and timeout reporting.
 - Added localized consent disclosure labeling and content-based initial text height.
 - Added a direct-dotnet local packaging helper for matching Release or Development companion and module outputs; it does not run a local runner or workflow.
+- Clarified that DevTools=true builds are development-only and may be uploaded only to the matching Development Workshop item, never a Release item.
 
 Documentation update signed by OpenAI-Codex.
