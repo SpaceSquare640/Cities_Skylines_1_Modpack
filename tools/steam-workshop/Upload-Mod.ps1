@@ -165,14 +165,145 @@ switch ($Module) {
     'AI_Gaming' {
         $project = Join-Path $sourceRoot 'AIGaming.csproj'
         $outputDll = Join-Path $sourceRoot 'bin\Release\AIGaming.dll'
+        $companionProject = Join-Path $sourceRoot 'Companion\AIGaming.Companion.csproj'
         if (-not (Test-Path -LiteralPath $project -PathType Leaf)) {
             throw 'AIGaming.csproj is missing from the checked-out AI_Gaming branch.'
         }
+        if (-not (Test-Path -LiteralPath $companionProject -PathType Leaf)) {
+            throw 'Companion\AIGaming.Companion.csproj is missing from the checked-out AI_Gaming branch.'
+        }
         $dotnet = Get-Command dotnet -ErrorAction Stop
-        & $dotnet.Source build $project --configuration Release --no-incremental "-p:DevTools=$devTools" "-p:CSInstallPath=$gameRoot"
+
+        function Get-ProjectProperty {
+            param(
+                [Parameter(Mandatory = $true)]
+                [xml]$ProjectXml,
+
+                [Parameter(Mandatory = $true)]
+                [string]$PropertyName
+            )
+
+            $node = $ProjectXml.SelectSingleNode("/Project/PropertyGroup/$PropertyName")
+            if ($null -eq $node -or [string]::IsNullOrWhiteSpace($node.InnerText)) {
+                throw "Required property '$PropertyName' was not found in a project file."
+            }
+
+            return $node.InnerText.Trim()
+        }
+
+        function Test-ByteSequence {
+            param(
+                [Parameter(Mandatory = $true)]
+                [byte[]]$Bytes,
+
+                [Parameter(Mandatory = $true)]
+                [byte[]]$Pattern
+            )
+
+            if ($Pattern.Length -eq 0 -or $Pattern.Length -gt $Bytes.Length) {
+                return $false
+            }
+
+            for ($start = 0; $start -le $Bytes.Length - $Pattern.Length; $start++) {
+                $matches = $true
+                for ($offset = 0; $offset -lt $Pattern.Length; $offset++) {
+                    if ($Bytes[$start + $offset] -ne $Pattern[$offset]) {
+                        $matches = $false
+                        break
+                    }
+                }
+
+                if ($matches) {
+                    return $true
+                }
+            }
+
+            return $false
+        }
+
+        function Assert-CleanSourceCheckout {
+            param(
+                [Parameter(Mandatory = $true)]
+                [string]$Path
+            )
+
+            $status = & git -C $Path status --porcelain=v1 --untracked-files=all
+            if ($LASTEXITCODE -ne 0) {
+                throw 'Could not verify that the AI Gaming source checkout is clean.'
+            }
+            if (-not [string]::IsNullOrWhiteSpace(($status -join "`n"))) {
+                throw 'The AI Gaming source checkout has modified or untracked files. Upload stopped so the source commit exactly identifies the build.'
+            }
+        }
+
+        [xml]$moduleProjectXml = Get-Content -LiteralPath $project -Raw
+        [xml]$companionProjectXml = Get-Content -LiteralPath $companionProject -Raw
+        $moduleVersion = Get-ProjectProperty -ProjectXml $moduleProjectXml -PropertyName 'Version'
+        $companionVersion = Get-ProjectProperty -ProjectXml $companionProjectXml -PropertyName 'Version'
+        $moduleProtocolVersion = Get-ProjectProperty -ProjectXml $moduleProjectXml -PropertyName 'CompanionProtocolVersion'
+        $companionProtocolVersion = Get-ProjectProperty -ProjectXml $companionProjectXml -PropertyName 'CompanionProtocolVersion'
+        if ($moduleVersion -cne $companionVersion -or $moduleProtocolVersion -cne $companionProtocolVersion) {
+            throw "AI Gaming module and companion versions/protocols do not match. No Workshop upload was prepared."
+        }
+
+        Assert-CleanSourceCheckout -Path $sourceRoot
+
+        $companionEdition = $Edition.ToLowerInvariant()
+        $companionBuildRoot = Join-Path $packageRoot 'companion-build'
+        New-Item -ItemType Directory -Path $companionBuildRoot -Force | Out-Null
+        $companionPublishArguments = @(
+            'publish',
+            $companionProject,
+            '--configuration', 'Release',
+            '--runtime', 'win-x64',
+            '--self-contained', 'true',
+            '--output', $companionBuildRoot,
+            '-p:PublishSingleFile=true',
+            '-p:EnableCompressionInSingleFile=true',
+            '-p:IncludeNativeLibrariesForSelfExtract=true',
+            "-p:CompanionEdition=$companionEdition",
+            "-p:CompanionProtocolVersion=$moduleProtocolVersion",
+            "-p:Version=$moduleVersion"
+        )
+        Write-Output "Publishing the matching $Module $Edition self-contained win-x64 companion."
+        & $dotnet.Source @companionPublishArguments
+        if ($LASTEXITCODE -ne 0) {
+            throw "AI Gaming companion publish failed with exit code $LASTEXITCODE. Workshop upload stopped."
+        }
+
+        $companionSourceExe = Join-Path $companionBuildRoot 'AIGaming.Companion.exe'
+        if (-not (Test-Path -LiteralPath $companionSourceExe -PathType Leaf)) {
+            throw "Expected self-contained companion was not produced: $companionSourceExe"
+        }
+        $companionHash = (Get-FileHash -LiteralPath $companionSourceExe -Algorithm SHA256).Hash.ToLowerInvariant()
+        if ($companionHash -notmatch '^[0-9a-f]{64}$') {
+            throw 'The AI Gaming companion produced an invalid SHA-256 value. Workshop upload stopped.'
+        }
+
+        & $dotnet.Source build $project --configuration Release --no-incremental `
+            "-p:DevTools=$devTools" `
+            "-p:CSInstallPath=$gameRoot" `
+            "-p:CompanionEdition=$companionEdition" `
+            "-p:CompanionVersion=$moduleVersion" `
+            "-p:CompanionProtocolVersion=$moduleProtocolVersion" `
+            "-p:CompanionSha256=$companionHash"
         if ($LASTEXITCODE -ne 0) {
             throw "AI Gaming build failed with exit code $LASTEXITCODE."
         }
+
+        Assert-CleanSourceCheckout -Path $sourceRoot
+        if (-not (Test-Path -LiteralPath $outputDll -PathType Leaf)) {
+            throw "Expected AI Gaming DLL was not produced: $outputDll"
+        }
+        $moduleBuildInfo = [IO.File]::ReadAllBytes($outputDll)
+        $hashAscii = [Text.Encoding]::ASCII.GetBytes($companionHash)
+        $hashUnicode = [Text.Encoding]::Unicode.GetBytes($companionHash)
+        if (-not (Test-ByteSequence -Bytes $moduleBuildInfo -Pattern $hashAscii) -and
+            -not (Test-ByteSequence -Bytes $moduleBuildInfo -Pattern $hashUnicode)) {
+            throw 'The AI Gaming DLL does not contain the expected companion SHA-256. Workshop upload stopped.'
+        }
+
+        Write-Output "Pinned companion SHA-256 into the matching $Module $Edition module build: $companionHash"
     }
 }
 
@@ -196,6 +327,18 @@ $packageDll = Join-Path $contentRoot (Split-Path -Leaf $outputDll)
 Copy-Item -LiteralPath $outputDll -Destination $packageDll
 $hash = (Get-FileHash -LiteralPath $packageDll -Algorithm SHA256).Hash
 Write-Output "Prepared $Module $Edition Workshop content: $(Split-Path -Leaf $packageDll), SHA-256 $hash"
+
+if ($Module -eq 'AI_Gaming') {
+    $packageCompanionDirectory = Join-Path $contentRoot 'Companion'
+    New-Item -ItemType Directory -Path $packageCompanionDirectory -Force | Out-Null
+    $packageCompanionExe = Join-Path $packageCompanionDirectory 'AIGaming.Companion.exe'
+    Copy-Item -LiteralPath $companionSourceExe -Destination $packageCompanionExe
+    $packagedCompanionHash = (Get-FileHash -LiteralPath $packageCompanionExe -Algorithm SHA256).Hash.ToLowerInvariant()
+    if ($packagedCompanionHash -cne $companionHash) {
+        throw 'The packaged AI Gaming companion SHA-256 differs from the value pinned in its module build.'
+    }
+    Write-Output "Prepared $Module $Edition companion: Companion\AIGaming.Companion.exe, SHA-256 $packagedCompanionHash"
+}
 
 $workshopTitle = switch ("$Module/$Edition") {
     'AI_Improve/Release' { 'AI Improve: Release Version' }
@@ -231,6 +374,42 @@ if (Test-Path -LiteralPath $descriptionPath -PathType Leaf) {
     }
     if ($description.Length -gt 8000) {
         throw "Workshop\$Edition.txt is $($description.Length) characters; Steam allows at most 8000."
+    }
+}
+
+if ($Module -eq 'AI_Gaming') {
+    if ($null -eq $description) {
+        throw "AI Gaming requires Workshop\$Edition.txt so the companion notice can be included."
+    }
+
+    $legacyStatement = switch ($Edition) {
+        'Development' { 'The current build is an early preview: it does not control the game, makes no network connections and asks for no API keys. Future developer tools will appear in this version first.' }
+        'Release' { 'It does not control the game yet, makes no network connections and asks for no API keys.' }
+        default { throw "Unsupported AI Gaming edition: $Edition" }
+    }
+    if (-not $description.Contains($legacyStatement)) {
+        throw "AI Gaming Workshop\$Edition.txt needs review before upload; the expected early-preview statement was not found."
+    }
+
+    $updatedStatement = "Version $moduleVersion can send selected read-only city fields and your question to Ollama Local at http://localhost:11434 through the optional companion after a separate preview and confirmation. Replies are advice only; AI Gaming does not control the game, connect to cloud providers, or ask for API keys. Ollama's own cloud settings may affect data routing."
+    $description = $description.Replace($legacyStatement, $updatedStatement)
+
+    $sourceCommit = & git -C $sourceRoot rev-parse --verify HEAD
+    if ($LASTEXITCODE -ne 0) {
+        throw 'Could not identify the AI Gaming source commit for its Workshop companion notice.'
+    }
+    $sourceCommit = $sourceCommit.Trim()
+    if ($sourceCommit -notmatch '^[0-9a-fA-F]{40}$') {
+        throw 'The AI Gaming source commit for the Workshop companion notice is not a full commit SHA.'
+    }
+
+    $description += "`n`n[h2]Unsigned companion[/h2]`nThe optional Windows x64 companion executable included in this item is unsigned. It starts only after request confirmation and when its setting is enabled; permission defaults off and resets after the game restarts.`nCompanion SHA-256: $companionHash`nAI Gaming source commit: $sourceCommit"
+
+    if ($description.Contains('"') -or $description.Contains('\')) {
+        throw "AI Gaming Workshop\$Edition.txt companion notice contains a character that cannot be safely written to the Workshop VDF."
+    }
+    if ($description.Length -gt 8000) {
+        throw "AI Gaming Workshop\$Edition.txt with companion details is $($description.Length) characters; Steam allows at most 8000."
     }
 }
 
@@ -283,3 +462,4 @@ Write-Output 'SteamCMD exited with code 0. Verify the item page and Workshop bui
 
 # Author: OpenAI-Codex.
 # Modified by: Anthropic-Claude_Code.
+# Updated by: OpenAI-Codex.
