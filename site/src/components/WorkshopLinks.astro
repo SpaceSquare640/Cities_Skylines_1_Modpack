@@ -13,6 +13,7 @@ const labels = {
 <div class="workshop-links">
 	{(['release', 'development'] as const).map((edition) => items[edition].public
 		? <a class={edition === 'release' ? 'button' : 'button secondary'} href={workshopUrl(items[edition].id)}>{labels[edition]} <span aria-hidden="true">↗</span></a>
-		: <span class="button pending" aria-disabled="true">{labels[edition]} · {zh ? '即將公開' : 'coming soon'}</span>)}
+		: <span class="button pending" aria-disabled="true">{labels[edition]} · {zh ? '尚未公開' : 'not yet public'}</span>)}
 </div>
 <p class="workshop-note">{zh ? 'Release 版適合一般遊玩；Development 版搶先收到修改並包含測試工具。兩者擇一訂閱，不要同時啟用。' : 'Release is for everyday play; Development gets changes first and includes testing tools. Subscribe to one, never both.'}</p>
+<!-- Updated by OpenAI-Codex on 2026-10-26. -->

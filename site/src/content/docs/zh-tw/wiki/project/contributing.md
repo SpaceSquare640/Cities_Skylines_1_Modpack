@@ -24,6 +24,8 @@ description: "如何回報問題、提出建議，以及在哪裡找到 Modpack 
 | AI Gaming | [`AI_Gaming`](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/tree/AI_Gaming) |
 | 本網站 | [`Modpack_Website`](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/tree/Modpack_Website) |
 
-## 授權
+## 現行授權條款
 
-所有 Modpack 模組與本網站皆以 **GNU General Public License v3.0** 釋出。第三方元件保留各自的授權。
+Modpack 為原始碼可得的非商業專案。模組與網站程式碼採用 **PolyForm Noncommercial License**；網站文字與圖片採用 **CC BY-NC-SA**。版權所有 Kingsley。第三方元件保留各自的授權。
+
+<!-- Updated by OpenAI-Codex on 2026-10-26. -->

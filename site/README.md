@@ -2,6 +2,10 @@
 
 The site is built with Astro and Starlight. It contains a bilingual project website and source-based Wiki. Astro writes the static site to `dist/` with the GitHub Pages base path `/Cities_Skylines_1_Modpack/`.
 
+## Licensing
+
+The Modpack is source-available and noncommercial. Mod and website code use the **PolyForm Noncommercial License**. Website text and images use **CC BY-NC-SA**. Copyright © Kingsley. Third-party components keep their own licenses.
+
 ## Local offline setup
 
 This project uses the dependency versions in `package-lock.json`: Astro 7.4.1, Starlight 0.42.6, Sharp 0.35.5 and Playwright 1.64.1. Do not update these versions without reviewing the offline package preparation and site compatibility.
@@ -23,16 +27,18 @@ The Playwright browser is supplied outside the repository. Set its path before b
 $env:PLAYWRIGHT_BROWSERS_PATH = 'D:\Code\Game Code\Cities_Skyline_1_Modpack\.tools\playwright-browsers'
 ```
 
-The Playwright browser check and screenshot report are pending until the Astro content sync error is resolved. Their intended output location is the project `.tools\tmp\website-screenshots` folder; no browser verification has run yet.
+## Current verification status
+
+The local `npm --offline run build` attempt on 2026-10-26 failed during `astro sync` with `require is not defined` from `yaml/dist/index.js`. This records the observed error; its root cause has not been established. The existing `dist/` predates the current source changes and is not valid evidence for them. Playwright checks, page-size measurements and current screenshots remain pending. Their intended output location is the project `.tools\tmp\website-screenshots` folder.
 
 ## Source-derived content
 
-`src/data/ai-improve.json` is generated from the AI Improve source branch's localization and settings UI. The extractor records the source commit and does not alter source files. Project art is labelled as artwork, not gameplay capture. Missing game evidence uses an explicit screenshot placeholder.
+`src/data/ai-improve.json` is generated from the AI Improve source branch's localization and settings UI. The extractor records the source commit and does not alter source files. If sandbox policy blocks its Git lookup, `AI_IMPROVE_SOURCE_COMMIT` can supply a commit hash that was verified separately. Project art is labelled as artwork, not gameplay capture. Missing game evidence uses an explicit screenshot placeholder.
 
-The transport and AI Gaming pages distinguish current preview behaviour from planned work. Their runtime status is not implied by a static site build.
+The AI Gaming page describes the 0.4.0 Development source and identifies its companion packaging and game-runtime verification limits. The transport page distinguishes the 0.2.0 read-only preview from planned route-planning work. A static site build does not verify either mod in game.
 
 ## Deployment
 
 This folder contains no deployment workflow. The Pages deployment change should be reviewed and approved separately before switching the public site.
 
-<!-- Documentation authored by OpenAI-Codex. -->
+<!-- Documentation updated by OpenAI-Codex on 2026-10-26. -->

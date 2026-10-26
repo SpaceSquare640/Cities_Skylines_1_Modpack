@@ -12,16 +12,16 @@ const recent = changeEntries.slice(0, 5);
 const projects = [
 	{ art: aiImproveArt, name: 'AI Improve', status: 'Available on the Workshop', text: 'Vehicles, services and citizens that react to what is actually happening in your city: jams, crowded platforms, nearby fires and full depots.', page: 'ai-improve/', wiki: 'wiki/ai-improve/overview/' },
 	{ art: transportArt, name: 'Automated Public Transport Planning', status: 'Early preview 0.2.0', text: 'Will plan bus lines from your city’s real demand and show every line as a preview before anything is built. Today it surveys the network.', page: 'automated-public-transport-planning/', wiki: 'wiki/transport/overview/' },
-	{ art: aiGamingArt, name: 'AI Gaming', status: 'Early preview 0.1.0', text: 'Connects a local or cloud AI to the game, so you can watch it build, let it advise you, or hand it the controls. Today it reads a city summary.', page: 'ai-gaming/', wiki: 'wiki/ai-gaming/overview/' },
+	{ art: aiGamingArt, name: 'AI Gaming', status: 'Development preview 0.4.0 · runtime pending', text: 'The 0.4.0 source adds player-confirmed Ollama Local advice. Companion packaging and in-game testing are not verified; AI gameplay remains planned.', page: 'ai-gaming/', wiki: 'wiki/ai-gaming/overview/' },
 ];
 ---
 
-<SiteLayout title="Cities: Skylines 1 Modpack" description="Three Cities: Skylines 1 mods by Kingsley that work together: smarter city AI, automatic bus planning and AI that plays the game." active="home">
+<SiteLayout title="Cities: Skylines 1 Modpack" description="Three Cities: Skylines 1 mods by Kingsley: smarter city behaviour, bus planning in development, and an AI advice preview." active="home">
 	<section class="hero page-wrap">
 		<div class="hero-copy">
 			<p class="eyebrow">Cities: Skylines 1 mods by Kingsley</p>
 			<h1>Make the city work better.</h1>
-			<p class="hero-lead">Three mods built to work together: smarter decisions for the vehicles and citizens in your city, automatic public transport planning, and an AI that can play the game with you.</p>
+			<p class="hero-lead">Three mods built to work together: smarter decisions for vehicles and citizens, public transport planning in development, and an AI advice preview.</p>
 			<div class="hero-actions"><a class="button" href={base + 'wiki/getting-started/'}>Get started</a><a class="button secondary" href={base + 'ai-improve/'}>Explore AI Improve</a></div>
 		</div>
 		<figure class="hero-art"><Image src={cityArt} alt="Illustrated city block crossed by a red transit line" widths={[520, 760]} sizes="(max-width: 640px) 100vw, 45vw" format="webp" quality={78} loading="eager" /><figcaption class="art-note">Illustration · not a gameplay screenshot</figcaption></figure>
@@ -54,3 +54,4 @@ const projects = [
 		</div>
 	</section>
 </SiteLayout>
+<!-- Updated by OpenAI-Codex on 2026-10-26. -->

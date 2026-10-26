@@ -20,7 +20,7 @@ description: "在 Cities: Skylines 1 中訂閱、選擇正確版本並啟用 Mod
 | 更新時機 | 版本準備好時 | 每次修改都會自動更新 |
 | 測試工具 | 不包含 | 包含（詳見各模組頁） |
 
-**兩者只能擇一訂閱。**它們是同一個模組，同時啟用會互相衝突。各模組頁都有連結：[AI Improve](/Cities_Skylines_1_Modpack/zh-tw/ai-improve/)、[公共運輸自動規劃](/Cities_Skylines_1_Modpack/zh-tw/automated-public-transport-planning/)、[AI Gaming](/Cities_Skylines_1_Modpack/zh-tw/ai-gaming/)。尚未公開的項目會標示「即將公開」。
+**兩者只能擇一訂閱。**它們是同一個模組，同時啟用會互相衝突。各模組頁都有連結：[AI Improve](/Cities_Skylines_1_Modpack/zh-tw/ai-improve/)、[公共運輸自動規劃](/Cities_Skylines_1_Modpack/zh-tw/automated-public-transport-planning/)、[AI Gaming](/Cities_Skylines_1_Modpack/zh-tw/ai-gaming/)。尚未公開的項目會標示「尚未公開」。
 
 ## 3. 啟用與設定
 
@@ -31,3 +31,5 @@ description: "在 Cities: Skylines 1 中訂閱、選擇正確版本並啟用 Mod
 ## 4. 遇到問題時
 
 請使用 [Issue 表單](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/issues/new/choose) 回報，內容包括：模組名稱與版本、你使用的其他模組、發生問題的步驟，以及遊戲輸出記錄中的相關段落。記錄檔的位置請見[常見問題](/Cities_Skylines_1_Modpack/zh-tw/wiki/ai-improve/faq/)。張貼前請先刪除 Windows 使用者名稱等個人資料。
+
+<!-- Updated by OpenAI-Codex on 2026-10-26. -->

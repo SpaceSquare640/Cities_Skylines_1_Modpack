@@ -3,6 +3,9 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+// Updated by OpenAI-Codex on 2026-10-26 to support an explicitly verified source commit
+// when sandbox policy blocks the extractor's child-process Git lookup.
+
 const siteRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const sourceRoot = path.resolve(
 	process.env.AI_IMPROVE_SOURCE || path.join(siteRoot, '..', '..', '..', 'Cities_Skylines_1_AI_Improve', 'Source_Code'),
@@ -202,7 +205,8 @@ const languageCodes = readStringArray(languageCodesText);
 const languageLabels = readStringArray(languageLabelsText);
 assertFile(languageCodes.length === languageLabels.length && languageCodes.length > 0, 'SettingsPageUI.cs language options');
 generalFields[0].options = languageCodes.map((code, index) => ({ value: code, label: languageLabels[index] }));
-const sourceCommit = execFileSync('git', ['-c', 'safe.directory=' + sourceRoot, '-C', sourceRoot, 'rev-parse', '--short', 'HEAD'], { encoding: 'utf8' }).trim();
+const sourceCommit = process.env.AI_IMPROVE_SOURCE_COMMIT?.trim()
+	|| execFileSync('git', ['-c', 'safe.directory=' + sourceRoot, '-C', sourceRoot, 'rev-parse', '--short', 'HEAD'], { encoding: 'utf8' }).trim();
 const extractedAt = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Hong_Kong', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
 const output = {
 	metadata: {

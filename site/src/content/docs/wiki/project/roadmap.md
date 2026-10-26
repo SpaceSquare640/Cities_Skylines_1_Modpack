@@ -26,13 +26,13 @@ It currently covers regular city buses only.
 
 | Stage | Status |
 | --- | --- |
-| City summary written to the log | **Now** · 0.1.0 |
-| Reading the city in a form an AI can understand | Next |
-| AI suggestions that you review | Then |
-| Limited AI actions that you switch on | Later |
+| Player-confirmed Ollama Local advice | 0.4.0 Development source; companion package and game runtime unverified |
+| Watch AI play and limited game actions | Planned; not implemented |
 
 ## All mods
 
-The Modpack mods are built to work together. As they grow, AI Gaming will use what the other mods can do instead of reimplementing it, and no two mods will take over the same job.
+The Modpack mods are designed to work together. Using their capabilities from AI Gaming is a longer-term direction; version 0.4.0 contains no interop calls.
 
 Follow progress in the [change log](/Cities_Skylines_1_Modpack/change-log/).
+
+<!-- Updated by OpenAI-Codex on 2026-10-26. -->

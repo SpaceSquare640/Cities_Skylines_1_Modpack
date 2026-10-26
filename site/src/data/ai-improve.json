@@ -1,7 +1,8 @@
 {
   "metadata": {
-    "sourceCommit": "d1cecad",
-    "extractedAt": "2026-10-21",
+    "sourceCommit": "ab3299b",
+    "extractedAt": "2026-10-26",
+    "updatedBy": "OpenAI-Codex",
     "sourceFiles": [
       "Localization.cs",
       "ModSettings.cs",

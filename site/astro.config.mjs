@@ -1,10 +1,21 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import { fileURLToPath } from 'node:url';
+
+// Use YAML's ESM browser entry for Astro content sync and keep Vite cache in .tools/tmp — OpenAI-Codex.
+const yamlBrowserEntrypoint = fileURLToPath(new URL('./node_modules/yaml/browser/index.js', import.meta.url));
+const siteViteCacheDir = fileURLToPath(new URL('../../../.tools/tmp/site-vite-cache/', import.meta.url));
 
 export default defineConfig({
 	site: 'https://spacesquare640.github.io',
 	base: '/Cities_Skylines_1_Modpack',
 	trailingSlash: 'always',
+	vite: {
+		cacheDir: siteViteCacheDir,
+		resolve: {
+			alias: [{ find: /^yaml$/, replacement: yamlBrowserEntrypoint }],
+		},
+	},
 	integrations: [
 		starlight({
 			title: 'Cities: Skylines 1 Modpack',

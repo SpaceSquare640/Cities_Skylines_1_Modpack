@@ -12,16 +12,16 @@ const recent = changeEntries.slice(0, 5);
 const projects = [
 	{ art: aiImproveArt, name: 'AI Improve', status: '已在 Workshop 發布', text: '讓城市裡的車輛、公共服務與市民，依照當下真實狀況做決定：塞車、擁擠的月台、附近的火警、滿載的車輛。', page: 'zh-tw/ai-improve/', wiki: 'zh-tw/wiki/ai-improve/overview/' },
 	{ art: transportArt, name: '公共運輸自動規劃', status: '早期預覽 0.2.0', text: '目標是依城市真實需求規劃公車路線，每條路線都先預覽、由你確認後才建立。目前版本負責調查路網。', page: 'zh-tw/automated-public-transport-planning/', wiki: 'zh-tw/wiki/transport/overview/' },
-	{ art: aiGamingArt, name: 'AI Gaming', status: '早期預覽 0.1.0', text: '把本機或雲端 AI 接入遊戲：看 AI 建城、讓 AI 給你建議，或把操作交給 AI。目前版本可讀取城市摘要。', page: 'zh-tw/ai-gaming/', wiki: 'zh-tw/wiki/ai-gaming/overview/' },
+	{ art: aiGamingArt, name: 'AI Gaming', status: 'Development 預覽 0.4.0 · 執行驗證待確認', text: '0.4.0 原始碼加入需玩家逐次確認的 Ollama Local 建議流程；輔助程式套件與遊戲內測試尚未驗證，AI 玩遊戲仍屬規劃。', page: 'zh-tw/ai-gaming/', wiki: 'zh-tw/wiki/ai-gaming/overview/' },
 ];
 ---
 
-<SiteLayout title="Cities: Skylines 1 Modpack" description="Kingsley 製作、彼此相容的三個 Cities: Skylines 1 模組：更聰明的城市 AI、自動公車規劃、會玩遊戲的 AI。" locale="zh-tw" active="home">
+<SiteLayout title="Cities: Skylines 1 Modpack" description="Kingsley 製作的三個 Cities: Skylines 1 模組：更聰明的城市行為、開發中的公車規劃，以及 AI 建議功能預覽。" locale="zh-tw" active="home">
 	<section class="hero page-wrap">
 		<div class="hero-copy">
 			<p class="eyebrow">Kingsley 製作的 Cities: Skylines 1 模組</p>
 			<h1>讓城市運作得更好。</h1>
-			<p class="hero-lead">三個彼此相容的模組：讓車輛與市民做出更聰明的決定、自動規劃公共運輸，以及能陪你一起玩遊戲的 AI。</p>
+			<p class="hero-lead">三個彼此相容的模組：改善車輛與市民的決策、開發中的公共運輸規劃，以及 AI 建議功能預覽。</p>
 			<div class="hero-actions"><a class="button" href={base + 'zh-tw/wiki/getting-started/'}>開始使用</a><a class="button secondary" href={base + 'zh-tw/ai-improve/'}>認識 AI Improve</a></div>
 		</div>
 		<figure class="hero-art"><Image src={cityArt} alt="被紅色交通路線貫穿的城市街區插畫" widths={[520, 760]} sizes="(max-width: 640px) 100vw, 45vw" format="webp" quality={78} loading="eager" /><figcaption class="art-note">插畫 · 並非遊戲截圖</figcaption></figure>
@@ -54,3 +54,4 @@ const projects = [
 		</div>
 	</section>
 </SiteLayout>
+<!-- Updated by OpenAI-Codex on 2026-10-26. -->

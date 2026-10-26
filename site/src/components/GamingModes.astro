@@ -28,9 +28,9 @@ const modes = zh
 	<div class="mode-diagram" aria-label={zh ? '遊戲、AI Gaming 與 AI 之間的資料流程' : 'Data flow between the game, AI Gaming and the AI'}>
 		<div class="mode-node"><strong>Cities: Skylines 1</strong><small>{zh ? '你的城市' : 'your city'}</small></div>
 		<span aria-hidden="true">⇄</span>
-		<div class="mode-node accent"><strong>AI Gaming</strong><small>{zh ? '讀取城市、轉交操作' : 'reads the city, relays actions'}</small></div>
+		<div class="mode-node accent"><strong>AI Gaming</strong><small>{zh ? '規劃中的玩法構想' : 'planned mode concepts'}</small></div>
 		<span aria-hidden="true">⇄</span>
-		<div class="mode-node"><strong>AI</strong><small>{zh ? '本機模型或雲端服務' : 'local model or cloud service'}</small></div>
+		<div class="mode-node"><strong>AI</strong><small>{zh ? '未來 AI 玩法' : 'future AI modes'}</small></div>
 	</div>
 	<div class="mode-cards">
 		{modes.map((mode) => <article class="mode-card" data-mode-detail={mode.id}>
@@ -83,3 +83,4 @@ const modes = zh
 		.mode-card dl { grid-template-columns: 1fr; }
 	}
 </style>
+<!-- Updated by OpenAI-Codex on 2026-10-26. -->

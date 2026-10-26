@@ -24,6 +24,8 @@ Each mod lives on its own branch of the [Modpack repository](https://github.com/
 | AI Gaming | [`AI_Gaming`](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/tree/AI_Gaming) |
 | This website | [`Modpack_Website`](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/tree/Modpack_Website) |
 
-## License
+## Current license terms
 
-All Modpack mods and this website are released under the **GNU General Public License v3.0**. Third-party components keep their own licenses.
+The Modpack is source-available and noncommercial. Mod and website code use the **PolyForm Noncommercial License**. Website text and images use **CC BY-NC-SA**. Copyright © Kingsley. Third-party components keep their own licenses.
+
+<!-- Updated by OpenAI-Codex on 2026-10-26. -->

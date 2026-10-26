@@ -23,4 +23,6 @@ The panel also has two buttons: **Scan for empty intercity trains** and **Scan f
 
 ## Screenshots
 
-> In-game screenshots of the panel and the options page are coming soon.
+> In-game screenshots of the panel and options page are pending.
+
+<!-- Updated by OpenAI-Codex on 2026-10-26. -->
