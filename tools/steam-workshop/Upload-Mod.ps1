@@ -250,7 +250,9 @@ switch ($Module) {
 
         $companionEdition = $Edition.ToLowerInvariant()
         $companionBuildRoot = Join-Path $packageRoot 'companion-build'
-        New-Item -ItemType Directory -Path $companionBuildRoot -Force | Out-Null
+        $companionBaseOutputRoot = (Join-Path $packageRoot 'companion-bin').TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
+        $companionIntermediateRoot = (Join-Path $packageRoot 'companion-obj').TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
+        New-Item -ItemType Directory -Path $companionBuildRoot, $companionBaseOutputRoot, $companionIntermediateRoot -Force | Out-Null
         $companionPublishArguments = @(
             'publish',
             $companionProject,
@@ -261,6 +263,9 @@ switch ($Module) {
             '-p:PublishSingleFile=true',
             '-p:EnableCompressionInSingleFile=true',
             '-p:IncludeNativeLibrariesForSelfExtract=true',
+            "-p:BaseOutputPath=$companionBaseOutputRoot",
+            "-p:BaseIntermediateOutputPath=$companionIntermediateRoot",
+            "-p:MSBuildProjectExtensionsPath=$companionIntermediateRoot",
             "-p:CompanionEdition=$companionEdition",
             "-p:CompanionProtocolVersion=$moduleProtocolVersion",
             "-p:Version=$moduleVersion"
@@ -270,6 +275,7 @@ switch ($Module) {
         if ($LASTEXITCODE -ne 0) {
             throw "AI Gaming companion publish failed with exit code $LASTEXITCODE. Workshop upload stopped."
         }
+        Assert-CleanSourceCheckout -Path $sourceRoot
 
         $companionSourceExe = Join-Path $companionBuildRoot 'AIGaming.Companion.exe'
         if (-not (Test-Path -LiteralPath $companionSourceExe -PathType Leaf)) {
