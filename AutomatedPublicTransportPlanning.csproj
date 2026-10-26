@@ -151,6 +151,7 @@
     <Compile Include="Source\Planning\StopPlacement.cs" />
     <Compile Include="Source\Planning\WorldSnapshot.cs" />
     <Compile Include="Source\Planning\StopGraph.cs" />
+    <Compile Include="Source\Planning\CitizenUnitDemand.cs" Condition=" '$(DevTools)' == 'true' " />
     <Compile Include="Source\Planning\PlanningSnapshot.cs" Condition=" '$(DevTools)' == 'true' " />
     <Compile Include="Source\Planning\PlanningEngine.cs" Condition=" '$(DevTools)' == 'true' " />
     <Compile Include="Source\Planning\PlanningCapture.cs" Condition=" '$(DevTools)' == 'true' " />

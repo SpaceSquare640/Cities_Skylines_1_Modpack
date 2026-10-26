@@ -18,9 +18,6 @@ namespace AutomatedPublicTransportPlanning.Planning
     {
         private const double SliceBudgetMillis = 5.0;
         private const int MaximumAttempts = 3;
-        private const int HomePeoplePerUnit = 5;
-        private const int WorkPeoplePerUnit = 5;
-        private const int VisitPeoplePerUnit = 5;
 
         private static volatile int s_request;
         private static volatile int s_cancel;
@@ -307,20 +304,9 @@ namespace AutomatedPublicTransportPlanning.Planning
                 }
 
                 CitizenUnit unit = citizens.m_units.m_buffer[(int)s_currentUnit];
-                CitizenUnit.Flags flags = unit.m_flags;
-                if ((flags & CitizenUnit.Flags.Home) != CitizenUnit.Flags.None)
+                if (CitizenUnitDemand.Accumulate(unit.m_flags, ref s_currentHome,
+                        ref s_currentWork, ref s_currentVisit))
                 {
-                    s_currentHome += HomePeoplePerUnit;
-                    s_currentBuildingHasDemand = true;
-                }
-                if ((flags & CitizenUnit.Flags.Work) != CitizenUnit.Flags.None)
-                {
-                    s_currentWork += WorkPeoplePerUnit;
-                    s_currentBuildingHasDemand = true;
-                }
-                if ((flags & CitizenUnit.Flags.Visit) != CitizenUnit.Flags.None)
-                {
-                    s_currentVisit += VisitPeoplePerUnit;
                     s_currentBuildingHasDemand = true;
                 }
                 s_currentUnit = unit.m_nextUnit;

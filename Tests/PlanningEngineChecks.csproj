@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- OpenAI-Codex: isolated .NET 3.5 executable with no third-party test framework. -->
+  <Import Project="$(MSBuildThisFileDirectory)..\Local.props" Condition="Exists('$(MSBuildThisFileDirectory)..\Local.props')" />
+
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>AutomatedPublicTransportPlanning.Tests</RootNamespace>
+    <AssemblyName>PlanningEngineChecks</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <LangVersion>5</LangVersion>
+    <CodePage>65001</CodePage>
+    <OutputPath>..\bin\PlanningEngineChecks\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>..\obj\PlanningEngineChecks\$(Configuration)\</IntermediateOutputPath>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <CitiesSkylinesDir Condition=" '$(CitiesSkylinesDir)' == '' ">$(CITIES_SKYLINES_DIR)</CitiesSkylinesDir>
+    <_CandidateA>C:\Program Files (x86)\Steam\steamapps\common\Cities_Skylines</_CandidateA>
+    <_CandidateB>C:\SteamLibrary\steamapps\common\Cities_Skylines</_CandidateB>
+    <_CandidateC>D:\SteamLibrary\steamapps\common\Cities_Skylines</_CandidateC>
+    <_CandidateD>E:\SteamLibrary\steamapps\common\Cities_Skylines</_CandidateD>
+    <CitiesSkylinesDir Condition=" '$(CitiesSkylinesDir)' == '' And Exists('$(_CandidateA)\Cities_Data\Managed\ICities.dll') ">$(_CandidateA)</CitiesSkylinesDir>
+    <CitiesSkylinesDir Condition=" '$(CitiesSkylinesDir)' == '' And Exists('$(_CandidateB)\Cities_Data\Managed\ICities.dll') ">$(_CandidateB)</CitiesSkylinesDir>
+    <CitiesSkylinesDir Condition=" '$(CitiesSkylinesDir)' == '' And Exists('$(_CandidateC)\Cities_Data\Managed\ICities.dll') ">$(_CandidateC)</CitiesSkylinesDir>
+    <CitiesSkylinesDir Condition=" '$(CitiesSkylinesDir)' == '' And Exists('$(_CandidateD)\Cities_Data\Managed\ICities.dll') ">$(_CandidateD)</CitiesSkylinesDir>
+    <ManagedDir>$(CitiesSkylinesDir)\Cities_Data\Managed</ManagedDir>
+    <_TargetFrameworkDirectories>$(MSBuildThisFileDirectory)</_TargetFrameworkDirectories>
+    <_FullFrameworkReferenceAssemblyPaths>$(MSBuildThisFileDirectory)</_FullFrameworkReferenceAssemblyPaths>
+  </PropertyGroup>
+
+  <Target Name="VerifyGamePath" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition=" !Exists('$(ManagedDir)\ICities.dll') "
+           Text="Cities: Skylines managed assemblies not found. Set CitiesSkylinesDir or CITIES_SKYLINES_DIR." />
+  </Target>
+
+  <ItemGroup>
+    <Reference Include="mscorlib">
+      <HintPath>$(ManagedDir)\mscorlib.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="System">
+      <HintPath>$(ManagedDir)\System.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="System.Xml">
+      <HintPath>$(ManagedDir)\System.Xml.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="System.Core, Version=3.5.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+      <HintPath>$(ManagedDir)\System.Core.dll</HintPath>
+      <SpecificVersion>true</SpecificVersion>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="ICities">
+      <HintPath>$(ManagedDir)\ICities.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(ManagedDir)\Assembly-CSharp.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="ColossalManaged">
+      <HintPath>$(ManagedDir)\ColossalManaged.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$(ManagedDir)\UnityEngine.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="PlanningEngineChecks.cs" />
+    <Compile Include="..\Source\Planning\CitizenUnitDemand.cs"><Link>Production\CitizenUnitDemand.cs</Link></Compile>
+    <Compile Include="..\Source\Planning\BusPrefabResolver.cs"><Link>Production\BusPrefabResolver.cs</Link></Compile>
+    <Compile Include="..\Source\Planning\PlanningEngine.cs"><Link>Production\PlanningEngine.cs</Link></Compile>
+    <Compile Include="..\Source\Planning\PlanningSnapshot.cs"><Link>Production\PlanningSnapshot.cs</Link></Compile>
+    <Compile Include="..\Source\Planning\StopGraph.cs"><Link>Production\StopGraph.cs</Link></Compile>
+    <Compile Include="..\Source\Planning\StopPlacement.cs"><Link>Production\StopPlacement.cs</Link></Compile>
+    <Compile Include="..\Source\Planning\WorldSnapshot.cs"><Link>Production\WorldSnapshot.cs</Link></Compile>
+    <Compile Include="..\Source\Util\Log.cs"><Link>Production\Log.cs</Link></Compile>
+  </ItemGroup>
+
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

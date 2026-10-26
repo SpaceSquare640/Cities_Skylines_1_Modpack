@@ -93,7 +93,9 @@ namespace AutomatedPublicTransportPlanning.Planning
                 .Append("; visit=").Append(VisitPeople)
                 .Append("; assigned buildings=").Append(AssignedBuildings)
                 .Append("; unassigned buildings=").Append(UnassignedBuildings)
-                .Append("\nCoverage index: 50% home + 50% work/visit; no route-length or stop-count rejection.");
+                // OpenAI-Codex: clarify that coverage is route-segment based and expose search caps.
+                .Append("\nRoute-segment demand coverage estimate: 50% home + 50% work/visit; this is not stop-access coverage; no route-length or stop-count rejection.")
+                .Append("\nCandidate search caps: up to 12 home and 12 work/visit endpoints; up to 8 pairs ranked by normalized complementary demand are evaluated.");
 
             if (Snapshot != null && Snapshot.RetryCount > 0)
             {
