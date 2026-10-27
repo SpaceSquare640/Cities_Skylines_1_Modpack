@@ -4,7 +4,7 @@ The site is built with Astro and Starlight. It contains a bilingual project webs
 
 ## Licensing
 
-The Modpack is source-available and noncommercial. Mod and website code use the **PolyForm Noncommercial License**. Website text and images use **CC BY-NC-SA**. Copyright © Kingsley. Third-party components keep their own licenses.
+The Modpack is source-available and noncommercial; see [Licensing](#licensing) below for code, website content, copyright and third-party terms.
 
 ## Local offline setup
 
@@ -41,4 +41,10 @@ The AI Gaming page describes the 0.4.0 Development source and identifies its com
 
 This folder contains no deployment workflow. The Pages deployment change should be reviewed and approved separately before switching the public site.
 
-<!-- Documentation updated by OpenAI-Codex on 2026-10-26. -->
+## Licensing
+
+This is a source-available, noncommercial project. Mod and website code use the [PolyForm Noncommercial License 1.0.0](../LICENSE). Original website content, including text and images, uses [CC BY-NC-SA 4.0](../LICENSE-CONTENT). Copyright © Kingsley. Third-party components and assets keep their own licenses as listed in [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md).
+
+<!-- Documentation updated by OpenAI-Codex on 2026-10-27. -->
+
+Author: OpenAI-Codex

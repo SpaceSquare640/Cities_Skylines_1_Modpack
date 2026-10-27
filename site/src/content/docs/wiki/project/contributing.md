@@ -26,6 +26,6 @@ Each mod lives on its own branch of the [Modpack repository](https://github.com/
 
 ## Current license terms
 
-The Modpack is source-available and noncommercial. Mod and website code use the **PolyForm Noncommercial License**. Website text and images use **CC BY-NC-SA**. Copyright © Kingsley. Third-party components keep their own licenses.
+The Modpack is source-available and noncommercial. Mod and website code use the [**PolyForm Noncommercial License 1.0.0**](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/blob/Modpack_Website/LICENSE). Original website content, including text and images, is licensed under [**CC BY-NC-SA 4.0**](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/blob/Modpack_Website/LICENSE-CONTENT). Copyright © Kingsley. Third-party components and assets keep their own licenses.
 
-<!-- Updated by OpenAI-Codex on 2026-10-26. -->
+<!-- Updated by OpenAI-Codex on 2026-10-27. -->

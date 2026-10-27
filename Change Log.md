@@ -2,6 +2,12 @@
 
 Author: OpenAI-Codex
 
+## 2026-10-27 — License terms aligned
+
+- Updated license files, documentation and the site footer: mod and website code use the PolyForm Noncommercial License 1.0.0; website content, including text and images, uses CC BY-NC-SA 4.0.
+- Copyright © Kingsley. Third-party components keep their own licenses.
+- Author: OpenAI-Codex.
+
 ## 2026-10-22 — Language switch label fixed
 
 - The language button in the site header now shows the language it switches to: English on Traditional Chinese pages, 繁體中文 on English pages. Its screen-reader label was corrected to match.

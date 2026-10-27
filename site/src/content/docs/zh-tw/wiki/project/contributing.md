@@ -26,6 +26,6 @@ description: "如何回報問題、提出建議，以及在哪裡找到 Modpack 
 
 ## 現行授權條款
 
-Modpack 為原始碼可得的非商業專案。模組與網站程式碼採用 **PolyForm Noncommercial License**；網站文字與圖片採用 **CC BY-NC-SA**。版權所有 Kingsley。第三方元件保留各自的授權。
+Modpack 為原始碼可得的非商業專案。模組與網站程式碼採用 [**PolyForm Noncommercial License 1.0.0**](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/blob/Modpack_Website/LICENSE)；原創網站內容（包括文字與圖片）採用 [**CC BY-NC-SA 4.0**](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/blob/Modpack_Website/LICENSE-CONTENT)。版權所有 Kingsley。第三方元件與素材保留各自的授權。
 
-<!-- Updated by OpenAI-Codex on 2026-10-26. -->
+<!-- Updated by OpenAI-Codex on 2026-10-27. -->
