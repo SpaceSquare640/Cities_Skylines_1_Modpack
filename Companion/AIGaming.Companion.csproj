@@ -14,6 +14,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Checks\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <CompanionBuildInfoLine Include="namespace AIGaming.Companion {" />
     <CompanionBuildInfoLine Include="    internal static class CompanionBuildInfo {" />
     <CompanionBuildInfoLine Include="        internal const string Edition = &quot;$(CompanionEdition)&quot;%3B" />

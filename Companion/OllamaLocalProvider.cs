@@ -67,8 +67,11 @@ internal sealed class OllamaLocalProvider : IDisposable
                 return Error(request.ModelName, "ollama_error");
             }
 
-            await using Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-            using JsonDocument document = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken).ConfigureAwait(false);
+            byte[] responseBody = await BoundedOllamaResponseReader.ReadAsync(
+                response.Content,
+                BoundedOllamaResponseReader.MaximumResponseBytes,
+                cancellationToken).ConfigureAwait(false);
+            using JsonDocument document = JsonDocument.Parse(responseBody);
             if (!document.RootElement.TryGetProperty("message", out JsonElement messageElement) ||
                 !messageElement.TryGetProperty("content", out JsonElement contentElement) ||
                 contentElement.ValueKind != JsonValueKind.String)
@@ -98,6 +101,10 @@ internal sealed class OllamaLocalProvider : IDisposable
         catch (SocketException)
         {
             return Error(request.ModelName, "ollama_unavailable");
+        }
+        catch (InvalidDataException)
+        {
+            return Error(request.ModelName, "invalid_response");
         }
         catch (JsonException)
         {
@@ -141,7 +148,10 @@ internal sealed class OllamaLocalProvider : IDisposable
             return "local_model_required";
         }
 
-        using HttpResponseMessage response = await _client.GetAsync("api/tags", cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage response = await _client.GetAsync(
+            "api/tags",
+            HttpCompletionOption.ResponseHeadersRead,
+            cancellationToken).ConfigureAwait(false);
         if (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.Forbidden)
         {
             return "local_authentication_failed";
@@ -151,8 +161,11 @@ internal sealed class OllamaLocalProvider : IDisposable
             return "ollama_error";
         }
 
-        await using Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-        using JsonDocument document = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken).ConfigureAwait(false);
+        byte[] responseBody = await BoundedOllamaResponseReader.ReadAsync(
+            response.Content,
+            BoundedOllamaResponseReader.MaximumResponseBytes,
+            cancellationToken).ConfigureAwait(false);
+        using JsonDocument document = JsonDocument.Parse(responseBody);
         if (!document.RootElement.TryGetProperty("models", out JsonElement models) || models.ValueKind != JsonValueKind.Array)
         {
             return "invalid_response";

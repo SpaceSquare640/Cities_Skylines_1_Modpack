@@ -1,5 +1,9 @@
 # Change Log
 
+## Unreleased
+
+- Limited Ollama `/api/tags` and `/api/chat` response bodies to 1 MiB before JSON parsing; oversized responses use the sanitized `invalid_response` category.
+
 ## 0.4.0 — Early preview
 
 - Added player-confirmed Ollama Local suggestions through an optional companion, with selectable schemaVersion 1 city fields and advice-only responses.
