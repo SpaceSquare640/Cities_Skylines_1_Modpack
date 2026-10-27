@@ -23,7 +23,12 @@ namespace AutomatedPublicTransportPlanning.Planning
         private static volatile int s_cancel;
         private static volatile bool s_busy;
         private static readonly object s_displayLock = new object();
+        // OpenAI-Codex: publish immutable previews safely to the Development settings UI.
+        private static readonly object s_previewLock = new object();
         private static string s_display = "No planning preview has been generated in this city session.";
+        private static PlanningPreviewResult s_latestPreview;
+        private static int s_previewGeneration;
+        private static int s_captureGeneration;
 
         // These fields are owned by the simulation thread after a request is accepted.
         private static bool s_active;
@@ -63,6 +68,7 @@ namespace AutomatedPublicTransportPlanning.Planning
         private static bool s_readyToComplete;
         private static Stopwatch s_attemptClock;
         private static TransportInfo s_busInfo;
+        private static string s_busPrefabName;
         private static StructureSignature s_signatureAtStart;
         private static StructureSignature s_signatureAtCaptureEnd;
         private static uint s_buildIndexAtStart;
@@ -73,6 +79,17 @@ namespace AutomatedPublicTransportPlanning.Planning
         public static string DisplayText
         {
             get { lock (s_displayLock) { return s_display; } }
+        }
+
+        public static PlanningPreviewResult LatestPreview
+        {
+            get { lock (s_previewLock) { return s_latestPreview; } }
+        }
+
+        public static void ClearLatestPreview()
+        {
+            Interlocked.Increment(ref s_previewGeneration);
+            lock (s_previewLock) { s_latestPreview = null; }
         }
 
         public static bool RequestPreview()
@@ -87,6 +104,8 @@ namespace AutomatedPublicTransportPlanning.Planning
             {
                 s_display = "Waiting for the next simulation frame to start a read-only capture.";
             }
+            ClearLatestPreview();
+            s_captureGeneration = Interlocked.CompareExchange(ref s_previewGeneration, 0, 0);
             Log.Info("Planning preview requested; the city will be read in simulation-frame slices.");
             return true;
         }
@@ -95,6 +114,11 @@ namespace AutomatedPublicTransportPlanning.Planning
         {
             Interlocked.Exchange(ref s_cancel, 1);
             Interlocked.Exchange(ref s_request, 0);
+            ClearLatestPreview();
+            lock (s_displayLock)
+            {
+                s_display = "No planning preview has been generated in this city session.";
+            }
         }
 
         /// <summary>Called only from ThreadingExtensionBase.OnAfterSimulationFrame.</summary>
@@ -163,6 +187,7 @@ namespace AutomatedPublicTransportPlanning.Planning
                 FailPermanently("no city bus TransportInfo is available");
                 return;
             }
+            s_busPrefabName = s_busInfo.name ?? string.Empty;
 
             s_attemptClock = Stopwatch.StartNew();
             s_segments = new List<SegmentSnapshotData>();
@@ -277,12 +302,22 @@ namespace AutomatedPublicTransportPlanning.Planning
             Vector3 middle = segment.m_middlePosition;
             Vector3 stopPosition;
             bool fixedPlatform;
+            int stopLaneIndex;
+            bool stopLaneForward;
+            bool stopLaneBackward;
             bool canAnchor = StopPlacement.TryGetStopPosition((ushort)id, middle, s_busInfo,
-                                      out stopPosition, out fixedPlatform) &&
+                                      out stopPosition, out fixedPlatform, out stopLaneIndex,
+                                      out stopLaneForward, out stopLaneBackward) &&
                              StopPlacement.CanAnchorStop(stopPosition, s_busInfo);
+            bool forwardStopCanAnchor = canAnchor && forward && stopLaneForward;
+            bool backwardStopCanAnchor = canAnchor && backward && stopLaneBackward;
             s_segments.Add(new SegmentSnapshotData((ushort)id, segment.m_buildIndex,
                 segment.m_averageLength, segment.m_startNode, segment.m_endNode,
-                speed, forward, backward, middle, stopPosition, fixedPlatform, canAnchor));
+                speed, forward, backward, middle,
+                stopPosition, fixedPlatform, forwardStopCanAnchor,
+                forwardStopCanAnchor ? stopLaneIndex : -1,
+                stopPosition, fixedPlatform, backwardStopCanAnchor,
+                backwardStopCanAnchor ? stopLaneIndex : -1));
         }
 
         private static void CaptureOneBuildingOrUnit()
@@ -467,8 +502,9 @@ namespace AutomatedPublicTransportPlanning.Planning
                 s_createdSegments, s_createdBuildings, s_existingBusStops, s_attempt - 1,
                 s_retryDiagnostic, s_totalRequestSlices, s_totalRequestOverBudgetSlices, s_buildIndexAtStart,
                 s_buildIndexAtEnd, s_signatureAtStart, s_signatureAtCaptureEnd,
-                elapsed, sliceWork, s_totalRequestMaxSliceMillis);
+                elapsed, sliceWork, s_totalRequestMaxSliceMillis, s_busPrefabName);
             s_busy = true;
+            int previewGeneration = s_captureGeneration;
             UpdateDisplay("Capture validated; computing demand and route proposals on copied data. Retries=" +
                           (s_attempt - 1) + ".");
             Log.Info("Planning capture validated; attempts=" + s_attempt + ", retries=" + (s_attempt - 1) +
@@ -490,8 +526,25 @@ namespace AutomatedPublicTransportPlanning.Planning
                 {
                     PlanningPreviewResult result = PlanningEngine.CreatePreview((PlanningSnapshot)state);
                     string description = result.Describe();
-                    UpdateDisplay(description);
-                    Log.Info("Planning preview complete.\n" + description.Replace("\n", "\n  "));
+                    bool published = false;
+                    lock (s_previewLock)
+                    {
+                        if (previewGeneration == Interlocked.CompareExchange(ref s_previewGeneration, 0, 0))
+                        {
+                            s_latestPreview = result;
+                            UpdateDisplay(description);
+                            published = true;
+                        }
+                    }
+
+                    if (published)
+                    {
+                        Log.Info("Planning preview complete.\n" + description.Replace("\n", "\n  "));
+                    }
+                    else
+                    {
+                        Log.Info("Discarded a planning preview completed after its city session changed.");
+                    }
                 }
                 catch (Exception e)
                 {

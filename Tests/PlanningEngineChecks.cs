@@ -14,6 +14,7 @@ internal static class PlanningEngineChecks
         Run("citizen unit categories convert to five people", CitizenUnitPeopleConversion);
         Run("planning snapshots isolate arrays and expose read-only views", SnapshotCopyIsolation);
         Run("preview warns that its snapshot may become stale", SnapshotStaleWarning);
+        Run("route creation accepts only three to six distinct stop sites", RouteCreationStopCountRules);
         Run("people totals and weighted route-segment coverage", PeopleTotalsAndCoverage);
         Run("endpoint pairing uses normalized complementary demand", NormalizedPairing);
         Run("one-way route without a return path is diagnosed", MissingReturnPath);
@@ -98,6 +99,40 @@ internal static class PlanningEngineChecks
             "preview description must warn that a snapshot may become stale after city changes");
     }
 
+    private static void RouteCreationStopCountRules()
+    {
+        Require(RouteCreationRules.IsStopCountAllowed(3), "allow minimum stop count");
+        Require(RouteCreationRules.IsStopCountAllowed(6), "allow maximum stop count");
+        Require(!RouteCreationRules.IsStopCountAllowed(2), "reject fewer than three stops");
+        Require(!RouteCreationRules.IsStopCountAllowed(7), "reject more than six stops");
+
+        RouteStopSite[] distinctSites =
+        {
+            new RouteStopSite(10, 1, true, 2, new Vector3(0f, 0f, 0f), false),
+            new RouteStopSite(20, 1, true, 3, new Vector3(10f, 0f, 0f), false),
+            new RouteStopSite(30, 1, false, 4, new Vector3(20f, 0f, 0f), false)
+        };
+        Require(RouteCreationRules.HasValidStopSites(distinctSites),
+            "allow three distinct captured segment lanes");
+
+        RouteStopSite[] duplicateLane =
+        {
+            distinctSites[0], distinctSites[1],
+            new RouteStopSite(10, 1, false, 2, new Vector3(30f, 0f, 0f), false)
+        };
+        Require(!RouteCreationRules.HasValidStopSites(duplicateLane),
+            "reject a lane repeated in the opposite direction as a distinct stop");
+
+        RouteStopSite[] nearSites =
+        {
+            distinctSites[0],
+            new RouteStopSite(20, 1, true, 5, new Vector3(2f, 0f, 0f), false),
+            distinctSites[2]
+        };
+        Require(!RouteCreationRules.HasValidStopSites(nearSites),
+            "reject stop positions close enough for AddStop to close the loop early");
+    }
+
     private static void Run(string name, Action check)
     {
         try
@@ -118,14 +153,15 @@ internal static class PlanningEngineChecks
         {
             Segment(10, 1, 2, 0f, true, true),
             Segment(20, 2, 3, 400f, true, true),
-            Segment(30, 4, 5, 800f, true, true)
+            Segment(30, 3, 4, 800f, true, true),
+            Segment(40, 5, 6, 1200f, true, true)
         };
         BuildingDemandData[] buildings =
         {
             Building(1, 0f, 50, 0, 0),
-            Building(2, 400f, 0, 25, 0),
-            Building(3, 400f, 0, 0, 25),
-            Building(4, 800f, 50, 0, 0)
+            Building(2, 800f, 0, 25, 0),
+            Building(3, 800f, 0, 0, 25),
+            Building(4, 1200f, 50, 0, 0)
         };
 
         PlanningPreviewResult result = PlanningEngine.CreatePreview(Snapshot(segments, buildings));
@@ -141,6 +177,10 @@ internal static class PlanningEngineChecks
         Near(75.0, result.Proposals[0].CoverageIndex, 0.0001, "50/50 weighted route-segment coverage index");
         Equal(50, result.Proposals[0].HomePeopleCovered, "home people covered on route segments");
         Equal(50, result.Proposals[0].AttractionPeopleCovered, "work and visit people covered on route segments");
+        Require(result.Proposals[0].StopSites.Count >= 3,
+            "route proposal must retain concrete directional stop sites");
+        Require(result.Proposals[0].StopSites[0].LaneIndex >= 0,
+            "route proposal must retain the selected bus lane index");
     }
 
     private static void NormalizedPairing()

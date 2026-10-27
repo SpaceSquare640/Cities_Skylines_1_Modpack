@@ -10,6 +10,7 @@ namespace AutomatedPublicTransportPlanning.Planning
     /// </summary>
     internal struct SegmentSnapshotData
     {
+        // OpenAI-Codex: retain the selected lane and position separately for each world direction.
         public readonly ushort Id;
         public readonly uint BuildIndex;
         public readonly float Length;
@@ -22,11 +23,33 @@ namespace AutomatedPublicTransportPlanning.Planning
         public readonly Vector3 StopPosition;
         public readonly bool FixedPlatform;
         public readonly bool CanAnchor;
+        public readonly Vector3 ForwardStopPosition;
+        public readonly Vector3 BackwardStopPosition;
+        public readonly bool ForwardFixedPlatform;
+        public readonly bool BackwardFixedPlatform;
+        public readonly bool ForwardCanAnchor;
+        public readonly bool BackwardCanAnchor;
+        public readonly int ForwardLaneIndex;
+        public readonly int BackwardLaneIndex;
 
         public SegmentSnapshotData(ushort id, uint buildIndex, float length,
                                    ushort startNode, ushort endNode, float speedLimit,
                                    bool forwardOpen, bool backwardOpen, Vector3 midPoint,
                                    Vector3 stopPosition, bool fixedPlatform, bool canAnchor)
+            : this(id, buildIndex, length, startNode, endNode, speedLimit,
+                   forwardOpen, backwardOpen, midPoint,
+                   stopPosition, fixedPlatform, forwardOpen && canAnchor, forwardOpen && canAnchor ? 0 : -1,
+                   stopPosition, fixedPlatform, backwardOpen && canAnchor, backwardOpen && canAnchor ? 0 : -1)
+        {
+        }
+
+        public SegmentSnapshotData(ushort id, uint buildIndex, float length,
+                                   ushort startNode, ushort endNode, float speedLimit,
+                                   bool forwardOpen, bool backwardOpen, Vector3 midPoint,
+                                   Vector3 forwardStopPosition, bool forwardFixedPlatform,
+                                   bool forwardCanAnchor, int forwardLaneIndex,
+                                   Vector3 backwardStopPosition, bool backwardFixedPlatform,
+                                   bool backwardCanAnchor, int backwardLaneIndex)
         {
             Id = id;
             BuildIndex = buildIndex;
@@ -37,9 +60,17 @@ namespace AutomatedPublicTransportPlanning.Planning
             ForwardOpen = forwardOpen;
             BackwardOpen = backwardOpen;
             MidPoint = midPoint;
-            StopPosition = stopPosition;
-            FixedPlatform = fixedPlatform;
-            CanAnchor = canAnchor;
+            ForwardStopPosition = forwardStopPosition;
+            BackwardStopPosition = backwardStopPosition;
+            ForwardFixedPlatform = forwardFixedPlatform;
+            BackwardFixedPlatform = backwardFixedPlatform;
+            ForwardCanAnchor = forwardOpen && forwardCanAnchor;
+            BackwardCanAnchor = backwardOpen && backwardCanAnchor;
+            ForwardLaneIndex = ForwardCanAnchor ? forwardLaneIndex : -1;
+            BackwardLaneIndex = BackwardCanAnchor ? backwardLaneIndex : -1;
+            CanAnchor = ForwardCanAnchor || BackwardCanAnchor;
+            StopPosition = ForwardCanAnchor ? forwardStopPosition : backwardStopPosition;
+            FixedPlatform = ForwardCanAnchor ? forwardFixedPlatform : backwardFixedPlatform;
         }
     }
 
@@ -128,6 +159,7 @@ namespace AutomatedPublicTransportPlanning.Planning
         public double ElapsedMillis { get; private set; }
         public double SliceWorkMillis { get; private set; }
         public double MaxSliceMillis { get; private set; }
+        public string BusPrefabName { get; private set; }
 
         public PlanningSnapshot(SegmentSnapshotData[] segments,
                                 BuildingDemandData[] buildings,
@@ -141,7 +173,24 @@ namespace AutomatedPublicTransportPlanning.Planning
                    existingStopCount, retryCount, retryDiagnostic, sliceCount,
                    overBudgetSliceCount, buildIndexAtStart, buildIndexAtEnd,
                    signatureAtStart, signatureAtEnd, elapsedMillis, sliceWorkMillis,
-                   maxSliceMillis, false)
+                   maxSliceMillis, null, false)
+        {
+        }
+
+        public PlanningSnapshot(SegmentSnapshotData[] segments,
+                                BuildingDemandData[] buildings,
+                                int createdSegmentCount, int createdBuildingCount,
+                                int existingStopCount, int retryCount, string retryDiagnostic, int sliceCount,
+                                int overBudgetSliceCount, uint buildIndexAtStart,
+                                uint buildIndexAtEnd, StructureSignature signatureAtStart,
+                                StructureSignature signatureAtEnd, double elapsedMillis,
+                                double sliceWorkMillis, double maxSliceMillis,
+                                string busPrefabName)
+            : this(segments, buildings, createdSegmentCount, createdBuildingCount,
+                   existingStopCount, retryCount, retryDiagnostic, sliceCount,
+                   overBudgetSliceCount, buildIndexAtStart, buildIndexAtEnd,
+                   signatureAtStart, signatureAtEnd, elapsedMillis, sliceWorkMillis,
+                   maxSliceMillis, busPrefabName, false)
         {
         }
 
@@ -153,6 +202,7 @@ namespace AutomatedPublicTransportPlanning.Planning
                                  uint buildIndexAtEnd, StructureSignature signatureAtStart,
                                  StructureSignature signatureAtEnd, double elapsedMillis,
                                  double sliceWorkMillis, double maxSliceMillis,
+                                 string busPrefabName,
                                  bool takeOwnership)
         {
             m_segments = segments == null ? new SegmentSnapshotData[0] : takeOwnership ? segments :
@@ -175,6 +225,7 @@ namespace AutomatedPublicTransportPlanning.Planning
             ElapsedMillis = elapsedMillis;
             SliceWorkMillis = sliceWorkMillis;
             MaxSliceMillis = maxSliceMillis;
+            BusPrefabName = busPrefabName ?? string.Empty;
         }
 
         public static PlanningSnapshot TakeCapturedArrays(SegmentSnapshotData[] segments,
@@ -192,13 +243,14 @@ namespace AutomatedPublicTransportPlanning.Planning
                                                           StructureSignature signatureAtEnd,
                                                           double elapsedMillis,
                                                           double sliceWorkMillis,
-                                                          double maxSliceMillis)
+                                                          double maxSliceMillis,
+                                                          string busPrefabName)
         {
             return new PlanningSnapshot(segments, buildings, createdSegmentCount,
                 createdBuildingCount, existingStopCount, retryCount, retryDiagnostic,
                 sliceCount, overBudgetSliceCount, buildIndexAtStart, buildIndexAtEnd,
                 signatureAtStart, signatureAtEnd, elapsedMillis, sliceWorkMillis,
-                maxSliceMillis, true);
+                maxSliceMillis, busPrefabName, true);
         }
 
         public PlanningSnapshot Copy()
@@ -207,7 +259,7 @@ namespace AutomatedPublicTransportPlanning.Planning
                 CreatedBuildingCount, ExistingStopCount, RetryCount, RetryDiagnostic, SliceCount,
                 OverBudgetSliceCount, BuildIndexAtStart, BuildIndexAtEnd,
                 SignatureAtStart, SignatureAtEnd, ElapsedMillis, SliceWorkMillis,
-                MaxSliceMillis);
+                MaxSliceMillis, BusPrefabName);
         }
 
         /// <summary>

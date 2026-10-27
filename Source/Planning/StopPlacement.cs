@@ -61,12 +61,37 @@ namespace AutomatedPublicTransportPlanning.Planning
         /// direction, is effectively arbitrary. Callers that care must pass a sideHint
         /// that is genuinely offset towards the side they want. Resolving this properly
         /// needs the corridor-direction concept that does not exist yet.
+        /// Planning capture records the actual selected vehicle lane and its world
+        /// direction; it does not infer the opposite sidewalk from a centreline hint.
+        /// Proposals therefore omit stop directions that this selected lane cannot serve.
         /// </summary>
         public static bool TryGetStopPosition(ushort segmentId, Vector3 sideHint, TransportInfo info,
                                               out Vector3 stopPosition, out bool fixedPlatform)
         {
+            int laneIndex;
+            bool forward;
+            bool backward;
+            return TryGetStopPosition(segmentId, sideHint, info, out stopPosition,
+                out fixedPlatform, out laneIndex, out forward, out backward);
+        }
+
+        // OpenAI-Codex: expose the actual selected bus lane and its normalized world direction.
+        /// <summary>
+        /// Computes the position and identifies the actual vehicle lane selected by
+        /// the game's closest-lane search. Direction flags are expressed in world
+        /// start-to-end terms, after applying the segment's Invert flag.
+        /// </summary>
+        public static bool TryGetStopPosition(ushort segmentId, Vector3 sideHint, TransportInfo info,
+                                              out Vector3 stopPosition, out bool fixedPlatform,
+                                              out int selectedLaneIndex,
+                                              out bool selectedLaneForward,
+                                              out bool selectedLaneBackward)
+        {
             stopPosition = Vector3.zero;
             fixedPlatform = false;
+            selectedLaneIndex = -1;
+            selectedLaneForward = false;
+            selectedLaneBackward = false;
 
             if (segmentId == 0 || info == null)
             {
@@ -120,6 +145,7 @@ namespace AutomatedPublicTransportPlanning.Planning
 
             if (info.m_vehicleType == VehicleInfo.VehicleType.None)
             {
+                selectedLaneIndex = pedestrianLaneIndex;
                 return TryPedestrianStop(segmentId, segmentInfo, info,
                                          pedestrianLaneId, pedestrianLaneIndex,
                                          out stopPosition, out fixedPlatform);
@@ -127,7 +153,9 @@ namespace AutomatedPublicTransportPlanning.Planning
 
             return TryVehicleStop(segmentId, segmentInfo, info,
                                   pedestrianPosition, pedestrianLaneId,
-                                  out stopPosition, out fixedPlatform);
+                                  out stopPosition, out fixedPlatform,
+                                  out selectedLaneIndex, out selectedLaneForward,
+                                  out selectedLaneBackward);
         }
 
         /// <summary>
@@ -181,10 +209,16 @@ namespace AutomatedPublicTransportPlanning.Planning
         /// </summary>
         private static bool TryVehicleStop(ushort segmentId, NetInfo segmentInfo, TransportInfo info,
                                            Vector3 pedestrianPosition, uint pedestrianLaneId,
-                                           out Vector3 stopPosition, out bool fixedPlatform)
+                                           out Vector3 stopPosition, out bool fixedPlatform,
+                                           out int selectedLaneIndex,
+                                           out bool selectedLaneForward,
+                                           out bool selectedLaneBackward)
         {
             stopPosition = Vector3.zero;
             fixedPlatform = false;
+            selectedLaneIndex = -1;
+            selectedLaneForward = false;
+            selectedLaneBackward = false;
 
             NetManager net = Singleton<NetManager>.instance;
 
@@ -210,6 +244,20 @@ namespace AutomatedPublicTransportPlanning.Planning
             {
                 return false;
             }
+
+            NetInfo.Lane selectedLane = segmentInfo.m_lanes[vehicleLaneIndex];
+            if (selectedLane == null)
+            {
+                return false;
+            }
+
+            bool invert = (net.m_segments.m_buffer[segmentId].m_flags & NetSegment.Flags.Invert) != NetSegment.Flags.None;
+            NetInfo.Direction worldDirection = invert
+                ? NetInfo.InvertDirection(selectedLane.m_finalDirection)
+                : selectedLane.m_finalDirection;
+            selectedLaneIndex = vehicleLaneIndex;
+            selectedLaneForward = (byte)(worldDirection & NetInfo.Direction.Forward) != 0;
+            selectedLaneBackward = (byte)(worldDirection & NetInfo.Direction.Backward) != 0;
 
             // Stop flags come from the pedestrian lane even on this path.
             NetLane.Flags laneStopFlags = (NetLane.Flags)net.m_lanes.m_buffer[pedestrianLaneId].m_flags & NetLane.Flags.Stops;

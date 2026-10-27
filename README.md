@@ -24,6 +24,10 @@ $msbuild = & $vswhere -latest -products '*' -requires Microsoft.Component.MSBuil
 .\bin\PlanningEngineChecks\Release\PlanningEngineChecks.exe
 ```
 
-The checks cover citizen-unit-to-people conversion, planning snapshot copy isolation, the stale-snapshot warning, people totals and route-segment coverage, normalized endpoint pairing, missing directed return paths, and the current endpoint/pair search caps. Build output stays under `bin\`; the test project has no game Mods deployment target.
+The checks cover citizen-unit-to-people conversion, planning snapshot copy isolation, the stale-snapshot warning, the 3–6 distinct-lane creation rule, concrete proposal stop data, people totals and route-segment coverage, normalized endpoint pairing, missing directed return paths, and the current endpoint/pair search caps. Build output stays under `bin\`; the test project has no game Mods deployment target.
+
+The Development build also offers selected proposal creation. It records the actual bus lane and world direction selected for each stop, then revalidates the snapshot build index, bus prefab, segment build indices, lane, stop position, anchorability, and line limits on the simulation thread. Creation is hidden from Release builds, starts disarmed, requires confirmation on each click, and accepts only proposals with 3–6 distinct stop lanes. A later simulation-frame check inspects stop-lane connections, the `LineNotConnected` flag, and `PathFailed` flags on segments adjacent to stops; it does not verify each route's full path.
+
+The route graph still treats junction-connected segments as connected and does not model lane-level turns or TM:PE restrictions. A generated proposal and its asynchronous checks are a Development prototype, not proof that every line can run in a live game.
 
 <!-- Updated by OpenAI-Codex on 2026-10-26. -->

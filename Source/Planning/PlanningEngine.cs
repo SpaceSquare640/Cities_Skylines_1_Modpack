@@ -5,6 +5,64 @@ using UnityEngine;
 
 namespace AutomatedPublicTransportPlanning.Planning
 {
+    /// <summary>One route stop bound to the actual lane selected during capture.</summary>
+    internal struct RouteStopSite
+    {
+        public readonly ushort SegmentId;
+        public readonly uint SegmentBuildIndex;
+        public readonly bool Forward;
+        public readonly int LaneIndex;
+        public readonly Vector3 Position;
+        public readonly bool FixedPlatform;
+
+        public RouteStopSite(ushort segmentId, uint segmentBuildIndex, bool forward,
+                             int laneIndex, Vector3 position, bool fixedPlatform)
+        {
+            SegmentId = segmentId;
+            SegmentBuildIndex = segmentBuildIndex;
+            Forward = forward;
+            LaneIndex = laneIndex;
+            Position = position;
+            FixedPlatform = fixedPlatform;
+        }
+    }
+
+    /// <summary>Fail-closed limits for Development proposal creation.</summary>
+    internal static class RouteCreationRules
+    {
+        public const int MinimumStops = 3;
+        public const int MaximumStops = 6;
+        private const float MinimumDistinctStopDistanceSquared = 6.25f;
+
+        public static bool IsStopCountAllowed(int count)
+        {
+            return count >= MinimumStops && count <= MaximumStops;
+        }
+
+        public static bool HasValidStopSites(IList<RouteStopSite> sites)
+        {
+            if (sites == null || !IsStopCountAllowed(sites.Count)) { return false; }
+            for (int i = 0; i < sites.Count; i++)
+            {
+                if (sites[i].SegmentId == 0 || sites[i].LaneIndex < 0) { return false; }
+                for (int j = 0; j < i; j++)
+                {
+                    if (sites[i].SegmentId == sites[j].SegmentId &&
+                        sites[i].LaneIndex == sites[j].LaneIndex)
+                    {
+                        return false;
+                    }
+                    if ((sites[i].Position - sites[j].Position).sqrMagnitude <=
+                        MinimumDistinctStopDistanceSquared)
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+    }
+
     /// <summary>A single immutable route proposal and the reasons behind its score.</summary>
     internal sealed class RouteProposal
     {
@@ -18,13 +76,14 @@ namespace AutomatedPublicTransportPlanning.Planning
         public readonly int AttractionPeopleCovered;
         public readonly int StopCount;
         public readonly string Diagnostic;
+        public readonly ReadOnlyCollection<RouteStopSite> StopSites;
         public readonly ReadOnlyCollection<ushort> StopSegments;
 
         public RouteProposal(ushort homeEndpoint, ushort attractionEndpoint,
                              double pairingScore, double homeCoverage,
                              double attractionCoverage, double coverageIndex,
                              int homePeopleCovered, int attractionPeopleCovered,
-                             IList<ushort> stopSegments, string diagnostic)
+                             IList<RouteStopSite> stopSites, string diagnostic)
         {
             HomeEndpoint = homeEndpoint;
             AttractionEndpoint = attractionEndpoint;
@@ -34,9 +93,15 @@ namespace AutomatedPublicTransportPlanning.Planning
             CoverageIndex = coverageIndex;
             HomePeopleCovered = homePeopleCovered;
             AttractionPeopleCovered = attractionPeopleCovered;
-            List<ushort> stopCopy = new List<ushort>(stopSegments ?? new ushort[0]);
-            StopSegments = stopCopy.AsReadOnly();
-            StopCount = StopSegments.Count;
+            List<RouteStopSite> stopCopy = new List<RouteStopSite>(stopSites ?? new RouteStopSite[0]);
+            StopSites = stopCopy.AsReadOnly();
+            List<ushort> segmentCopy = new List<ushort>(StopSites.Count);
+            for (int i = 0; i < StopSites.Count; i++)
+            {
+                segmentCopy.Add(StopSites[i].SegmentId);
+            }
+            StopSegments = segmentCopy.AsReadOnly();
+            StopCount = StopSites.Count;
             Diagnostic = diagnostic;
         }
     }
@@ -94,7 +159,7 @@ namespace AutomatedPublicTransportPlanning.Planning
                 .Append("; assigned buildings=").Append(AssignedBuildings)
                 .Append("; unassigned buildings=").Append(UnassignedBuildings)
                 // OpenAI-Codex: clarify that coverage is route-segment based and expose search caps.
-                .Append("\nRoute-segment demand coverage estimate: 50% home + 50% work/visit; this is not stop-access coverage; no route-length or stop-count rejection.")
+                .Append("\nRoute-segment demand coverage estimate: 50% home + 50% work/visit; this is not stop-access coverage. Creation requires 3-6 distinct captured stop lanes.")
                 .Append("\nCandidate search caps: up to 12 home and 12 work/visit endpoints; up to 8 pairs ranked by normalized complementary demand are evaluated.");
 
             if (Snapshot != null && Snapshot.RetryCount > 0)
@@ -124,14 +189,15 @@ namespace AutomatedPublicTransportPlanning.Planning
                         .Append("; home=").Append(proposal.HomeCoverage.ToString("P1"))
                         .Append("; work/visit=").Append(proposal.AttractionCoverage.ToString("P1"));
                 }
-                text.Append("; stop segment IDs=");
-                int shownStops = Math.Min(proposal.StopSegments.Count, 12);
+                text.Append("; stop segment IDs/directions=");
+                int shownStops = Math.Min(proposal.StopSites.Count, 12);
                 for (int stop = 0; stop < shownStops; stop++)
                 {
                     if (stop > 0) { text.Append(','); }
-                    text.Append(proposal.StopSegments[stop]);
+                    text.Append(proposal.StopSites[stop].SegmentId)
+                        .Append(proposal.StopSites[stop].Forward ? "+" : "-");
                 }
-                if (proposal.StopSegments.Count > shownStops) { text.Append(",..."); }
+                if (proposal.StopSites.Count > shownStops) { text.Append(",..."); }
                 text.Append("; ").Append(proposal.Diagnostic);
             }
 
@@ -235,9 +301,9 @@ namespace AutomatedPublicTransportPlanning.Planning
                     continue;
                 }
 
-                List<ushort> stopIds = new List<ushort>();
-                AppendStops(outward, graph, snapshot, field, stopIds);
-                AppendStops(returnPath, graph, snapshot, field, stopIds);
+                List<RouteStopSite> stopSites = new List<RouteStopSite>();
+                AppendStops(outward, graph, snapshot, field, stopSites);
+                AppendStops(returnPath, graph, snapshot, field, stopSites);
                 int[] covered = DistinctPathSegments(outward, returnPath, graph);
                 int homeCovered;
                 int attractionCovered;
@@ -249,7 +315,7 @@ namespace AutomatedPublicTransportPlanning.Planning
                 string diagnostic = "directed out-and-back path; shortest-path cost uses segment length / fastest eligible lane speed; stop candidates use 300-500 m spacing and demand density";
                 proposals.Add(new RouteProposal(homeId, attractionId, pair.Score,
                     homeRate, attractionRate, coverageIndex, homeCovered,
-                    attractionCovered, stopIds, diagnostic));
+                    attractionCovered, stopSites, diagnostic));
             }
 
             if (pairs.Count > evaluated)
@@ -272,7 +338,7 @@ namespace AutomatedPublicTransportPlanning.Planning
                                                 double score, string reason)
         {
             return new RouteProposal(homeId, attractionId, score, -1.0, -1.0,
-                -1.0, 0, 0, new ushort[0], "unavailable: " + reason);
+                -1.0, 0, 0, new RouteStopSite[0], "unavailable: " + reason);
         }
 
         private static int CompareProposals(RouteProposal left, RouteProposal right)
@@ -454,44 +520,99 @@ namespace AutomatedPublicTransportPlanning.Planning
 
         private static void AppendStops(int[] path, StopGraph graph,
                                         PlanningSnapshot snapshot, DemandField field,
-                                        List<ushort> output)
+                                        List<RouteStopSite> output)
         {
             if (path == null || path.Length == 0) { return; }
-            int current = 0;
-            AddStopId(snapshot.Segments[graph.SegmentIndex[path[0]]].Id, output);
+
+            int current = -1;
             while (current < path.Length - 1)
             {
                 float distance = 0f;
                 int chosen = -1;
+                int nextEligible = -1;
                 double bestDemand = -1.0;
-                int next = current + 1;
-                for (int i = current + 1; i < path.Length; i++)
+                int first = current + 1;
+                for (int i = first; i < path.Length; i++)
                 {
                     int segment = graph.SegmentIndex[path[i]];
-                    distance += snapshot.Segments[segment].Length;
-                    if (distance >= MinimumStopSpacing && distance <= MaximumStopSpacing &&
-                        field.HomeBySegment[segment] + field.AttractionBySegment[segment] > bestDemand)
+                    if (current >= 0)
                     {
-                        bestDemand = field.HomeBySegment[segment] + field.AttractionBySegment[segment];
-                        chosen = i;
+                        distance += snapshot.Segments[segment].Length;
+                        if (distance > MaximumStopSpacing) { break; }
                     }
-                    if (distance > MaximumStopSpacing) { break; }
-                    next = i;
+
+                    RouteStopSite candidate;
+                    if (TryCreateStopSite(path[i], graph, snapshot, out candidate) &&
+                        !ContainsStopSite(output, candidate))
+                    {
+                        nextEligible = i;
+                        if (current < 0)
+                        {
+                            chosen = i;
+                            break;
+                        }
+
+                        double demand = field.HomeBySegment[segment] + field.AttractionBySegment[segment];
+                        if (distance >= MinimumStopSpacing && distance <= MaximumStopSpacing &&
+                            demand > bestDemand)
+                        {
+                            bestDemand = demand;
+                            chosen = i;
+                        }
+                    }
                 }
 
-                if (chosen < 0) { chosen = Math.Max(current + 1, next); }
-                int chosenSegment = graph.SegmentIndex[path[chosen]];
-                AddStopId(snapshot.Segments[chosenSegment].Id, output);
+                if (chosen < 0) { chosen = nextEligible; }
+                if (chosen < 0) { break; }
+
+                RouteStopSite selected;
+                if (!TryCreateStopSite(path[chosen], graph, snapshot, out selected)) { break; }
+                if (!ContainsStopSite(output, selected)) { output.Add(selected); }
                 current = chosen;
             }
         }
 
-        private static void AddStopId(ushort segmentId, List<ushort> output)
+        private static bool TryCreateStopSite(int node, StopGraph graph,
+                                              PlanningSnapshot snapshot,
+                                              out RouteStopSite stopSite)
         {
-            if (output.Count == 0 || output[output.Count - 1] != segmentId)
+            SegmentSnapshotData segment = snapshot.Segments[graph.SegmentIndex[node]];
+            bool forward = graph.Forward[node];
+            if (forward)
             {
-                output.Add(segmentId);
+                if (!segment.ForwardCanAnchor || segment.ForwardLaneIndex < 0)
+                {
+                    stopSite = new RouteStopSite();
+                    return false;
+                }
+                stopSite = new RouteStopSite(segment.Id, segment.BuildIndex, true,
+                    segment.ForwardLaneIndex, segment.ForwardStopPosition,
+                    segment.ForwardFixedPlatform);
+                return true;
             }
+
+            if (!segment.BackwardCanAnchor || segment.BackwardLaneIndex < 0)
+            {
+                stopSite = new RouteStopSite();
+                return false;
+            }
+            stopSite = new RouteStopSite(segment.Id, segment.BuildIndex, false,
+                segment.BackwardLaneIndex, segment.BackwardStopPosition,
+                segment.BackwardFixedPlatform);
+            return true;
+        }
+
+        private static bool ContainsStopSite(IList<RouteStopSite> sites, RouteStopSite candidate)
+        {
+            for (int i = 0; i < sites.Count; i++)
+            {
+                if (sites[i].SegmentId == candidate.SegmentId &&
+                    sites[i].LaneIndex == candidate.LaneIndex)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private static int[] DistinctPathSegments(int[] outward, int[] returning, StopGraph graph)

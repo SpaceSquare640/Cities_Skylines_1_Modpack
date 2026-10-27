@@ -6,7 +6,10 @@
 [h2]Developer tools are included[/h2]
 Besides the read-only diagnostics, this build contains a save round-trip test that [b]creates test bus lines in the loaded city[/b]. The create button stays disabled until you arm it in the mod settings, then shows a separate confirmation dialog on every click. The dialog explains the change and reminds you to back up first. The remove button is disabled because deleting a route cannot be undone by this tool. Only use the test tools on a backup copy of your save.
 
-Automatic bus line planning is not available yet.
+[h2]Selected proposal creation[/h2]
+The Development build can create one eligible route from the generated planning preview. Select a proposal, arm the control, and confirm each click. Creation accepts only proposals with 3 to 6 distinct stop lanes; it rechecks the captured city version, bus prefab, stop segments, selected lanes, positions, and line limits on the simulation thread. Back up your save before using it. The new line changes the city, and simulation effects cannot be rolled back by this tool.
+
+The post-creation check inspects stop-lane connections, the LineNotConnected flag, and PathFailed flags on segments adjacent to stops; it does not validate each route's complete path. If a warning appears, inspect the line and the game log. The route graph does not model lane-level turns or TM:PE restrictions, so treat this as a Development prototype. Fully automatic route planning is not available yet.
 
 [list]
 [*][url=https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/issues/new/choose]Report a bug[/url] with your mod list and output log.
@@ -14,3 +17,5 @@ Automatic bus line planning is not available yet.
 [/list]
 
 Part of the Cities: Skylines 1 Modpack by Kingsley.
+
+[i]Technical description maintained with OpenAI-Codex.[/i]

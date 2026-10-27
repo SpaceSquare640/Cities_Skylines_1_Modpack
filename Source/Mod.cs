@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 using ColossalFramework.UI;
 using ICities;
 using AutomatedPublicTransportPlanning.Planning;
@@ -45,7 +46,14 @@ namespace AutomatedPublicTransportPlanning
         private static readonly List<KeyValuePair<object, string>> s_localised =
             new List<KeyValuePair<object, string>>();
 #if DEVTOOLS
+        // OpenAI-Codex: keep proposal creation disabled until a current selection is armed.
         private static UITextField s_planningStatus;
+        private static UIDropDown s_routeProposalDropdown;
+        private static UIButton s_routeCreateButton;
+        private static bool s_routeCreationArmed;
+        private static PlanningPreviewResult s_displayedPreview;
+        private static int[] s_routeProposalIndexes = new int[0];
+        private static int s_selectedRouteProposalIndex = -1;
 #endif
 
         /// <summary>
@@ -62,6 +70,14 @@ namespace AutomatedPublicTransportPlanning
             s_localised.Clear();
 #if DEVTOOLS
             s_planningStatus = null;
+            s_routeProposalDropdown = null;
+            s_routeCreateButton = null;
+            s_routeCreationArmed = false;
+            s_displayedPreview = null;
+            s_routeProposalIndexes = new int[0];
+            s_selectedRouteProposalIndex = -1;
+            PlanningCapture.ClearLatestPreview();
+            RouteCreationController.ResetForLevelChange();
 #endif
         }
 
@@ -69,12 +85,15 @@ namespace AutomatedPublicTransportPlanning
         /// <summary>Called on the main thread by PlanningThreadingExtension.OnUpdate.</summary>
         internal static void UpdatePlanningStatus(string text)
         {
+            RefreshRouteProposalOptions(PlanningCapture.LatestPreview, false);
+            UpdateRouteCreateButton();
             UITextField status = s_planningStatus;
             if (status != null)
             {
                 string display = text ?? string.Empty;
                 display = display.Replace(PlanningEngine.SnapshotStalePlaceholder,
                                          Loc.Get(Strings.SnapshotStaleNote));
+                display = display + "\n\n" + RouteCreationController.StatusText;
                 status.text = display;
             }
         }
@@ -143,8 +162,31 @@ namespace AutomatedPublicTransportPlanning
             {
                 s_planningStatus.multiline = true;
                 s_planningStatus.readOnly = true;
-                s_planningStatus.height = 240f;
+                s_planningStatus.height = 280f;
             }
+
+            s_routeCreationArmed = false;
+            s_routeProposalDropdown = null;
+            s_routeCreateButton = null;
+            s_displayedPreview = null;
+            s_routeProposalIndexes = new int[0];
+            s_selectedRouteProposalIndex = -1;
+
+            UIHelperBase routeCreation = helper.AddGroup(Loc.Get(Strings.GroupRouteCreation));
+            UICheckBox routeArm = Track(routeCreation.AddCheckbox(Loc.Get(Strings.CheckRouteArm),
+                false, OnRouteCreationArmedChanged) as UICheckBox, Strings.CheckRouteArm);
+            TrackGroupTitle(routeArm, Strings.GroupRouteCreation);
+
+            s_routeProposalDropdown = Track(routeCreation.AddDropdown(
+                Loc.Get(Strings.LabelRouteProposal), new string[] { Loc.Get(Strings.NoEligibleRouteProposal) },
+                0, OnRouteProposalChanged) as UIDropDown, Strings.LabelRouteProposal);
+            TrackDropdownLabel(s_routeProposalDropdown, Strings.LabelRouteProposal);
+
+            s_routeCreateButton = Track(routeCreation.AddButton(Loc.Get(Strings.ButtonRouteCreate),
+                Guarded("route proposal creation confirmation", ConfirmSelectedRouteProposal)) as UIButton,
+                Strings.ButtonRouteCreate);
+            if (s_routeCreateButton != null) { s_routeCreateButton.isEnabled = false; }
+            RefreshRouteProposalOptions(PlanningCapture.LatestPreview, true);
 #endif
 
 #if DEVTOOLS
@@ -192,6 +234,106 @@ namespace AutomatedPublicTransportPlanning
 #endif
         }
 
+#if DEVTOOLS
+        private static void RefreshRouteProposalOptions(PlanningPreviewResult preview, bool force)
+        {
+            if (s_routeProposalDropdown == null || (!force && object.ReferenceEquals(preview, s_displayedPreview)))
+            {
+                return;
+            }
+
+            s_displayedPreview = preview;
+            List<string> options = new List<string>();
+            List<int> proposalIndexes = new List<int>();
+            if (preview != null)
+            {
+                for (int i = 0; i < preview.Proposals.Count; i++)
+                {
+                    RouteProposal proposal = preview.Proposals[i];
+                    if (!RouteCreationRules.HasValidStopSites(proposal.StopSites)) { continue; }
+                    options.Add(string.Format(CultureInfo.InvariantCulture,
+                        Loc.Get(Strings.RouteProposalFormat), i + 1, proposal.StopCount,
+                        proposal.CoverageIndex.ToString("F1", CultureInfo.InvariantCulture)));
+                    proposalIndexes.Add(i);
+                }
+            }
+
+            if (options.Count == 0) { options.Add(Loc.Get(Strings.NoEligibleRouteProposal)); }
+            s_routeProposalIndexes = proposalIndexes.ToArray();
+            s_routeProposalDropdown.items = options.ToArray();
+            s_routeProposalDropdown.selectedIndex = 0;
+            s_selectedRouteProposalIndex = s_routeProposalIndexes.Length == 0
+                ? -1 : s_routeProposalIndexes[0];
+            UpdateRouteCreateButton();
+        }
+
+        private static void OnRouteProposalChanged(int selection)
+        {
+            if (selection < 0 || selection >= s_routeProposalIndexes.Length)
+            {
+                s_selectedRouteProposalIndex = -1;
+            }
+            else
+            {
+                s_selectedRouteProposalIndex = s_routeProposalIndexes[selection];
+            }
+            UpdateRouteCreateButton();
+        }
+
+        private static void OnRouteCreationArmedChanged(bool isChecked)
+        {
+            s_routeCreationArmed = isChecked;
+            UpdateRouteCreateButton();
+            Log.Info(isChecked
+                ? "Route proposal creation armed. Every click still requires confirmation."
+                : "Route proposal creation disarmed.");
+        }
+
+        private static void UpdateRouteCreateButton()
+        {
+            if (s_routeCreateButton != null)
+            {
+                s_routeCreateButton.isEnabled = s_routeCreationArmed &&
+                    s_selectedRouteProposalIndex >= 0 &&
+                    object.ReferenceEquals(PlanningCapture.LatestPreview, s_displayedPreview) &&
+                    !RouteCreationController.IsBusy;
+            }
+        }
+
+        private static void ConfirmSelectedRouteProposal()
+        {
+            if (!s_routeCreationArmed)
+            {
+                Log.Warning("Ignored route proposal creation because the control is disarmed.");
+                return;
+            }
+
+            PlanningPreviewResult preview = PlanningCapture.LatestPreview;
+            if (!object.ReferenceEquals(preview, s_displayedPreview))
+            {
+                RefreshRouteProposalOptions(preview, true);
+                Log.Warning("Ignored route proposal creation because the displayed proposal list was stale; select again after it refreshes.");
+                return;
+            }
+
+            int proposalIndex = s_selectedRouteProposalIndex;
+            if (preview == null || proposalIndex < 0 || proposalIndex >= preview.Proposals.Count)
+            {
+                Log.Warning("Ignored route proposal creation because no current proposal is selected.");
+                return;
+            }
+
+            ConfirmPanel.ShowModal(Loc.Get(Strings.RouteConfirmTitle), Loc.Get(Strings.RouteConfirmCreate),
+                delegate(UIComponent component, int result)
+                {
+                    if (result == 1 && s_routeCreationArmed)
+                    {
+                        RouteCreationController.RequestCreate(preview, proposalIndex);
+                    }
+                });
+        }
+#endif
+
         // ------------------------------------------------------------------ language
 
         /// <summary>
@@ -211,6 +353,9 @@ namespace AutomatedPublicTransportPlanning
 
                 Loc.SetLanguage(order[selection]);
                 Retranslate();
+#if DEVTOOLS
+                RefreshRouteProposalOptions(PlanningCapture.LatestPreview, true);
+#endif
             });
         }
 

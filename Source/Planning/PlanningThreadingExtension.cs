@@ -3,6 +3,7 @@ using AutomatedPublicTransportPlanning;
 
 namespace AutomatedPublicTransportPlanning.Planning
 {
+    // OpenAI-Codex: drive route post-checks from simulation frames and publish localized status.
     /// <summary>
     /// Bridges the sliced capture to actual simulation frames. AddAction drains its
     /// queue in one step, so it cannot be used to spread a capture over frames.
@@ -12,6 +13,7 @@ namespace AutomatedPublicTransportPlanning.Planning
         public override void OnAfterSimulationFrame()
         {
             PlanningCapture.OnAfterSimulationFrame();
+            RouteCreationController.OnAfterSimulationFrame();
         }
 
         public override void OnUpdate(float realTimeDelta, float simulationTimeDelta)
