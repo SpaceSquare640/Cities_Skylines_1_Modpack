@@ -209,6 +209,23 @@ namespace AutomatedPublicTransportPlanning.Planning
                 snapshot.BuildIndexAtStart != snapshot.BuildIndexAtEnd ||
                 Singleton<SimulationManager>.instance.m_currentBuildIndex != snapshot.BuildIndexAtEnd)
             {
+                // OpenAI-Codex: distinguish stale capture, later city changes and invalid stops without weakening the guard.
+                try
+                {
+                    uint currentBuildIndex = Singleton<SimulationManager>.instance.m_currentBuildIndex;
+                    Log.Warning("Route creation eligibility: proposal=" + (proposalIndex + 1) +
+                        ", stops=" + proposal.StopSites.Count +
+                        ", validStopSites=" + RouteCreationRules.HasValidStopSites(proposal.StopSites) +
+                        ", captureBuildIndexChanged=" + (snapshot.BuildIndexAtStart != snapshot.BuildIndexAtEnd) +
+                        ", cityBuildIndexChanged=" + (currentBuildIndex != snapshot.BuildIndexAtEnd) +
+                        ", buildIndexStart=" + snapshot.BuildIndexAtStart +
+                        ", buildIndexEnd=" + snapshot.BuildIndexAtEnd +
+                        ", buildIndexCurrent=" + currentBuildIndex + ".");
+                }
+                catch (Exception)
+                {
+                    // A diagnostic failure must not prevent the existing refusal.
+                }
                 Refuse("the preview is stale or its stop list is outside the 3-6 distinct-stop limit");
                 return;
             }

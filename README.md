@@ -28,6 +28,8 @@ The checks cover citizen-unit-to-people conversion, planning snapshot copy isola
 
 The Development build also offers selected proposal creation. It records the actual bus lane and world direction selected for each stop, then revalidates the snapshot build index, bus prefab, segment build indices, lane, stop position, anchorability, and line limits on the simulation thread. Creation is hidden from Release builds, starts disarmed, requires confirmation on each click, and accepts only proposals with 3–6 distinct stop lanes. A later simulation-frame check inspects stop-lane connections, the `LineNotConnected` flag, and `PathFailed` flags on segments adjacent to stops; it does not verify each route's full path.
 
+If creation is refused for stop eligibility or build-index changes, the Development log records the individual conditions and the capture and current indices. The global build index is diagnostic during capture but is a strict creation guard. <!-- OpenAI-Codex -->
+
 The Development content-manager entry identifies DevTool and warns that the development version can damage saves. <!-- OpenAI-Codex -->
 
 The route graph still treats junction-connected segments as connected and does not model lane-level turns or TM:PE restrictions. A generated proposal and its asynchronous checks are a Development prototype, not proof that every line can run in a live game.

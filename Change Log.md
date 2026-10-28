@@ -2,6 +2,11 @@
 
 Copyright © Kingsley.
 
+## 2026-10-28 — Development route refusal diagnostics
+
+- Added eligibility and build-index details to route creation refusal logs while retaining the existing safety checks.
+- Author: OpenAI-Codex.
+
 ## 2026-10-28 — Development description
 
 - Updated the Development content-manager entry to identify DevTool and warn that it can damage saves.
