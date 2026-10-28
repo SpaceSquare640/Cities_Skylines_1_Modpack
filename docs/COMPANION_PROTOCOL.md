@@ -59,7 +59,7 @@ The PID/path/name checks are not publisher-signature authentication. A same-user
 - The request carries protocol, edition, sequence, body hash, and proof headers. The companion requires the next sequence exactly (`1`, then previous + 1), validates the proof with a fixed-time byte comparison, reads the declared body, checks its hash, then validates its fields and types before contacting Ollama.
 - A successful HTTP response includes the protocol, edition, same sequence, response-body hash, and an HMAC over protocol, edition, sequence, status code, method, route, and response hash. The mod validates all values and discards unauthenticated, mismatched, malformed, or replayed responses.
 - Loopback HTTP is not encrypted. HMAC protects authenticity and replay within this session; it does not protect the payload from software able to read/inject into either process or inspect their memory. The accepted threat model does not defend against privileged local software with those abilities.
-- No application request-size or request-frequency caps are implemented, per the approved user decision. The connection has a ten-minute deadline. The companion processes one client at a time and a mod request ends the session. Request size and repeated local use can still consume memory/CPU; these are residual risks. The companion streams Ollama `/api/tags` and `/api/chat` response bodies with a 1 MiB maximum before JSON parsing; it stops after reading at most one byte beyond the limit and maps oversized bodies to the sanitized `invalid_response` category without logging response content.
+- No application request-size or request-frequency caps are implemented, per the approved user decision. The connection has a ten-minute deadline. The companion processes one client at a time and a mod request ends the session. Request size and repeated local use can still consume memory/CPU; these are residual risks. The application applies no response-size cap to Ollama `/api/chat`; large answers can consume substantial memory. The `/api/tags` model-list response remains limited to 1 MiB before JSON parsing, with oversized bodies mapped to the sanitized `invalid_response` category without logging response content.
 
 ## 5. Request encoding and Ollama adapter
 
@@ -86,3 +86,5 @@ Official Ollama documentation checked 2026-10-25:
 - Disable cloud features and local/cloud data handling: https://docs.ollama.com/faq
 
 Implementation documentation signed by OpenAI-Codex.
+
+Documentation update signed by OpenAI-Codex_Responsible: AI Gaming.

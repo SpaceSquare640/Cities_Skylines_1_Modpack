@@ -5,6 +5,7 @@ namespace AIGaming.Companion;
 internal static class Program
 {
     private const int Limit = 8;
+    private const int FormerMaximumResponseBytes = 1024 * 1024;
 
     private static async Task Main()
     {
@@ -12,7 +13,9 @@ internal static class Program
         await AcceptsBodyAtLimitAsync();
         await RejectsAdvertisedBodyAboveLimitAsync();
         await RejectsUnknownLengthBodyAfterOneExtraByteAsync();
-        Console.WriteLine("PASS: 4 bounded response body checks.");
+        await ReadsAdvertisedBodyAboveFormerMaximumAsync();
+        await ReadsUnknownLengthBodyAboveFormerMaximumAsync();
+        Console.WriteLine("PASS: 4 bounded model-list and 2 unbounded response body checks.");
     }
 
     private static async Task ReadsBodyBelowLimitAsync()
@@ -50,6 +53,34 @@ internal static class Program
         if (stream.BytesRead != Limit + 1)
         {
             throw new InvalidOperationException($"Expected {Limit + 1} bytes read, got {stream.BytesRead}.");
+        }
+    }
+
+    private static async Task ReadsAdvertisedBodyAboveFormerMaximumAsync()
+    {
+        byte[] expected = Enumerable.Repeat((byte)42, FormerMaximumResponseBytes + 1).ToArray();
+        using var content = new ByteArrayContent(expected);
+        byte[] actual = await BoundedOllamaResponseReader.ReadUnboundedAsync(content, CancellationToken.None);
+        AssertBytes(expected, actual, "advertised body above former maximum");
+    }
+
+    private static async Task ReadsUnknownLengthBodyAboveFormerMaximumAsync()
+    {
+        byte[] expected = Enumerable.Repeat((byte)42, FormerMaximumResponseBytes + 1).ToArray();
+        var stream = new NonSeekableReadStream(expected);
+        using var content = new StreamContent(stream);
+        if (content.Headers.ContentLength != null)
+        {
+            throw new InvalidOperationException("The test stream must not advertise a content length.");
+        }
+
+        byte[] actual = await BoundedOllamaResponseReader.ReadUnboundedAsync(
+            content,
+            CancellationToken.None);
+        AssertBytes(expected, actual, "unknown-length body above former maximum");
+        if (stream.BytesRead != expected.Length)
+        {
+            throw new InvalidOperationException($"Expected {expected.Length} bytes read, got {stream.BytesRead}.");
         }
     }
 
@@ -127,3 +158,4 @@ internal sealed class NonSeekableReadStream : Stream
 }
 
 // Implementation update signed by OpenAI-Codex.
+// Implementation update signed by OpenAI-Codex_Responsible: AI Gaming.

@@ -67,9 +67,8 @@ internal sealed class OllamaLocalProvider : IDisposable
                 return Error(request.ModelName, "ollama_error");
             }
 
-            byte[] responseBody = await BoundedOllamaResponseReader.ReadAsync(
+            byte[] responseBody = await BoundedOllamaResponseReader.ReadUnboundedAsync(
                 response.Content,
-                BoundedOllamaResponseReader.MaximumResponseBytes,
                 cancellationToken).ConfigureAwait(false);
             using JsonDocument document = JsonDocument.Parse(responseBody);
             if (!document.RootElement.TryGetProperty("message", out JsonElement messageElement) ||
@@ -263,3 +262,4 @@ internal sealed class OllamaLocalProvider : IDisposable
     };
 }
 // Implementation update signed by OpenAI-Codex.
+// Implementation update signed by OpenAI-Codex_Responsible: AI Gaming.

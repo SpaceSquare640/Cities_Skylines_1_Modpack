@@ -7,6 +7,11 @@ internal static class BoundedOllamaResponseReader
     internal const int MaximumResponseBytes = 1024 * 1024;
     private const int BufferSize = 8192;
 
+    internal static Task<byte[]> ReadUnboundedAsync(HttpContent content, CancellationToken cancellationToken)
+    {
+        return content.ReadAsByteArrayAsync(cancellationToken);
+    }
+
     internal static async Task<byte[]> ReadAsync(
         HttpContent content,
         int maximumBytes,
@@ -47,3 +52,4 @@ internal static class BoundedOllamaResponseReader
 }
 
 // Implementation update signed by OpenAI-Codex.
+// Implementation update signed by OpenAI-Codex_Responsible: AI Gaming.

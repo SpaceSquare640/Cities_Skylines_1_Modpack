@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Limited Ollama `/api/tags` and `/api/chat` response bodies to 1 MiB before JSON parsing; oversized responses use the sanitized `invalid_response` category.
+- Removed the application response-size limit for Ollama `/api/chat` answers. The `/api/tags` model-list response remains limited to 1 MiB before JSON parsing.
 
 ## 0.4.0 — Early preview
 
@@ -13,3 +13,5 @@
 - Clarified that DevTools=true builds are development-only and may be uploaded only to the matching Development Workshop item, never a Release item.
 
 Documentation update signed by OpenAI-Codex.
+
+Documentation update signed by OpenAI-Codex_Responsible: AI Gaming.
