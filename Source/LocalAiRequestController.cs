@@ -10,6 +10,7 @@ namespace AIGaming
 {
     internal sealed class LocalAiRequestController
     {
+        private readonly UIHelperBase _group;
         private readonly UITextField _previewDisplay;
         private readonly UIButton _statusDisplay;
         private readonly UITextField _responseDisplay;
@@ -32,8 +33,10 @@ namespace AIGaming
 
         internal LocalAiRequestController(UIHelperBase group)
         {
+            _group = group;
             CreateReadOnlyTextField(group, Localization.Get("localAi.consentLabel"), Localization.Get("localAi.consentNotice"));
-            group.AddCheckbox(Localization.Get("localAi.allowLaunch"), false, OnAllowLaunchChanged);
+            UICheckBox allowLaunch = group.AddCheckbox(Localization.Get("localAi.allowLaunch"), false, OnAllowLaunchChanged) as UICheckBox;
+            SettingsLayout.FitCheckbox(group, allowLaunch);
             group.AddTextfield(Localization.Get("localAi.model"), string.Empty, OnModelChanged, OnModelSubmitted);
             group.AddTextfield(Localization.Get("localAi.question"), string.Empty, OnQuestionChanged, OnQuestionSubmitted);
             group.AddButton(Localization.Get("localAi.selectAll"), SelectAllFields);
@@ -46,6 +49,7 @@ namespace AIGaming
 
             _previewDisplay = CreateReadOnlyTextField(group, Localization.Get("localAi.previewLabel"), Localization.Get("localAi.preview.none"));
             _statusDisplay = group.AddButton(Localization.Get("localAi.status.ready"), IgnoreClick) as UIButton;
+            SettingsLayout.FitButton(group, _statusDisplay);
             _responseDisplay = CreateReadOnlyTextField(group, Localization.Get("localAi.responseLabel"), Localization.Get("localAi.response.none"));
             group.AddButton(Localization.Get("localAi.previewButton"), PrepareRequest);
             _confirmButton = group.AddButton(Localization.Get("localAi.confirmButton"), ConfirmRequest) as UIButton;
@@ -229,6 +233,7 @@ namespace AIGaming
                 field.multiline = true;
                 field.processMarkup = false;
                 field.height = EstimateTextHeight(text);
+                SettingsLayout.FitTextField(group, field);
             }
             return field;
         }
@@ -246,13 +251,14 @@ namespace AIGaming
         {
         }
 
-        private static void SetFieldText(UITextField field, string text)
+        private void SetFieldText(UITextField field, string text)
         {
             if (field == null) return;
             try
             {
                 field.text = text ?? string.Empty;
                 field.height = EstimateTextHeight(field.text);
+                SettingsLayout.FitTextField(_group, field);
             }
             catch
             {
@@ -321,6 +327,7 @@ namespace AIGaming
         private void SetStatus(string text)
         {
             SetButtonText(_statusDisplay, text);
+            SettingsLayout.FitButton(_group, _statusDisplay);
         }
 
         private string GetErrorText(string code)
@@ -395,3 +402,4 @@ namespace AIGaming
     }
 }
 // Implementation update signed by OpenAI-Codex.
+// Implementation update signed by OpenAI-Codex_Responsible: AI Gaming.

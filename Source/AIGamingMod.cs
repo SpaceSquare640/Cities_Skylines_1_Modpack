@@ -11,6 +11,9 @@ namespace AIGaming
         public string Name => "AI Gaming";
 
         public string Description =>
+            CompanionBuildInfo.Edition == "development"
+            ? "Development Version. This version has DevTool. Be careful; the development version can let your save be broken."
+            :
             "Early preview of a mod that will let a local or cloud AI model play Cities: Skylines, " +
             "or assist you while you play. This version can send selected read-only city fields to a local Ollama " +
             "model through an optional companion after per-request confirmation. It does not connect to cloud models " +
@@ -40,9 +43,9 @@ namespace AIGaming
 
             UIHelperBase group = helper.AddGroup(
                 Localization.Get("settings.title") + " - " + Localization.Get("settings.versionShort"));
-            group.AddButton(Localization.Get("settings.status"), IgnoreInformationClick);
-            group.AddButton(Localization.Get("settings.description"), IgnoreInformationClick);
-            group.AddButton(Localization.Get("settings.website"), IgnoreInformationClick);
+            AddInformationRow(group, Localization.Get("settings.status"));
+            AddInformationRow(group, Localization.Get("settings.description"));
+            AddInformationRow(group, Localization.Get("settings.website"));
             AddInteropStatusRows(group);
             group.AddButton(Localization.Get("settings.summaryButton"), CitySummary.QueueWrite);
 
@@ -56,20 +59,20 @@ namespace AIGaming
 
         private static void AddInteropStatusRows(UIHelperBase group)
         {
-            group.AddButton(Localization.Get("settings.interop.title"), IgnoreInformationClick);
+            AddInformationRow(group, Localization.Get("settings.interop.title"));
 
             try
             {
                 IList<InteropProviderStatus> statuses = ModpackInteropDiscovery.Discover();
                 for (int i = 0; i < statuses.Count; i++)
                 {
-                    group.AddButton(GetInteropStatusText(statuses[i]), IgnoreInformationClick);
+                    AddInformationRow(group, GetInteropStatusText(statuses[i]));
                 }
             }
             catch
             {
-                group.AddButton(Localization.Get("interop.aiImprove.discoveryFailed"), IgnoreInformationClick);
-                group.AddButton(Localization.Get("interop.transport.discoveryFailed"), IgnoreInformationClick);
+                AddInformationRow(group, Localization.Get("interop.aiImprove.discoveryFailed"));
+                AddInformationRow(group, Localization.Get("interop.transport.discoveryFailed"));
             }
         }
 
@@ -127,6 +130,13 @@ namespace AIGaming
         {
             // UIHelperBase exposes buttons but no static label control.
         }
+
+        private static void AddInformationRow(UIHelperBase group, string text)
+        {
+            ColossalFramework.UI.UIButton button = group.AddButton(text, IgnoreInformationClick) as ColossalFramework.UI.UIButton;
+            SettingsLayout.FitButton(group, button);
+        }
     }
 }
 // Implementation update signed by OpenAI-Codex.
+// Implementation update signed by OpenAI-Codex_Responsible: AI Gaming.

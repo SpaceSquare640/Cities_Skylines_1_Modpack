@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Adjusted settings layout to reserve space for wrapped text and expanding preview and response fields; updated the Development version description.
 - Removed the application response-size limit for Ollama `/api/chat` answers. The `/api/tags` model-list response remains limited to 1 MiB before JSON parsing.
 
 ## 0.4.0 — Early preview
