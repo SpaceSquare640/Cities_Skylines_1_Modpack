@@ -8,6 +8,8 @@ This build contains testing tools that the Release Version does not:
 [list]
 [*]A developer panel triggered with Ctrl+Shift+R and Ctrl+Shift+T, used to force rare events such as thunderstorm handling and level reloads.
 [*]Experimental probes that can [b]deliberately alter vehicle paths[/b] to test new behaviour.
+[*]The path-altering LateMergeProbe is disabled unless explicitly enabled at build time.
+[*]If a custom build enables it, restart the game to stop it; disabling the mod during the session does not remove its patch.
 [/list]
 Only use this version on a copy of your save, and only if you know why you need it.
 
@@ -20,3 +22,5 @@ Only use this version on a copy of your save, and only if you know why you need 
 Requires [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2040656402]Harmony[/url]. Features and settings match the Release Version unless the [url=https://spacesquare640.github.io/Cities_Skylines_1_Modpack/change-log/]change log[/url] says otherwise.
 
 Part of the Cities: Skylines 1 Modpack by Kingsley.
+
+<!-- Updated by OpenAI-Codex. -->

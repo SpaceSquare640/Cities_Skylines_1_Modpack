@@ -11,7 +11,12 @@ namespace AIImprove
     {
         public string Name => "AI_Improve";
 
+        // Content Manager displays Name followed by Description. Signed: OpenAI-Codex.
+#if AIIMPROVE_DEVTOOLS
+        public string Description => "Development Version. This version has DevTool. Be careful; the development version can let your save be broken.";
+#else
         public string Description => "Improves traffic, citizen and service vehicle AI decision quality. By Kingsley.";
+#endif
 
         public void OnEnabled()
         {

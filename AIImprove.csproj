@@ -49,6 +49,16 @@
     <Compile Remove="dev/**/*.cs" />
   </ItemGroup>
 
+  <!-- Keep the in-game description aligned with the Development tools gate. Signed: OpenAI-Codex. -->
+  <PropertyGroup Condition="'$(DevTools)' == 'true'">
+    <DefineConstants>$(DefineConstants);AIIMPROVE_DEVTOOLS</DefineConstants>
+  </PropertyGroup>
+
+  <!-- The path-altering experiment requires a separate explicit build opt-in. Signed: OpenAI-Codex. -->
+  <PropertyGroup Condition="'$(DevTools)' == 'true' and '$(EnableLateMergeProbe)' == 'true'">
+    <DefineConstants>$(DefineConstants);AIIMPROVE_LATE_MERGE_PROBE</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup Condition="'$(DevTools)' == 'true'">
     <Compile Include="dev/**/*.cs" />
   </ItemGroup>

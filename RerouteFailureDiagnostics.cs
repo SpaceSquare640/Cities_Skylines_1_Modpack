@@ -23,14 +23,9 @@ namespace AIImprove
     //      Topology decides whether the A* finds a better route, but the A* never ran. Whatever
     //      is failing happens earlier, during position resolution or path allocation.
     //
-    // Rather than guess again, this records the discriminating context at the moment of failure.
-    // The leading hypothesis is that startPos is the problem: FlexibleReroutePatch passes
-    // vehicleData.m_targetPos3, which is a *lookahead* target rather than where the vehicle
-    // actually is, while FindPathPosition snaps within 32m and is given an underground/surface
-    // flag derived from Vehicle.Flags.Underground|Transition. A long train, or one near a tunnel
-    // portal, can easily have a m_targetPos3 that fails to snap - a mechanism that has nothing to
-    // do with topology. Hence the two things measured per failure: how far m_targetPos3 is from
-    // the vehicle's real position, and whether it was underground/in transition.
+    // Record contextual measurements at the moment of failure. The current self-StartPathFind
+    // overload selects its own positions, so target distance and underground flags do not identify
+    // the failed step or prove a snap failure. Signed: OpenAI-Codex.
     //
     // Everything here is Verbose-only and callers must guard with `if (Log.VerboseEnabled)` -
     // with verbose off (the default) not even the counters are touched, so ordinary play pays
@@ -63,9 +58,8 @@ namespace AIImprove
         // produces a readable handful of lines rather than a wall of them.
         private const int ReportEveryFailures = 50;
 
-        // FindPathPosition's own snap radius in TrainAI/AircraftAI/ShipAI.StartPathFind. A
-        // m_targetPos3 further than this from the vehicle cannot resolve to the vehicle's own
-        // lane, and is the specific thing this measurement is here to confirm or rule out.
+        // Historical reference distance; exceeding it does not establish a snap failure.
+        // Signed: OpenAI-Codex.
         private const float SnapRadius = 32f;
 
         // Above this fraction of the PathUnit pool in use, CreatePath is plausibly the failing
@@ -160,7 +154,7 @@ namespace AIImprove
                 counters.Attempts + " attempts, " + counters.Accepted + " accepted (" +
                 acceptedPercent.ToString("F0") + "%), " + counters.Failed + " failed. Of the failures: " +
                 counters.FailedWithTargetPosBeyondSnapRadius + " had m_targetPos3 beyond the " +
-                SnapRadius.ToString("F0") + "m snap radius (avg " + averageDistance.ToString("F0") +
+                SnapRadius.ToString("F0") + "m reference distance (not a confirmed failure cause; avg " + averageDistance.ToString("F0") +
                 "m across " + counters.FailedTargetPosDistanceSampleCount + " finite distance samples, max " +
                 counters.FailedTargetPosDistanceMax.ToString("F0") + "m), " +
                 counters.FailedWhileUndergroundOrTransition + " were underground/in transition, " +

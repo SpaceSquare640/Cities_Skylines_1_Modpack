@@ -157,6 +157,11 @@ namespace AIImprove
             object[] args = { vehicleID, vehicleData, startPos, endPos, true, true };
             bool success = (bool)startPathFind.Invoke(aiInstance, args);
             vehicleData = (Vehicle)args[1]; // reflection writes ref/out results back into the array
+            // A rejected request cannot own a later path change. Signed: OpenAI-Codex.
+            if (!success)
+            {
+                RerouteEffectDiagnostics.ReleaseVehicle(vehicleID);
+            }
 
             if (Log.VerboseEnabled)
             {
@@ -349,6 +354,11 @@ namespace AIImprove
             object[] args = { vehicleID, vehicleData };
             bool success = (bool)selfStartPathFind.Invoke(aiInstance, args);
             vehicleData = (Vehicle)args[1];
+            // Do not attribute an unrelated later path to a rejected request. Signed: OpenAI-Codex.
+            if (!success)
+            {
+                RerouteEffectDiagnostics.ReleaseVehicle(vehicleID);
+            }
 
             if (Log.VerboseEnabled)
             {
