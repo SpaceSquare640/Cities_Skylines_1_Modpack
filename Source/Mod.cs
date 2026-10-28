@@ -25,12 +25,21 @@ namespace AutomatedPublicTransportPlanning
         /// </summary>
         public string Name
         {
+#if DEVTOOLS
+            // OpenAI-Codex: the content manager joins this name and the Development description.
+            get { return ModName; }
+#else
             get { return ModName + " " + Version; }
+#endif
         }
 
         public string Description
         {
+#if DEVTOOLS
+            get { return "Development Version. This version has DevTool. Be careful; the development version can let your save be broken."; }
+#else
             get { return Loc.Get(Strings.ModDescription); }
+#endif
         }
 
         /// <summary>

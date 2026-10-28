@@ -2,6 +2,11 @@
 
 Copyright © Kingsley.
 
+## 2026-10-28 — Development description
+
+- Updated the Development content-manager entry to identify DevTool and warn that it can damage saves.
+- Author: OpenAI-Codex.
+
 ## 2026-10-27 — Development route proposal creation
 
 - Added a Development-only flow to select and create one eligible planning proposal. It remains disarmed by default and requires a fresh confirmation for each creation.
