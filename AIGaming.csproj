@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Remove="Source\Development\**\*.cs" />
     <Compile Remove="Companion\**\*.cs" />
+    <Compile Remove="LoggingChecks\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -78,3 +79,4 @@
 
 </Project>
 <!-- Implementation update signed by OpenAI-Codex. -->
+<!-- Implementation update signed by OpenAI-Codex_Responsible: AI Gaming. -->

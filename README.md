@@ -18,6 +18,14 @@ The request preview can also include utility status (electricity, water, sewage,
 
 The complete raw HTTP response body from Ollama `/api/chat`, including its JSON envelope, has no application-level size limit by default (`0`). Players may enter a whole-number limit from 1 to 2047 MiB in the settings. If a configured limit is exceeded, AI Gaming discards the entire response before parsing it and does not display a partial answer. This byte-size limit does not set the model's generated-token limit or cap total process memory; parsing may require additional memory. With the default unlimited setting, normal memory and request-time constraints still apply. The `/api/tags` model-list response remains limited to 1 MiB.
 
+## Diagnostic logs
+
+Release records warnings and errors only; Development also records lifecycle, discovery, request status, and request elapsed time. Diagnostic logs do not include prompts, model responses, city values, or credentials. The manual city snapshot action remains separate and writes to the game log.
+
+On Windows, daily UTC diagnostic files are stored under the local application data directory in `SpaceSquare640/AI Gaming/Logs/release` or `Logs/development`. A background check runs at activation if due and then every 48 hours; it removes only marked, correctly named, non-current diagnostic files last modified more than 48 hours ago. Depending on the check schedule, files may remain for nearly 96 hours. Directory and file handles are verified before deletion; files that cannot be safely verified are retained. On other operating systems, or when safe file access fails, diagnostics fall back to the game log and automatic deletion is unavailable. The manual city snapshot remains in the game log.
+
+An invalid cleanup timestamp is treated as due. If a damaged state file still has the expected ownership marker, it can be updated; an unmarked file is left untouched. In that case the current process schedules its next check after 48 hours, but restarting the mod can trigger an earlier check. The 48-hour minimum age for deleting a diagnostic file still applies.
+
 Author: Kingsley
 
 

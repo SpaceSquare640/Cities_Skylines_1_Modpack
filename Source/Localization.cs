@@ -671,7 +671,7 @@ namespace AIGaming
             }
             catch
             {
-                Debug.LogWarning("[AI Gaming] Could not persist the selected UI language.");
+                DiagnosticLog.Warning("Could not persist the selected UI language.");
             }
             return true;
         }

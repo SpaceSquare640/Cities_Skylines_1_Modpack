@@ -219,12 +219,15 @@ namespace AIGaming
             SetLocalizedStatus("localAi.status.starting");
 
             var client = new CompanionClient();
+            DiagnosticLog.Detail("Local AI request started.");
+            long started = System.Diagnostics.Stopwatch.GetTimestamp();
             _activeClient = client;
             long generation = _requestGeneration.BeginResponse();
             bool queued = ThreadPool.QueueUserWorkItem(delegate
             {
                 LocalAiResult result = client.Send(request);
-                DispatchToUi(delegate { CompleteRequest(generation, client, result); });
+                long elapsedMs = (long)((System.Diagnostics.Stopwatch.GetTimestamp() - started) * 1000.0 / System.Diagnostics.Stopwatch.Frequency);
+                DispatchToUi(delegate { CompleteRequest(generation, client, result, elapsedMs); });
             });
             if (!queued)
             {
@@ -235,9 +238,10 @@ namespace AIGaming
             }
         }
 
-        private void CompleteRequest(long generation, CompanionClient client, LocalAiResult result)
+        private void CompleteRequest(long generation, CompanionClient client, LocalAiResult result, long elapsedMs)
         {
             if (_disposed || !_requestGeneration.IsResponseCurrent(generation)) return;
+            DiagnosticLog.Detail("Local AI request elapsedMs=" + Math.Max(0, elapsedMs).ToString(CultureInfo.InvariantCulture) + ".");
             if (ReferenceEquals(_activeClient, client)) _activeClient = null;
             SetEnabled(_cancelButton, false);
 
@@ -245,14 +249,14 @@ namespace AIGaming
             {
                 SetResponseText(result.Content);
                 SetLocalizedStatus("localAi.status.success", result.ModelName);
-                UnityEngine.Debug.Log("[AI Gaming] Local AI request completed | status=success.");
+                DiagnosticLog.Detail("Local AI request completed | status=success.");
                 return;
             }
 
             string errorCode = result == null ? "companion_request_failed" : result.ErrorCode;
             SetLocalizedResponse("localAi.response.none");
             SetLocalizedStatus("localAi.error." + (string.IsNullOrEmpty(errorCode) ? "generic" : errorCode));
-            UnityEngine.Debug.LogWarning("[AI Gaming] Local AI request failed | status=" + GetSafeErrorCategory(errorCode) + ".");
+            DiagnosticLog.Warning("Local AI request failed | status=" + GetSafeErrorCategory(errorCode) + ".");
         }
 
         private void CancelRequest()

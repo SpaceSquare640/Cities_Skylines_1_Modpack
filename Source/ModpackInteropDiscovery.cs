@@ -65,7 +65,7 @@ namespace AIGaming
 
         internal static IList<InteropProviderStatus> Discover()
         {
-            Debug.Log("[AI Gaming] Interop discovery started.");
+            DiagnosticLog.Detail("Interop discovery started.");
 
             var presence = new ProviderPresence[Providers.Length];
             var manifests = new List<ProviderManifest>();
@@ -146,24 +146,20 @@ namespace AIGaming
 
                         manifests.Add(parsed);
                     }
-                    catch (Exception exception)
+                    catch (Exception)
                     {
                         if (matchedProviderIndex >= 0)
                         {
                             presence[matchedProviderIndex].DiscoveryFailed = true;
                         }
 
-                        Debug.LogWarning(
-                            "[AI Gaming] Interop manifest read failed: exceptionType=" +
-                            exception.GetType().Name + ".");
+                        DiagnosticLog.Warning("Interop manifest read failed.");
                     }
                 }
             }
-            catch (Exception exception)
+            catch (Exception)
             {
-                Debug.LogWarning(
-                    "[AI Gaming] Interop discovery failed: exceptionType=" +
-                    exception.GetType().Name + ".");
+                DiagnosticLog.Warning("Interop discovery failed.");
                 return CreateDiscoveryFailedStatuses();
             }
 
@@ -173,7 +169,7 @@ namespace AIGaming
                 LogStatus(statuses[statuses.Count - 1]);
             }
 
-            Debug.Log("[AI Gaming] Interop discovery complete.");
+            DiagnosticLog.Detail("Interop discovery complete.");
             return statuses;
         }
 
@@ -192,7 +188,7 @@ namespace AIGaming
                 LogStatus(status);
             }
 
-            Debug.Log("[AI Gaming] Interop discovery complete.");
+            DiagnosticLog.Detail("Interop discovery complete.");
             return statuses;
         }
 
@@ -615,23 +611,11 @@ namespace AIGaming
                 status.State == InteropProviderState.InterfaceIncomplete ||
                 status.State == InteropProviderState.Incompatible)
             {
-                Debug.Log(
-                    "[AI Gaming] Interop provider detected: providerId=" + status.ProviderId +
-                    ", providerVersion=" + status.ProviderVersion +
-                    ", contractVersion=" + status.ContractVersion +
-                    ", edition=" + status.Edition + ".");
-                Debug.Log(
-                    "[AI Gaming] Interop capability status: capabilityId=" + status.CapabilityId +
-                    ", capabilityVersion=" + status.CapabilityVersion +
-                    ", manifestCompatible=" + (status.State == InteropProviderState.Incompatible ? "false" : "true") +
-                    ", entrypointAvailable=" + (status.CapabilityEntryPointAvailable ? "true" : "false") +
-                    ", invocation=not-invoked.");
+                DiagnosticLog.Detail("Interop provider=" + DiagnosticLogPolicy.GetProviderLabel(status.ProviderId) + " | status=" + status.State.ToString() + ".");
                 return;
             }
 
-            Debug.LogWarning(
-                "[AI Gaming] Interop provider unavailable: providerId=" + status.ProviderId +
-                ", reason=" + GetReasonCode(status.State) + ".");
+            DiagnosticLog.Detail("Interop provider=" + DiagnosticLogPolicy.GetProviderLabel(status.ProviderId) + " | unavailable: reason=" + GetReasonCode(status.State) + ".");
         }
 
         private static string GetReasonCode(InteropProviderState state)

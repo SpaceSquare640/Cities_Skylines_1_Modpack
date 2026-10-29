@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Added minimal Release and detailed Development diagnostic logs with marked daily files. On Windows, a background check removes eligible files older than 48 hours using verified handles; checks occur every 48 hours. Other platforms use the game log without automatic deletion. The manual city snapshot remains separate.
+- Recovered cleanup scheduling from invalid or future timestamps without overwriting unmarked state files; Development interop diagnostics now identify the provider using fixed labels.
+
 - Added selectable English, Traditional Chinese, Simplified Chinese, Japanese, and Korean settings UI languages. English is the default; the saved selection applies immediately.
 - Adjusted settings layout to reserve space for wrapped text and expanding preview and response fields; updated the Development version description.
 - Added a user-configurable size limit for the complete raw Ollama `/api/chat` HTTP response body. It defaults to 0 (unlimited); a configured 1-2047 MiB limit discards the entire oversized response. The limit includes the JSON envelope and does not set generated tokens. `/api/tags` remains limited to 1 MiB.

@@ -24,7 +24,7 @@ namespace AIGaming
 
         public void OnEnabled()
         {
-            Debug.Log("[AI Gaming] Early preview 0.4.0 loaded.");
+            DiagnosticLog.Start();
         }
 
         public void OnDisabled()
@@ -34,7 +34,7 @@ namespace AIGaming
                 _localAiRequestController.Shutdown();
                 _localAiRequestController = null;
             }
-            Debug.Log("[AI Gaming] Mod disabled.");
+            DiagnosticLog.Stop();
         }
 
         public void OnSettingsUI(UIHelperBase helper)

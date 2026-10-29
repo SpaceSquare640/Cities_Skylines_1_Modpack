@@ -17,7 +17,7 @@ namespace AIGaming
                 SimulationManager simulation = Singleton<SimulationManager>.instance;
                 if (simulation == null)
                 {
-                    Debug.LogWarning("[AI Gaming] City summary unavailable: the simulation is not ready.");
+                    DiagnosticLog.Warning("City summary unavailable: the simulation is not ready.");
                     return;
                 }
 
@@ -259,7 +259,7 @@ namespace AIGaming
         {
             try
             {
-                Debug.LogError("[AI Gaming] City snapshot failed: exceptionType=" + exception.GetType().Name + ".");
+                DiagnosticLog.Error("City snapshot failed.");
             }
             catch
             {
