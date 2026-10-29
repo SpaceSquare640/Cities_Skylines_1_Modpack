@@ -67,9 +67,18 @@ internal sealed class OllamaLocalProvider : IDisposable
                 return Error(request.ModelName, "ollama_error");
             }
 
-            byte[] responseBody = await BoundedOllamaResponseReader.ReadUnboundedAsync(
-                response.Content,
-                cancellationToken).ConfigureAwait(false);
+            byte[] responseBody;
+            try
+            {
+                responseBody = await BoundedOllamaResponseReader.ReadAsync(
+                    response.Content,
+                    request.MaximumResponseBytes,
+                    cancellationToken).ConfigureAwait(false);
+            }
+            catch (InvalidDataException) when (request.MaximumResponseBytes > 0)
+            {
+                return Error(request.ModelName, "response_limit_exceeded");
+            }
             using JsonDocument document = JsonDocument.Parse(responseBody);
             if (!document.RootElement.TryGetProperty("message", out JsonElement messageElement) ||
                 !messageElement.TryGetProperty("content", out JsonElement contentElement) ||
@@ -231,14 +240,72 @@ internal sealed class OllamaLocalProvider : IDisposable
     {
         var text = new StringBuilder();
         text.AppendLine("You are an assistant for Cities: Skylines. Give advice only. Do not claim to operate the game.");
-        text.AppendLine("Use only the city fields below and the player's question.");
-        text.AppendLine("City snapshot schemaVersion=1:");
+        text.AppendLine("Use only the city fields, game-reported installed and available DLC identifiers below, and the player's question.");
+        text.AppendLine("DLC identifiers describe content available to the player; do not assume a DLC is active in this save.");
+        text.AppendLine("City snapshot schemaVersion=3:");
         Append(text, "gameDate", request.GameDate);
         Append(text, "population", request.Population?.ToString(System.Globalization.CultureInfo.InvariantCulture));
         Append(text, "fundsCents", request.FundsCents?.ToString(System.Globalization.CultureInfo.InvariantCulture));
         Append(text, "residentialDemand", request.ResidentialDemand?.ToString(System.Globalization.CultureInfo.InvariantCulture));
         Append(text, "commercialDemand", request.CommercialDemand?.ToString(System.Globalization.CultureInfo.InvariantCulture));
         Append(text, "workplaceDemand", request.WorkplaceDemand?.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        if (request.Utilities is not null)
+        {
+            text.AppendLine("Utilities (raw game district values; physical units and scales are not verified; do not invent units):");
+            Append(text, "electricityCapacity", request.Utilities.ElectricityCapacity.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            Append(text, "electricityConsumption", request.Utilities.ElectricityConsumption.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            Append(text, "waterCapacity", request.Utilities.WaterCapacity.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            Append(text, "waterConsumption", request.Utilities.WaterConsumption.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            Append(text, "sewageCapacity", request.Utilities.SewageCapacity.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            Append(text, "sewageAccumulation", request.Utilities.SewageAccumulation.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            Append(text, "garbageAmount", request.Utilities.GarbageAmount.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            Append(text, "garbageCapacity", request.Utilities.GarbageCapacity.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            Append(text, "garbageAccumulation", request.Utilities.GarbageAccumulation.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            Append(text, "incinerationCapacity", request.Utilities.IncinerationCapacity.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        }
+        if (request.Zoning is not null)
+        {
+            text.AppendLine("Built buildings and area by land use (not vacant zoned cells; area unit is game-defined and unverified):");
+            Append(text, "residentialBuildingCount", request.Zoning.ResidentialBuildingCount.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            Append(text, "residentialBuildingArea", request.Zoning.ResidentialBuildingArea.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            Append(text, "commercialBuildingCount", request.Zoning.CommercialBuildingCount.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            Append(text, "commercialBuildingArea", request.Zoning.CommercialBuildingArea.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            Append(text, "industrialBuildingCount", request.Zoning.IndustrialBuildingCount.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            Append(text, "industrialBuildingArea", request.Zoning.IndustrialBuildingArea.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            Append(text, "officeBuildingCount", request.Zoning.OfficeBuildingCount.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            Append(text, "officeBuildingArea", request.Zoning.OfficeBuildingArea.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        }
+        if (request.TrafficTransit is not null)
+        {
+            text.AppendLine("Traffic and transit (game-reported statistics; raw values, unspecified scale/window; trafficFlow is not a congestion percentage):");
+            Append(text, "trafficFlow", request.TrafficTransit.TrafficFlow.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            Append(text, "averagePassengers", request.TrafficTransit.AveragePassengers.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        }
+        if (request.ServiceStatus is not null)
+        {
+            text.AppendLine("Service status (fire coverage is mean m_fireCoverage byte 0-255 over created network segments; if fireCoverageSegmentCount is zero, the mean is unavailable; police and healthcare are citywide workload/capacity, not geographic coverage):");
+            Append(text, "policeCriminalAmount", request.ServiceStatus.PoliceCriminalAmount.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            Append(text, "policeCriminalCapacity", request.ServiceStatus.PoliceCriminalCapacity.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            Append(text, "policeExtraCriminals", request.ServiceStatus.PoliceExtraCriminals.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            Append(text, "fireCoverageMeanByte", request.ServiceStatus.FireCoverageMeanByte.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture));
+            Append(text, "fireCoverageSegmentCount", request.ServiceStatus.FireCoverageSegmentCount.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            Append(text, "healthSickCount", request.ServiceStatus.HealthSickCount.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            Append(text, "healthCapacity", request.ServiceStatus.HealthCapacity.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            Append(text, "healthCareProductivity", request.ServiceStatus.HealthCareProductivity.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        }
+        text.AppendLine("installedAvailableDlcs (game API enum identifiers; installed and available):");
+        if (request.InstalledAvailableDlcs.Length == 0)
+        {
+            text.AppendLine("(none detected)");
+        }
+        else
+        {
+            foreach (string identifier in request.InstalledAvailableDlcs)
+            {
+                text.Append("- ");
+                text.AppendLine(identifier);
+            }
+        }
         text.AppendLine("Player question:");
         text.Append(request.Question);
         return text.ToString();

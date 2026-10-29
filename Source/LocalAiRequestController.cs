@@ -11,14 +11,19 @@ namespace AIGaming
     internal sealed class LocalAiRequestController
     {
         private readonly UIHelperBase _group;
+        private readonly UITextField _consentDisplay;
+        private readonly UITextField _modelField;
+        private readonly UITextField _responseLimitField;
+        private readonly UITextField _questionField;
         private readonly UITextField _previewDisplay;
         private readonly UIButton _statusDisplay;
         private readonly UITextField _responseDisplay;
         private readonly UIButton _confirmButton;
         private readonly UIButton _cancelButton;
-        private readonly UICheckBox[] _schemaCheckboxes = new UICheckBox[6];
+        private readonly UICheckBox[] _schemaCheckboxes = new UICheckBox[10];
         private string _modelName = string.Empty;
         private string _question = string.Empty;
+        private int _maximumResponseBytes;
         private bool _allowLaunch;
         private bool _includeGameDate = true;
         private bool _includePopulation = true;
@@ -26,26 +31,57 @@ namespace AIGaming
         private bool _includeResidentialDemand = true;
         private bool _includeCommercialDemand = true;
         private bool _includeWorkplaceDemand = true;
+        private bool _includeUtilities = true;
+        private bool _includeZoning = true;
+        private bool _includeTrafficTransit = true;
+        private bool _includeServiceStatus = true;
         private LocalAiRequest _preparedRequest;
+        private LocalAiRequest _displayedPreviewRequest;
+        private readonly RequestCaptureGeneration _captureGeneration = new RequestCaptureGeneration();
+        private bool _capturePending;
+        private string _previewLocalizationKey = "localAi.preview.none";
+        private string _responseLocalizationKey = "localAi.response.none";
+        private string _statusLocalizationKey = "localAi.status.ready";
+        private object[] _statusArguments = new object[0];
         private CompanionClient _activeClient;
-        private int _generation;
+        private readonly RequestCaptureGeneration _requestGeneration = new RequestCaptureGeneration();
         private bool _disposed;
 
         internal LocalAiRequestController(UIHelperBase group)
         {
             _group = group;
-            CreateReadOnlyTextField(group, Localization.Get("localAi.consentLabel"), Localization.Get("localAi.consentNotice"));
+            _consentDisplay = CreateReadOnlyTextField(group, Localization.Get("localAi.consentLabel"), Localization.Get("localAi.consentNotice"));
             UICheckBox allowLaunch = group.AddCheckbox(Localization.Get("localAi.allowLaunch"), false, OnAllowLaunchChanged) as UICheckBox;
             SettingsLayout.FitCheckbox(group, allowLaunch);
-            group.AddTextfield(Localization.Get("localAi.model"), string.Empty, OnModelChanged, OnModelSubmitted);
-            group.AddTextfield(Localization.Get("localAi.question"), string.Empty, OnQuestionChanged, OnQuestionSubmitted);
-            group.AddButton(Localization.Get("localAi.selectAll"), SelectAllFields);
+            _modelField = group.AddTextfield(Localization.Get("localAi.model"), string.Empty, OnModelChanged, OnModelSubmitted) as UITextField;
+            int responseLimitMiB = UnityEngine.PlayerPrefs.GetInt(LocalAiResponseLimit.PreferenceKey, LocalAiResponseLimit.DefaultMiB);
+            int responseLimitBytes;
+            if (!LocalAiResponseLimit.TryParseMiB(responseLimitMiB.ToString(CultureInfo.InvariantCulture), out responseLimitMiB, out responseLimitBytes))
+            {
+                responseLimitMiB = LocalAiResponseLimit.DefaultMiB;
+                responseLimitBytes = 0;
+            }
+            _maximumResponseBytes = responseLimitBytes;
+            _responseLimitField = group.AddTextfield(
+                Localization.Get("localAi.responseLimit"),
+                responseLimitMiB.ToString(CultureInfo.InvariantCulture),
+                OnResponseLimitChanged,
+                OnResponseLimitSubmitted) as UITextField;
+            SettingsLayout.FitTextField(group, _responseLimitField);
+            _questionField = group.AddTextfield(Localization.Get("localAi.question"), string.Empty, OnQuestionChanged, OnQuestionSubmitted) as UITextField;
+            UIButton selectAll = group.AddButton(Localization.Get("localAi.selectAll"), SelectAllFields) as UIButton;
+            SettingsLayout.FitButton(group, selectAll);
             _schemaCheckboxes[0] = group.AddCheckbox(Localization.Get("localAi.include.gameDate"), true, OnGameDateChanged) as UICheckBox;
             _schemaCheckboxes[1] = group.AddCheckbox(Localization.Get("localAi.include.population"), true, OnPopulationChanged) as UICheckBox;
             _schemaCheckboxes[2] = group.AddCheckbox(Localization.Get("localAi.include.fundsCents"), true, OnFundsChanged) as UICheckBox;
             _schemaCheckboxes[3] = group.AddCheckbox(Localization.Get("localAi.include.residentialDemand"), true, OnResidentialChanged) as UICheckBox;
             _schemaCheckboxes[4] = group.AddCheckbox(Localization.Get("localAi.include.commercialDemand"), true, OnCommercialChanged) as UICheckBox;
             _schemaCheckboxes[5] = group.AddCheckbox(Localization.Get("localAi.include.workplaceDemand"), true, OnWorkplaceChanged) as UICheckBox;
+            _schemaCheckboxes[6] = group.AddCheckbox(Localization.Get("localAi.include.utilities"), true, OnUtilitiesChanged) as UICheckBox;
+            _schemaCheckboxes[7] = group.AddCheckbox(Localization.Get("localAi.include.zoning"), true, OnZoningChanged) as UICheckBox;
+            _schemaCheckboxes[8] = group.AddCheckbox(Localization.Get("localAi.include.trafficTransit"), true, OnTrafficTransitChanged) as UICheckBox;
+            _schemaCheckboxes[9] = group.AddCheckbox(Localization.Get("localAi.include.serviceStatus"), true, OnServiceStatusChanged) as UICheckBox;
+            for (int i = 0; i < _schemaCheckboxes.Length; i++) SettingsLayout.FitCheckbox(group, _schemaCheckboxes[i]);
 
             _previewDisplay = CreateReadOnlyTextField(group, Localization.Get("localAi.previewLabel"), Localization.Get("localAi.preview.none"));
             _statusDisplay = group.AddButton(Localization.Get("localAi.status.ready"), IgnoreClick) as UIButton;
@@ -56,12 +92,43 @@ namespace AIGaming
             _cancelButton = group.AddButton(Localization.Get("localAi.cancelButton"), CancelRequest) as UIButton;
             SetEnabled(_confirmButton, false);
             SetEnabled(_cancelButton, false);
+            RefreshLocalizedContent();
+        }
+
+        internal void RefreshLocalizedContent()
+        {
+            SettingsLayout.SetTextFieldLabel(_group, _consentDisplay, Localization.Get("localAi.consentLabel"));
+            SettingsLayout.SetTextFieldLabel(_group, _modelField, Localization.Get("localAi.model"));
+            SettingsLayout.SetTextFieldLabel(_group, _responseLimitField, Localization.Get("localAi.responseLimit"));
+            SettingsLayout.SetTextFieldLabel(_group, _questionField, Localization.Get("localAi.question"));
+            SettingsLayout.SetTextFieldLabel(_group, _previewDisplay, Localization.Get("localAi.previewLabel"));
+            SettingsLayout.SetTextFieldLabel(_group, _responseDisplay, Localization.Get("localAi.responseLabel"));
+            SetFieldText(_consentDisplay, Localization.Get("localAi.consentNotice"));
+            if (_displayedPreviewRequest != null)
+            {
+                SetFieldText(_previewDisplay, FormatPreview(_displayedPreviewRequest));
+            }
+            else if (!string.IsNullOrEmpty(_previewLocalizationKey))
+            {
+                SetFieldText(_previewDisplay, Localization.Get(_previewLocalizationKey));
+            }
+
+            if (!string.IsNullOrEmpty(_responseLocalizationKey))
+            {
+                SetFieldText(_responseDisplay, Localization.Get(_responseLocalizationKey));
+            }
+            if (!string.IsNullOrEmpty(_statusLocalizationKey))
+            {
+                SetStatus(Localization.Get(_statusLocalizationKey, _statusArguments));
+            }
         }
 
         internal void Shutdown()
         {
             _disposed = true;
-            _generation++;
+            _captureGeneration.Invalidate();
+            _capturePending = false;
+            _requestGeneration.InvalidateResponse();
             _preparedRequest = null;
             if (_activeClient != null)
             {
@@ -73,34 +140,60 @@ namespace AIGaming
         private void PrepareRequest()
         {
             if (_disposed) return;
+            int responseLimitMiB;
+            int responseLimitBytes;
+            if (_responseLimitField == null || !LocalAiResponseLimit.TryParseMiB(_responseLimitField.text, out responseLimitMiB, out responseLimitBytes))
+            {
+                InvalidatePreview();
+                SetLocalizedStatus("localAi.error.response_limit_invalid");
+                return;
+            }
+            _maximumResponseBytes = responseLimitBytes;
+            UnityEngine.PlayerPrefs.SetInt(LocalAiResponseLimit.PreferenceKey, responseLimitMiB);
+            UnityEngine.PlayerPrefs.Save();
+
             if (string.IsNullOrEmpty(_modelName) || _modelName.Trim().Length == 0 ||
                 string.IsNullOrEmpty(_question) || _question.Trim().Length == 0)
             {
-                SetStatus(Localization.Get("localAi.status.inputRequired"));
+                SetLocalizedStatus("localAi.status.inputRequired");
                 return;
             }
 
             _preparedRequest = null;
             SetEnabled(_confirmButton, false);
             SetEnabled(_cancelButton, false);
-            SetStatus(Localization.Get("localAi.status.capturing"));
-            int generation = ++_generation;
+            SetLocalizedStatus("localAi.status.capturing");
+            long generation = _captureGeneration.Begin();
+            _capturePending = true;
 
-            CitySummary.QueueCapture(
+            var options = new CityCaptureOptions
+            {
+                IncludeUtilities = _includeUtilities,
+                IncludeZoning = _includeZoning,
+                IncludeTrafficTransit = _includeTrafficTransit,
+                IncludeServiceStatus = _includeServiceStatus
+            };
+            CitySummary.QueueCapture(options,
                 delegate(CitySnapshot snapshot)
                 {
-                    if (_disposed || generation != _generation) return;
+                    if (_disposed || !_captureGeneration.IsCurrent(generation)) return;
+                    _capturePending = false;
                     LocalAiRequest request = CreateRequest(snapshot);
                     _preparedRequest = request;
+                    _displayedPreviewRequest = request;
+                    _previewLocalizationKey = null;
                     SetFieldText(_previewDisplay, FormatPreview(request));
                     SetEnabled(_confirmButton, true);
                     SetEnabled(_cancelButton, true);
-                    SetStatus(Localization.Get("localAi.status.review"));
+                    SetLocalizedStatus("localAi.status.review");
                 },
                 delegate(string errorCode)
                 {
-                    if (_disposed || generation != _generation) return;
-                    SetStatus(Localization.Get("localAi.error.snapshot_unavailable"));
+                    if (_disposed || !_captureGeneration.IsCurrent(generation)) return;
+                    _capturePending = false;
+                    SetLocalizedStatus(errorCode == "dlc_detection_unavailable"
+                        ? "localAi.error.dlc_detection_unavailable"
+                        : "localAi.error.snapshot_unavailable");
                 });
         }
 
@@ -109,12 +202,12 @@ namespace AIGaming
             if (_disposed) return;
             if (_preparedRequest == null)
             {
-                SetStatus(Localization.Get("localAi.status.reviewFirst"));
+                SetLocalizedStatus("localAi.status.reviewFirst");
                 return;
             }
             if (!_allowLaunch)
             {
-                SetStatus(Localization.Get("localAi.status.launchDisabled"));
+                SetLocalizedStatus("localAi.status.launchDisabled");
                 return;
             }
 
@@ -122,12 +215,12 @@ namespace AIGaming
             _preparedRequest = null;
             SetEnabled(_confirmButton, false);
             SetEnabled(_cancelButton, true);
-            SetFieldText(_responseDisplay, Localization.Get("localAi.response.pending"));
-            SetStatus(Localization.Get("localAi.status.starting"));
+            SetLocalizedResponse("localAi.response.pending");
+            SetLocalizedStatus("localAi.status.starting");
 
             var client = new CompanionClient();
             _activeClient = client;
-            int generation = ++_generation;
+            long generation = _requestGeneration.BeginResponse();
             bool queued = ThreadPool.QueueUserWorkItem(delegate
             {
                 LocalAiResult result = client.Send(request);
@@ -138,27 +231,27 @@ namespace AIGaming
                 _activeClient = null;
                 client.Cancel();
                 SetEnabled(_cancelButton, false);
-                SetStatus(Localization.Get("localAi.error.companion_start_failed"));
+                SetLocalizedStatus("localAi.error.companion_start_failed");
             }
         }
 
-        private void CompleteRequest(int generation, CompanionClient client, LocalAiResult result)
+        private void CompleteRequest(long generation, CompanionClient client, LocalAiResult result)
         {
-            if (_disposed || generation != _generation) return;
+            if (_disposed || !_requestGeneration.IsResponseCurrent(generation)) return;
             if (ReferenceEquals(_activeClient, client)) _activeClient = null;
             SetEnabled(_cancelButton, false);
 
             if (result != null && result.Success)
             {
-                SetFieldText(_responseDisplay, result.Content);
-                SetStatus(Localization.Get("localAi.status.success", result.ModelName));
+                SetResponseText(result.Content);
+                SetLocalizedStatus("localAi.status.success", result.ModelName);
                 UnityEngine.Debug.Log("[AI Gaming] Local AI request completed | status=success.");
                 return;
             }
 
             string errorCode = result == null ? "companion_request_failed" : result.ErrorCode;
-            SetFieldText(_responseDisplay, Localization.Get("localAi.response.none"));
-            SetStatus(GetErrorText(errorCode));
+            SetLocalizedResponse("localAi.response.none");
+            SetLocalizedStatus("localAi.error." + (string.IsNullOrEmpty(errorCode) ? "generic" : errorCode));
             UnityEngine.Debug.LogWarning("[AI Gaming] Local AI request failed | status=" + GetSafeErrorCategory(errorCode) + ".");
         }
 
@@ -169,18 +262,21 @@ namespace AIGaming
             {
                 CompanionClient client = _activeClient;
                 _activeClient = null;
-                _generation++;
+                _requestGeneration.InvalidateResponse();
                 client.Cancel();
-                SetFieldText(_responseDisplay, Localization.Get("localAi.response.none"));
-                SetStatus(Localization.Get("localAi.status.cancelled"));
+                SetLocalizedResponse("localAi.response.none");
+                SetLocalizedStatus("localAi.status.cancelled");
                 SetEnabled(_cancelButton, false);
                 return;
             }
 
-            _generation++;
+            _captureGeneration.Invalidate();
+            _capturePending = false;
             _preparedRequest = null;
-            SetFieldText(_previewDisplay, Localization.Get("localAi.preview.none"));
-            SetStatus(Localization.Get("localAi.status.discarded"));
+            _displayedPreviewRequest = null;
+            _previewLocalizationKey = "localAi.preview.none";
+            SetFieldText(_previewDisplay, Localization.Get(_previewLocalizationKey));
+            SetLocalizedStatus("localAi.status.discarded");
             SetEnabled(_confirmButton, false);
             SetEnabled(_cancelButton, false);
         }
@@ -192,12 +288,17 @@ namespace AIGaming
                 ModelName = _modelName,
                 Question = _question,
                 Snapshot = snapshot,
+                MaximumResponseBytes = _maximumResponseBytes,
                 IncludeGameDate = _includeGameDate,
                 IncludePopulation = _includePopulation,
                 IncludeFundsCents = _includeFundsCents,
                 IncludeResidentialDemand = _includeResidentialDemand,
                 IncludeCommercialDemand = _includeCommercialDemand,
-                IncludeWorkplaceDemand = _includeWorkplaceDemand
+                IncludeWorkplaceDemand = _includeWorkplaceDemand,
+                IncludeUtilities = _includeUtilities,
+                IncludeZoning = _includeZoning,
+                IncludeTrafficTransit = _includeTrafficTransit,
+                IncludeServiceStatus = _includeServiceStatus
             };
         }
 
@@ -207,12 +308,68 @@ namespace AIGaming
             text.AppendLine(Localization.Get("localAi.preview.destination"));
             text.AppendLine(Localization.Get("localAi.preview.model", request.ModelName));
             text.AppendLine(Localization.Get("localAi.preview.schema"));
+            text.AppendLine(request.MaximumResponseBytes == 0
+                ? Localization.Get("localAi.preview.responseLimit.unlimited")
+                : Localization.Get("localAi.preview.responseLimit.configured",
+                    (request.MaximumResponseBytes / LocalAiResponseLimit.BytesPerMiB).ToString(CultureInfo.InvariantCulture)));
             AppendField(text, request.IncludeGameDate, Localization.Get("localAi.field.gameDate"), request.Snapshot.GameDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
             AppendField(text, request.IncludePopulation, Localization.Get("localAi.field.population"), request.Snapshot.Population.ToString(CultureInfo.InvariantCulture));
             AppendField(text, request.IncludeFundsCents, Localization.Get("localAi.field.fundsCents"), request.Snapshot.FundsCents.ToString(CultureInfo.InvariantCulture));
             AppendField(text, request.IncludeResidentialDemand, Localization.Get("localAi.field.residentialDemand"), request.Snapshot.ResidentialDemand.ToString(CultureInfo.InvariantCulture));
             AppendField(text, request.IncludeCommercialDemand, Localization.Get("localAi.field.commercialDemand"), request.Snapshot.CommercialDemand.ToString(CultureInfo.InvariantCulture));
             AppendField(text, request.IncludeWorkplaceDemand, Localization.Get("localAi.field.workplaceDemand"), request.Snapshot.WorkplaceDemand.ToString(CultureInfo.InvariantCulture));
+            if (request.IncludeUtilities && request.Snapshot.Utilities != null)
+            {
+                UtilitiesSnapshot data = request.Snapshot.Utilities;
+                text.AppendLine(Localization.Get("localAi.preview.utilities",
+                    data.ElectricityCapacity.ToString(CultureInfo.InvariantCulture),
+                    data.ElectricityConsumption.ToString(CultureInfo.InvariantCulture),
+                    data.WaterCapacity.ToString(CultureInfo.InvariantCulture),
+                    data.WaterConsumption.ToString(CultureInfo.InvariantCulture),
+                    data.SewageCapacity.ToString(CultureInfo.InvariantCulture),
+                    data.SewageAccumulation.ToString(CultureInfo.InvariantCulture),
+                    data.GarbageAmount.ToString(CultureInfo.InvariantCulture),
+                    data.GarbageCapacity.ToString(CultureInfo.InvariantCulture),
+                    data.GarbageAccumulation.ToString(CultureInfo.InvariantCulture),
+                    data.IncinerationCapacity.ToString(CultureInfo.InvariantCulture)));
+            }
+            if (request.IncludeZoning && request.Snapshot.Zoning != null)
+            {
+                ZoningSnapshot data = request.Snapshot.Zoning;
+                text.AppendLine(Localization.Get("localAi.preview.zoning",
+                    data.ResidentialBuildingCount.ToString(CultureInfo.InvariantCulture), data.ResidentialBuildingArea.ToString(CultureInfo.InvariantCulture),
+                    data.CommercialBuildingCount.ToString(CultureInfo.InvariantCulture), data.CommercialBuildingArea.ToString(CultureInfo.InvariantCulture),
+                    data.IndustrialBuildingCount.ToString(CultureInfo.InvariantCulture), data.IndustrialBuildingArea.ToString(CultureInfo.InvariantCulture),
+                    data.OfficeBuildingCount.ToString(CultureInfo.InvariantCulture), data.OfficeBuildingArea.ToString(CultureInfo.InvariantCulture)));
+            }
+            if (request.IncludeTrafficTransit && request.Snapshot.TrafficTransit != null)
+            {
+                TrafficTransitSnapshot data = request.Snapshot.TrafficTransit;
+                text.AppendLine(Localization.Get("localAi.preview.trafficTransit",
+                    data.TrafficFlow.ToString(CultureInfo.InvariantCulture),
+                    data.AveragePassengers.ToString(CultureInfo.InvariantCulture)));
+            }
+            if (request.IncludeServiceStatus && request.Snapshot.ServiceStatus != null)
+            {
+                ServiceStatusSnapshot data = request.Snapshot.ServiceStatus;
+                text.AppendLine(Localization.Get("localAi.preview.serviceStatus",
+                    data.PoliceCriminalAmount.ToString(CultureInfo.InvariantCulture),
+                    data.PoliceCriminalCapacity.ToString(CultureInfo.InvariantCulture),
+                    data.PoliceExtraCriminals.ToString(CultureInfo.InvariantCulture),
+                    data.FireCoverageSegmentCount == 0
+                        ? Localization.Get("localAi.preview.unavailable")
+                        : data.FireCoverageMeanByte.ToString("0.##", CultureInfo.InvariantCulture),
+                    data.FireCoverageSegmentCount.ToString(CultureInfo.InvariantCulture),
+                    data.HealthSickCount.ToString(CultureInfo.InvariantCulture),
+                    data.HealthCapacity.ToString(CultureInfo.InvariantCulture),
+                    data.HealthCareProductivity.ToString(CultureInfo.InvariantCulture)));
+            }
+            text.Append(Localization.Get("localAi.field.installedAvailableDlcs"));
+            text.Append('=');
+            string[] availableDlcs = request.Snapshot.InstalledAvailableDlcIdentifiers ?? new string[0];
+            text.AppendLine(availableDlcs.Length == 0
+                ? Localization.Get("localAi.dlc.noneDetected")
+                : string.Join(", ", availableDlcs));
             text.AppendLine(Localization.Get("localAi.preview.question"));
             text.AppendLine(request.Question);
             text.Append(Localization.Get("localAi.preview.confirmInstruction"));
@@ -330,6 +487,25 @@ namespace AIGaming
             SettingsLayout.FitButton(_group, _statusDisplay);
         }
 
+        private void SetLocalizedStatus(string key, params object[] arguments)
+        {
+            _statusLocalizationKey = key;
+            _statusArguments = arguments == null ? new object[0] : (object[])arguments.Clone();
+            SetStatus(Localization.Get(key, _statusArguments));
+        }
+
+        private void SetLocalizedResponse(string key)
+        {
+            _responseLocalizationKey = key;
+            SetFieldText(_responseDisplay, Localization.Get(key));
+        }
+
+        private void SetResponseText(string text)
+        {
+            _responseLocalizationKey = null;
+            SetFieldText(_responseDisplay, text);
+        }
+
         private string GetErrorText(string code)
         {
             if (string.IsNullOrEmpty(code)) return Localization.Get("localAi.error.generic");
@@ -364,13 +540,25 @@ namespace AIGaming
 
         private void InvalidatePreview()
         {
-            if (_disposed || _preparedRequest == null) return;
+            if (_disposed) return;
+            if (_capturePending)
+            {
+                _captureGeneration.Invalidate();
+                _capturePending = false;
+                _previewLocalizationKey = "localAi.preview.stale";
+                SetFieldText(_previewDisplay, Localization.Get(_previewLocalizationKey));
+                SetEnabled(_confirmButton, false);
+                SetEnabled(_cancelButton, false);
+                SetLocalizedStatus("localAi.status.reviewAgain");
+            }
+            if (_preparedRequest == null) return;
             _preparedRequest = null;
-            _generation++;
-            SetFieldText(_previewDisplay, Localization.Get("localAi.preview.stale"));
+            _displayedPreviewRequest = null;
+            _previewLocalizationKey = "localAi.preview.stale";
+            SetFieldText(_previewDisplay, Localization.Get(_previewLocalizationKey));
             SetEnabled(_confirmButton, false);
             SetEnabled(_cancelButton, false);
-            SetStatus(Localization.Get("localAi.status.reviewAgain"));
+            SetLocalizedStatus("localAi.status.reviewAgain");
         }
 
         private void SelectAllFields()
@@ -381,6 +569,10 @@ namespace AIGaming
             _includeResidentialDemand = true;
             _includeCommercialDemand = true;
             _includeWorkplaceDemand = true;
+            _includeUtilities = true;
+            _includeZoning = true;
+            _includeTrafficTransit = true;
+            _includeServiceStatus = true;
             for (int i = 0; i < _schemaCheckboxes.Length; i++)
             {
                 if (_schemaCheckboxes[i] != null) _schemaCheckboxes[i].isChecked = true;
@@ -391,6 +583,23 @@ namespace AIGaming
         private void OnAllowLaunchChanged(bool value) { _allowLaunch = value; InvalidatePreview(); }
         private void OnModelChanged(string value) { _modelName = value ?? string.Empty; InvalidatePreview(); }
         private void OnModelSubmitted(string value) { OnModelChanged(value); }
+        private void OnResponseLimitChanged(string value)
+        {
+            if (_disposed) return;
+            InvalidatePreview();
+            int responseLimitMiB;
+            int responseLimitBytes;
+            if (!LocalAiResponseLimit.TryParseMiB(value, out responseLimitMiB, out responseLimitBytes))
+            {
+                SetLocalizedStatus("localAi.error.response_limit_invalid");
+                return;
+            }
+
+            _maximumResponseBytes = responseLimitBytes;
+            UnityEngine.PlayerPrefs.SetInt(LocalAiResponseLimit.PreferenceKey, responseLimitMiB);
+            UnityEngine.PlayerPrefs.Save();
+        }
+        private void OnResponseLimitSubmitted(string value) { OnResponseLimitChanged(value); }
         private void OnQuestionChanged(string value) { _question = value ?? string.Empty; InvalidatePreview(); }
         private void OnQuestionSubmitted(string value) { OnQuestionChanged(value); }
         private void OnGameDateChanged(bool value) { _includeGameDate = value; InvalidatePreview(); }
@@ -399,6 +608,10 @@ namespace AIGaming
         private void OnResidentialChanged(bool value) { _includeResidentialDemand = value; InvalidatePreview(); }
         private void OnCommercialChanged(bool value) { _includeCommercialDemand = value; InvalidatePreview(); }
         private void OnWorkplaceChanged(bool value) { _includeWorkplaceDemand = value; InvalidatePreview(); }
+        private void OnUtilitiesChanged(bool value) { _includeUtilities = value; InvalidatePreview(); }
+        private void OnZoningChanged(bool value) { _includeZoning = value; InvalidatePreview(); }
+        private void OnTrafficTransitChanged(bool value) { _includeTrafficTransit = value; InvalidatePreview(); }
+        private void OnServiceStatusChanged(bool value) { _includeServiceStatus = value; InvalidatePreview(); }
     }
 }
 // Implementation update signed by OpenAI-Codex.

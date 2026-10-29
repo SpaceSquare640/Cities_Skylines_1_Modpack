@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using ICities;
 using UnityEngine;
@@ -7,6 +8,8 @@ namespace AIGaming
     public sealed class AIGamingMod : IUserMod
     {
         private LocalAiRequestController _localAiRequestController;
+        private UIHelperBase _settingsHelper;
+        private readonly List<Action> _localizedRefreshActions = new List<Action>();
 
         public string Name => "AI Gaming";
 
@@ -41,11 +44,19 @@ namespace AIGaming
                 return;
             }
 
+            _settingsHelper = helper;
+            _localizedRefreshActions.Clear();
+            helper.AddDropdown(
+                Localization.Get("settings.language"),
+                Localization.GetLanguageNames(),
+                Localization.SelectedLanguageIndex,
+                OnLanguageSelectionChanged);
+
             UIHelperBase group = helper.AddGroup(
                 Localization.Get("settings.title") + " - " + Localization.Get("settings.versionShort"));
-            AddInformationRow(group, Localization.Get("settings.status"));
-            AddInformationRow(group, Localization.Get("settings.description"));
-            AddInformationRow(group, Localization.Get("settings.website"));
+            AddInformationRow(group, "settings.status");
+            AddInformationRow(group, "settings.description");
+            AddInformationRow(group, "settings.website");
             AddInteropStatusRows(group);
             group.AddButton(Localization.Get("settings.summaryButton"), CitySummary.QueueWrite);
 
@@ -57,22 +68,39 @@ namespace AIGaming
             _localAiRequestController = new LocalAiRequestController(localAiGroup);
         }
 
-        private static void AddInteropStatusRows(UIHelperBase group)
+        private void OnLanguageSelectionChanged(int index)
         {
-            AddInformationRow(group, Localization.Get("settings.interop.title"));
+            string previousLanguage = Localization.CurrentLanguage;
+            if (!Localization.SetLanguage(index)) return;
+
+            SettingsLayout.RelocalizeExistingControls(_settingsHelper, previousLanguage);
+            for (int i = 0; i < _localizedRefreshActions.Count; i++)
+            {
+                _localizedRefreshActions[i]();
+            }
+            if (_localAiRequestController != null)
+            {
+                _localAiRequestController.RefreshLocalizedContent();
+            }
+        }
+
+        private void AddInteropStatusRows(UIHelperBase group)
+        {
+            AddInformationRow(group, "settings.interop.title");
 
             try
             {
                 IList<InteropProviderStatus> statuses = ModpackInteropDiscovery.Discover();
                 for (int i = 0; i < statuses.Count; i++)
                 {
-                    AddInformationRow(group, GetInteropStatusText(statuses[i]));
+                    InteropProviderStatus status = statuses[i];
+                    AddInformationRow(group, delegate { return GetInteropStatusText(status); });
                 }
             }
             catch
             {
-                AddInformationRow(group, Localization.Get("interop.aiImprove.discoveryFailed"));
-                AddInformationRow(group, Localization.Get("interop.transport.discoveryFailed"));
+                AddInformationRow(group, "interop.aiImprove.discoveryFailed");
+                AddInformationRow(group, "interop.transport.discoveryFailed");
             }
         }
 
@@ -131,10 +159,21 @@ namespace AIGaming
             // UIHelperBase exposes buttons but no static label control.
         }
 
-        private static void AddInformationRow(UIHelperBase group, string text)
+        private void AddInformationRow(UIHelperBase group, string key)
         {
-            ColossalFramework.UI.UIButton button = group.AddButton(text, IgnoreInformationClick) as ColossalFramework.UI.UIButton;
+            AddInformationRow(group, delegate { return Localization.Get(key); });
+        }
+
+        private void AddInformationRow(UIHelperBase group, Func<string> getText)
+        {
+            ColossalFramework.UI.UIButton button = group.AddButton(getText(), IgnoreInformationClick) as ColossalFramework.UI.UIButton;
             SettingsLayout.FitButton(group, button);
+            _localizedRefreshActions.Add(delegate
+            {
+                if (button == null) return;
+                button.text = getText();
+                SettingsLayout.FitButton(group, button);
+            });
         }
     }
 }

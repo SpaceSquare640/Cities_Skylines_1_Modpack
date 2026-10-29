@@ -7,6 +7,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\BoundedOllamaResponseReader.cs" Link="BoundedOllamaResponseReader.cs" />
+    <Compile Include="..\SessionProtocol.cs" Link="SessionProtocol.cs" />
+    <Compile Include="..\..\Source\LocalAiResponseLimit.cs" Link="LocalAiResponseLimit.cs" />
+    <Compile Include="..\..\Source\RequestCaptureGeneration.cs" Link="RequestCaptureGeneration.cs" />
   </ItemGroup>
 </Project>
 <!-- Implementation update signed by OpenAI-Codex. -->
+<!-- Implementation update signed by OpenAI-Codex_Responsible: AI Gaming. -->

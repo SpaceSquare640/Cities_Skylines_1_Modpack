@@ -13,6 +13,7 @@ namespace AIGaming
     {
         internal string ModelName { get; set; }
         internal string Question { get; set; }
+        internal int MaximumResponseBytes { get; set; }
         internal CitySnapshot Snapshot { get; set; }
         internal bool IncludeGameDate { get; set; }
         internal bool IncludePopulation { get; set; }
@@ -20,6 +21,10 @@ namespace AIGaming
         internal bool IncludeResidentialDemand { get; set; }
         internal bool IncludeCommercialDemand { get; set; }
         internal bool IncludeWorkplaceDemand { get; set; }
+        internal bool IncludeUtilities { get; set; }
+        internal bool IncludeZoning { get; set; }
+        internal bool IncludeTrafficTransit { get; set; }
+        internal bool IncludeServiceStatus { get; set; }
     }
 
     internal sealed class LocalAiResult
@@ -224,18 +229,70 @@ namespace AIGaming
         {
             var lines = new List<string>
             {
-                "schemaVersion=1",
+                "schemaVersion=4",
                 "model=" + Convert.ToBase64String(Encoding.UTF8.GetBytes(request.ModelName ?? string.Empty)),
-                "question=" + Convert.ToBase64String(Encoding.UTF8.GetBytes(request.Question ?? string.Empty))
+                "question=" + Convert.ToBase64String(Encoding.UTF8.GetBytes(request.Question ?? string.Empty)),
+                "maxResponseBytes=" + request.MaximumResponseBytes.ToString(CultureInfo.InvariantCulture)
             };
 
             if (request.Snapshot == null) throw new InvalidOperationException();
+            string[] availableDlcs = request.Snapshot.InstalledAvailableDlcIdentifiers ?? new string[0];
+            lines.Add("installedAvailableDlcs=" + Convert.ToBase64String(
+                new UTF8Encoding(false, true).GetBytes(string.Join("\n", availableDlcs))));
             if (request.IncludeGameDate) lines.Add("gameDate=" + request.Snapshot.GameDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
             if (request.IncludePopulation) lines.Add("population=" + request.Snapshot.Population.ToString(CultureInfo.InvariantCulture));
             if (request.IncludeFundsCents) lines.Add("fundsCents=" + request.Snapshot.FundsCents.ToString(CultureInfo.InvariantCulture));
             if (request.IncludeResidentialDemand) lines.Add("residentialDemand=" + request.Snapshot.ResidentialDemand.ToString(CultureInfo.InvariantCulture));
             if (request.IncludeCommercialDemand) lines.Add("commercialDemand=" + request.Snapshot.CommercialDemand.ToString(CultureInfo.InvariantCulture));
             if (request.IncludeWorkplaceDemand) lines.Add("workplaceDemand=" + request.Snapshot.WorkplaceDemand.ToString(CultureInfo.InvariantCulture));
+
+            if (request.IncludeUtilities)
+            {
+                UtilitiesSnapshot data = request.Snapshot.Utilities ?? throw new InvalidOperationException();
+                lines.Add("electricityCapacity=" + data.ElectricityCapacity.ToString(CultureInfo.InvariantCulture));
+                lines.Add("electricityConsumption=" + data.ElectricityConsumption.ToString(CultureInfo.InvariantCulture));
+                lines.Add("waterCapacity=" + data.WaterCapacity.ToString(CultureInfo.InvariantCulture));
+                lines.Add("waterConsumption=" + data.WaterConsumption.ToString(CultureInfo.InvariantCulture));
+                lines.Add("sewageCapacity=" + data.SewageCapacity.ToString(CultureInfo.InvariantCulture));
+                lines.Add("sewageAccumulation=" + data.SewageAccumulation.ToString(CultureInfo.InvariantCulture));
+                lines.Add("garbageAmount=" + data.GarbageAmount.ToString(CultureInfo.InvariantCulture));
+                lines.Add("garbageCapacity=" + data.GarbageCapacity.ToString(CultureInfo.InvariantCulture));
+                lines.Add("garbageAccumulation=" + data.GarbageAccumulation.ToString(CultureInfo.InvariantCulture));
+                lines.Add("incinerationCapacity=" + data.IncinerationCapacity.ToString(CultureInfo.InvariantCulture));
+            }
+
+            if (request.IncludeZoning)
+            {
+                ZoningSnapshot data = request.Snapshot.Zoning ?? throw new InvalidOperationException();
+                lines.Add("residentialBuildingCount=" + data.ResidentialBuildingCount.ToString(CultureInfo.InvariantCulture));
+                lines.Add("residentialBuildingArea=" + data.ResidentialBuildingArea.ToString(CultureInfo.InvariantCulture));
+                lines.Add("commercialBuildingCount=" + data.CommercialBuildingCount.ToString(CultureInfo.InvariantCulture));
+                lines.Add("commercialBuildingArea=" + data.CommercialBuildingArea.ToString(CultureInfo.InvariantCulture));
+                lines.Add("industrialBuildingCount=" + data.IndustrialBuildingCount.ToString(CultureInfo.InvariantCulture));
+                lines.Add("industrialBuildingArea=" + data.IndustrialBuildingArea.ToString(CultureInfo.InvariantCulture));
+                lines.Add("officeBuildingCount=" + data.OfficeBuildingCount.ToString(CultureInfo.InvariantCulture));
+                lines.Add("officeBuildingArea=" + data.OfficeBuildingArea.ToString(CultureInfo.InvariantCulture));
+            }
+
+            if (request.IncludeTrafficTransit)
+            {
+                TrafficTransitSnapshot data = request.Snapshot.TrafficTransit ?? throw new InvalidOperationException();
+                lines.Add("trafficFlow=" + data.TrafficFlow.ToString(CultureInfo.InvariantCulture));
+                lines.Add("averagePassengers=" + data.AveragePassengers.ToString(CultureInfo.InvariantCulture));
+            }
+
+            if (request.IncludeServiceStatus)
+            {
+                ServiceStatusSnapshot data = request.Snapshot.ServiceStatus ?? throw new InvalidOperationException();
+                lines.Add("policeCriminalAmount=" + data.PoliceCriminalAmount.ToString(CultureInfo.InvariantCulture));
+                lines.Add("policeCriminalCapacity=" + data.PoliceCriminalCapacity.ToString(CultureInfo.InvariantCulture));
+                lines.Add("policeExtraCriminals=" + data.PoliceExtraCriminals.ToString(CultureInfo.InvariantCulture));
+                lines.Add("fireCoverageMeanByte=" + data.FireCoverageMeanByte.ToString("0.##", CultureInfo.InvariantCulture));
+                lines.Add("fireCoverageSegmentCount=" + data.FireCoverageSegmentCount.ToString(CultureInfo.InvariantCulture));
+                lines.Add("healthSickCount=" + data.HealthSickCount.ToString(CultureInfo.InvariantCulture));
+                lines.Add("healthCapacity=" + data.HealthCapacity.ToString(CultureInfo.InvariantCulture));
+                lines.Add("healthCareProductivity=" + data.HealthCareProductivity.ToString(CultureInfo.InvariantCulture));
+            }
 
             return new UTF8Encoding(false, true).GetBytes(string.Join("\n", lines.ToArray()));
         }
@@ -287,7 +344,7 @@ namespace AIGaming
         private static bool IsKnownErrorCode(string value)
         {
             return value == "model_not_found" || value == "local_model_required" || value == "local_authentication_failed" ||
-                value == "ollama_error" || value == "ollama_unavailable" || value == "invalid_response" ||
+                value == "ollama_error" || value == "ollama_unavailable" || value == "invalid_response" || value == "response_limit_exceeded" ||
                 value == "cancelled" || value == "timeout";
         }
 
@@ -381,3 +438,6 @@ namespace AIGaming
     }
 }
 // Implementation update signed by OpenAI-Codex.
+// Implementation update signed by OpenAI-Codex_Responsible: AI Gaming.
+// Implementation update signed by OpenAI-Codex.
+// Implementation update signed by OpenAI-Codex_Responsible: AI Gaming.

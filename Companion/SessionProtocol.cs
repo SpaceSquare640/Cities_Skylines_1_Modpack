@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -19,12 +20,62 @@ internal sealed class CompanionRequest
 {
     internal string ModelName { get; init; } = string.Empty;
     internal string Question { get; init; } = string.Empty;
+    internal int MaximumResponseBytes { get; init; }
     internal string? GameDate { get; init; }
     internal uint? Population { get; init; }
     internal long? FundsCents { get; init; }
     internal int? ResidentialDemand { get; init; }
     internal int? CommercialDemand { get; init; }
     internal int? WorkplaceDemand { get; init; }
+    internal string[] InstalledAvailableDlcs { get; init; } = Array.Empty<string>();
+    internal UtilitiesData? Utilities { get; init; }
+    internal ZoningData? Zoning { get; init; }
+    internal TrafficTransitData? TrafficTransit { get; init; }
+    internal ServiceStatusData? ServiceStatus { get; init; }
+}
+
+internal sealed class UtilitiesData
+{
+    internal int ElectricityCapacity { get; init; }
+    internal int ElectricityConsumption { get; init; }
+    internal int WaterCapacity { get; init; }
+    internal int WaterConsumption { get; init; }
+    internal int SewageCapacity { get; init; }
+    internal int SewageAccumulation { get; init; }
+    internal int GarbageAmount { get; init; }
+    internal int GarbageCapacity { get; init; }
+    internal int GarbageAccumulation { get; init; }
+    internal int IncinerationCapacity { get; init; }
+}
+
+internal sealed class ZoningData
+{
+    internal ushort ResidentialBuildingCount { get; init; }
+    internal uint ResidentialBuildingArea { get; init; }
+    internal ushort CommercialBuildingCount { get; init; }
+    internal uint CommercialBuildingArea { get; init; }
+    internal ushort IndustrialBuildingCount { get; init; }
+    internal uint IndustrialBuildingArea { get; init; }
+    internal ushort OfficeBuildingCount { get; init; }
+    internal uint OfficeBuildingArea { get; init; }
+}
+
+internal sealed class TrafficTransitData
+{
+    internal int TrafficFlow { get; init; }
+    internal int AveragePassengers { get; init; }
+}
+
+internal sealed class ServiceStatusData
+{
+    internal int PoliceCriminalAmount { get; init; }
+    internal int PoliceCriminalCapacity { get; init; }
+    internal int PoliceExtraCriminals { get; init; }
+    internal float FireCoverageMeanByte { get; init; }
+    internal int FireCoverageSegmentCount { get; init; }
+    internal int HealthSickCount { get; init; }
+    internal int HealthCapacity { get; init; }
+    internal int HealthCareProductivity { get; init; }
 }
 
 internal sealed class CompanionResult
@@ -50,12 +101,42 @@ internal static class SessionProtocol
         "schemaVersion",
         "model",
         "question",
+        "maxResponseBytes",
         "gameDate",
         "population",
         "fundsCents",
         "residentialDemand",
         "commercialDemand",
-        "workplaceDemand"
+        "workplaceDemand",
+        "installedAvailableDlcs",
+        "electricityCapacity",
+        "electricityConsumption",
+        "waterCapacity",
+        "waterConsumption",
+        "sewageCapacity",
+        "sewageAccumulation",
+        "garbageAmount",
+        "garbageCapacity",
+        "garbageAccumulation",
+        "incinerationCapacity",
+        "residentialBuildingCount",
+        "residentialBuildingArea",
+        "commercialBuildingCount",
+        "commercialBuildingArea",
+        "industrialBuildingCount",
+        "industrialBuildingArea",
+        "officeBuildingCount",
+        "officeBuildingArea",
+        "trafficFlow",
+        "averagePassengers",
+        "policeCriminalAmount",
+        "policeCriminalCapacity",
+        "policeExtraCriminals",
+        "fireCoverageMeanByte",
+        "fireCoverageSegmentCount",
+        "healthSickCount",
+        "healthCapacity",
+        "healthCareProductivity"
     };
 
     internal static bool TryParseBootstrap(string text, out CompanionBootstrap bootstrap)
@@ -137,9 +218,19 @@ internal static class SessionProtocol
             return false;
         }
 
-        if (Get(values, "schemaVersion") != "1" ||
+        if (Get(values, "schemaVersion") != "4" ||
             !values.TryGetValue("model", out string? modelBase64) || !TryDecode(modelBase64, out string? model) || string.IsNullOrWhiteSpace(model) ||
-            !values.TryGetValue("question", out string? questionBase64) || !TryDecode(questionBase64, out string? question) || string.IsNullOrWhiteSpace(question))
+            !values.TryGetValue("question", out string? questionBase64) || !TryDecode(questionBase64, out string? question) || string.IsNullOrWhiteSpace(question) ||
+            !values.TryGetValue("maxResponseBytes", out string? maximumResponseBytesText) ||
+            !int.TryParse(maximumResponseBytesText, NumberStyles.None, CultureInfo.InvariantCulture, out int maximumResponseBytes) ||
+            maximumResponseBytes < 0)
+        {
+            return false;
+        }
+
+        if (!values.TryGetValue("installedAvailableDlcs", out string? availableDlcsBase64) ||
+            !TryDecode(availableDlcsBase64, out string? availableDlcsText) ||
+            !TryParseAvailableDlcIdentifiers(availableDlcsText, out string[] availableDlcs))
         {
             return false;
         }
@@ -182,18 +273,222 @@ internal static class SessionProtocol
             workplaceDemand = parsed;
         }
 
+        if (!TryParseUtilities(values, out UtilitiesData? utilities) ||
+            !TryParseZoning(values, out ZoningData? zoning) ||
+            !TryParseTrafficTransit(values, out TrafficTransitData? trafficTransit) ||
+            !TryParseServiceStatus(values, out ServiceStatusData? serviceStatus))
+        {
+            return false;
+        }
+
         request = new CompanionRequest
         {
             ModelName = model,
             Question = question,
+            MaximumResponseBytes = maximumResponseBytes,
             GameDate = gameDate,
             Population = population,
             FundsCents = fundsCents,
             ResidentialDemand = residentialDemand,
             CommercialDemand = commercialDemand,
-            WorkplaceDemand = workplaceDemand
+            WorkplaceDemand = workplaceDemand,
+            InstalledAvailableDlcs = availableDlcs,
+            Utilities = utilities,
+            Zoning = zoning,
+            TrafficTransit = trafficTransit,
+            ServiceStatus = serviceStatus
         };
         return true;
+    }
+
+    private static bool TryParseUtilities(Dictionary<string, string> values, out UtilitiesData? data)
+    {
+        data = null;
+        string[] keys =
+        {
+            "electricityCapacity", "electricityConsumption", "waterCapacity", "waterConsumption",
+            "sewageCapacity", "sewageAccumulation", "garbageAmount", "garbageCapacity",
+            "garbageAccumulation", "incinerationCapacity"
+        };
+        if (!HasAny(values, keys)) return true;
+        if (!TryGetInt32(values, "electricityCapacity", out int electricityCapacity) ||
+            !TryGetInt32(values, "electricityConsumption", out int electricityConsumption) ||
+            !TryGetInt32(values, "waterCapacity", out int waterCapacity) ||
+            !TryGetInt32(values, "waterConsumption", out int waterConsumption) ||
+            !TryGetInt32(values, "sewageCapacity", out int sewageCapacity) ||
+            !TryGetInt32(values, "sewageAccumulation", out int sewageAccumulation) ||
+            !TryGetInt32(values, "garbageAmount", out int garbageAmount) ||
+            !TryGetInt32(values, "garbageCapacity", out int garbageCapacity) ||
+            !TryGetInt32(values, "garbageAccumulation", out int garbageAccumulation) ||
+            !TryGetInt32(values, "incinerationCapacity", out int incinerationCapacity))
+        {
+            return false;
+        }
+        data = new UtilitiesData
+        {
+            ElectricityCapacity = electricityCapacity,
+            ElectricityConsumption = electricityConsumption,
+            WaterCapacity = waterCapacity,
+            WaterConsumption = waterConsumption,
+            SewageCapacity = sewageCapacity,
+            SewageAccumulation = sewageAccumulation,
+            GarbageAmount = garbageAmount,
+            GarbageCapacity = garbageCapacity,
+            GarbageAccumulation = garbageAccumulation,
+            IncinerationCapacity = incinerationCapacity
+        };
+        return true;
+    }
+
+    private static bool TryParseZoning(Dictionary<string, string> values, out ZoningData? data)
+    {
+        data = null;
+        string[] keys =
+        {
+            "residentialBuildingCount", "residentialBuildingArea", "commercialBuildingCount", "commercialBuildingArea",
+            "industrialBuildingCount", "industrialBuildingArea", "officeBuildingCount", "officeBuildingArea"
+        };
+        if (!HasAny(values, keys)) return true;
+        if (!TryGetUInt16(values, "residentialBuildingCount", out ushort residentialCount) ||
+            !TryGetUInt32(values, "residentialBuildingArea", out uint residentialArea) ||
+            !TryGetUInt16(values, "commercialBuildingCount", out ushort commercialCount) ||
+            !TryGetUInt32(values, "commercialBuildingArea", out uint commercialArea) ||
+            !TryGetUInt16(values, "industrialBuildingCount", out ushort industrialCount) ||
+            !TryGetUInt32(values, "industrialBuildingArea", out uint industrialArea) ||
+            !TryGetUInt16(values, "officeBuildingCount", out ushort officeCount) ||
+            !TryGetUInt32(values, "officeBuildingArea", out uint officeArea))
+        {
+            return false;
+        }
+        data = new ZoningData
+        {
+            ResidentialBuildingCount = residentialCount,
+            ResidentialBuildingArea = residentialArea,
+            CommercialBuildingCount = commercialCount,
+            CommercialBuildingArea = commercialArea,
+            IndustrialBuildingCount = industrialCount,
+            IndustrialBuildingArea = industrialArea,
+            OfficeBuildingCount = officeCount,
+            OfficeBuildingArea = officeArea
+        };
+        return true;
+    }
+
+    private static bool TryParseTrafficTransit(Dictionary<string, string> values, out TrafficTransitData? data)
+    {
+        data = null;
+        string[] keys = { "trafficFlow", "averagePassengers" };
+        if (!HasAny(values, keys)) return true;
+        if (!TryGetInt32(values, "trafficFlow", out int trafficFlow) ||
+            !TryGetInt32(values, "averagePassengers", out int averagePassengers))
+        {
+            return false;
+        }
+        data = new TrafficTransitData { TrafficFlow = trafficFlow, AveragePassengers = averagePassengers };
+        return true;
+    }
+
+    private static bool TryParseServiceStatus(Dictionary<string, string> values, out ServiceStatusData? data)
+    {
+        data = null;
+        string[] keys =
+        {
+            "policeCriminalAmount", "policeCriminalCapacity", "policeExtraCriminals", "fireCoverageMeanByte",
+            "fireCoverageSegmentCount", "healthSickCount", "healthCapacity", "healthCareProductivity"
+        };
+        if (!HasAny(values, keys)) return true;
+        if (!TryGetInt32(values, "policeCriminalAmount", out int policeAmount) ||
+            !TryGetInt32(values, "policeCriminalCapacity", out int policeCapacity) ||
+            !TryGetInt32(values, "policeExtraCriminals", out int extraCriminals) ||
+            !values.TryGetValue("fireCoverageMeanByte", out string? fireMeanText) ||
+            !float.TryParse(fireMeanText, NumberStyles.Float, CultureInfo.InvariantCulture, out float fireMean) ||
+            float.IsNaN(fireMean) || float.IsInfinity(fireMean) || fireMean < 0f || fireMean > 255f ||
+            !TryGetInt32(values, "fireCoverageSegmentCount", out int fireSegmentCount) || fireSegmentCount < 0 ||
+            !TryGetInt32(values, "healthSickCount", out int sickCount) ||
+            !TryGetInt32(values, "healthCapacity", out int healthCapacity) ||
+            !TryGetInt32(values, "healthCareProductivity", out int healthProductivity))
+        {
+            return false;
+        }
+        data = new ServiceStatusData
+        {
+            PoliceCriminalAmount = policeAmount,
+            PoliceCriminalCapacity = policeCapacity,
+            PoliceExtraCriminals = extraCriminals,
+            FireCoverageMeanByte = fireMean,
+            FireCoverageSegmentCount = fireSegmentCount,
+            HealthSickCount = sickCount,
+            HealthCapacity = healthCapacity,
+            HealthCareProductivity = healthProductivity
+        };
+        return true;
+    }
+
+    private static bool HasAny(Dictionary<string, string> values, string[] keys)
+    {
+        for (int i = 0; i < keys.Length; i++)
+        {
+            if (values.ContainsKey(keys[i])) return true;
+        }
+        return false;
+    }
+
+    private static bool TryGetInt32(Dictionary<string, string> values, string key, out int value)
+    {
+        value = 0;
+        return values.TryGetValue(key, out string? text) &&
+            int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out value);
+    }
+
+    private static bool TryGetUInt16(Dictionary<string, string> values, string key, out ushort value)
+    {
+        value = 0;
+        return values.TryGetValue(key, out string? text) &&
+            ushort.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture, out value);
+    }
+
+    private static bool TryGetUInt32(Dictionary<string, string> values, string key, out uint value)
+    {
+        value = 0;
+        return values.TryGetValue(key, out string? text) &&
+            uint.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture, out value);
+    }
+
+    private static bool TryParseAvailableDlcIdentifiers(string value, out string[] identifiers)
+    {
+        identifiers = Array.Empty<string>();
+        if (value.Length == 0) return true;
+
+        string[] parsed = value.Split('\n');
+        string? previous = null;
+        foreach (string identifier in parsed)
+        {
+            if (!IsValidDlcIdentifier(identifier) ||
+                (previous != null && string.CompareOrdinal(previous, identifier) >= 0))
+            {
+                return false;
+            }
+            previous = identifier;
+        }
+
+        identifiers = parsed;
+        return true;
+    }
+
+    private static bool IsValidDlcIdentifier(string value)
+    {
+        if (value.Length == 0 || !IsAsciiLetter(value[0])) return false;
+        for (int i = 1; i < value.Length; i++)
+        {
+            char character = value[i];
+            if (!IsAsciiLetter(character) && !(character >= '0' && character <= '9') && character != '_') return false;
+        }
+        return true;
+    }
+
+    private static bool IsAsciiLetter(char value)
+    {
+        return (value >= 'A' && value <= 'Z') || (value >= 'a' && value <= 'z');
     }
 
     internal static byte[] SerializeResult(CompanionResult result)
@@ -336,3 +631,4 @@ internal static class SessionProtocol
         values.TryGetValue(key, out string? value) ? value : string.Empty;
 }
 // Implementation update signed by OpenAI-Codex.
+// Implementation update signed by OpenAI-Codex_Responsible: AI Gaming.

@@ -17,7 +17,11 @@ internal static class BoundedOllamaResponseReader
         int maximumBytes,
         CancellationToken cancellationToken)
     {
-        if (maximumBytes <= 0)
+        if (maximumBytes == 0)
+        {
+            return await ReadUnboundedAsync(content, cancellationToken).ConfigureAwait(false);
+        }
+        if (maximumBytes < 0)
         {
             throw new ArgumentOutOfRangeException(nameof(maximumBytes));
         }

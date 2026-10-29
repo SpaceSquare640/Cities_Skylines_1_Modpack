@@ -1,4 +1,6 @@
 using System.Net.Http;
+using System.Reflection;
+using System.Text;
 
 namespace AIGaming.Companion;
 
@@ -9,13 +11,101 @@ internal static class Program
 
     private static async Task Main()
     {
+        ParsesZeroAsUnlimitedResponseSetting();
+        ParsesConfiguredResponseLimitInMebibytes();
+        ParsesMaximumSupportedResponseLimit();
+        RejectsInvalidResponseLimitSettings();
+        RejectsCaptureInvalidatedByChangedSettings();
+        CaptureInvalidationPreservesActiveResponse();
+        AcceptsSchemaV4WithoutOptionalGroups();
         await ReadsBodyBelowLimitAsync();
         await AcceptsBodyAtLimitAsync();
         await RejectsAdvertisedBodyAboveLimitAsync();
         await RejectsUnknownLengthBodyAfterOneExtraByteAsync();
         await ReadsAdvertisedBodyAboveFormerMaximumAsync();
         await ReadsUnknownLengthBodyAboveFormerMaximumAsync();
-        Console.WriteLine("PASS: 4 bounded model-list and 2 unbounded response body checks.");
+        AcceptsSchemaV4WithAllCityDataGroups();
+        RejectsMissingResponseLimit();
+        RejectsNegativeResponseLimit();
+        RejectsPartialCityDataGroup();
+        Console.WriteLine("PASS: bounded model-list, configurable local response limits, independent capture/response generations, and schema v4 checks.");
+    }
+
+    private static void RejectsCaptureInvalidatedByChangedSettings()
+    {
+        var generation = new AIGaming.RequestCaptureGeneration();
+        long pendingCapture = generation.Begin();
+        generation.Invalidate();
+
+        if (generation.IsCurrent(pendingCapture))
+        {
+            throw new InvalidOperationException("A pending city capture must be discarded after its settings change.");
+        }
+    }
+
+    private static void CaptureInvalidationPreservesActiveResponse()
+    {
+        var generation = new AIGaming.RequestCaptureGeneration();
+        long activeResponse = generation.BeginResponse();
+        long pendingCapture = generation.Begin();
+        generation.Invalidate();
+
+        if (!generation.IsResponseCurrent(activeResponse) || generation.IsCurrent(pendingCapture))
+        {
+            throw new InvalidOperationException("Invalidating a city capture must not discard an active AI response.");
+        }
+    }
+
+    private static void ParsesZeroAsUnlimitedResponseSetting()
+    {
+        if (!TryParseResponseLimit("0", out int mebibytes, out int bytes) || mebibytes != 0 || bytes != 0)
+        {
+            throw new InvalidOperationException("A zero response limit should mean unlimited.");
+        }
+    }
+
+    private static void ParsesConfiguredResponseLimitInMebibytes()
+    {
+        if (!TryParseResponseLimit("8", out int mebibytes, out int bytes) ||
+            mebibytes != 8 || bytes != 8388608)
+        {
+            throw new InvalidOperationException("An 8 MiB response limit should convert to 8388608 bytes.");
+        }
+    }
+
+    private static void ParsesMaximumSupportedResponseLimit()
+    {
+        if (!TryParseResponseLimit("2047", out int mebibytes, out int bytes) ||
+            mebibytes != 2047 || bytes != 2146435072)
+        {
+            throw new InvalidOperationException("The maximum supported 2047 MiB response limit should parse without overflow.");
+        }
+    }
+
+    private static void RejectsInvalidResponseLimitSettings()
+    {
+        if (TryParseResponseLimit("-1", out _, out _) ||
+            TryParseResponseLimit("1.5", out _, out _) ||
+            TryParseResponseLimit("2048", out _, out _))
+        {
+            throw new InvalidOperationException("Negative, fractional, or unsupported MiB limits should be rejected.");
+        }
+    }
+
+    private static bool TryParseResponseLimit(string text, out int mebibytes, out int bytes)
+    {
+        Type? type = typeof(Program).Assembly.GetType("AIGaming.LocalAiResponseLimit");
+        MethodInfo? method = type?.GetMethod("TryParseMiB", BindingFlags.Static | BindingFlags.NonPublic);
+        if (method == null)
+        {
+            throw new InvalidOperationException("The response limit settings parser is not available.");
+        }
+
+        object?[] arguments = { text, 0, 0 };
+        bool result = (bool)method.Invoke(null, arguments)!;
+        mebibytes = (int)arguments[1]!;
+        bytes = (int)arguments[2]!;
+        return result;
     }
 
     private static async Task ReadsBodyBelowLimitAsync()
@@ -60,7 +150,7 @@ internal static class Program
     {
         byte[] expected = Enumerable.Repeat((byte)42, FormerMaximumResponseBytes + 1).ToArray();
         using var content = new ByteArrayContent(expected);
-        byte[] actual = await BoundedOllamaResponseReader.ReadUnboundedAsync(content, CancellationToken.None);
+        byte[] actual = await BoundedOllamaResponseReader.ReadAsync(content, 0, CancellationToken.None);
         AssertBytes(expected, actual, "advertised body above former maximum");
     }
 
@@ -74,13 +164,125 @@ internal static class Program
             throw new InvalidOperationException("The test stream must not advertise a content length.");
         }
 
-        byte[] actual = await BoundedOllamaResponseReader.ReadUnboundedAsync(
+        byte[] actual = await BoundedOllamaResponseReader.ReadAsync(
             content,
+            0,
             CancellationToken.None);
         AssertBytes(expected, actual, "unknown-length body above former maximum");
         if (stream.BytesRead != expected.Length)
         {
             throw new InvalidOperationException($"Expected {expected.Length} bytes read, got {stream.BytesRead}.");
+        }
+    }
+
+    private static void AcceptsSchemaV4WithoutOptionalGroups()
+    {
+        string payload = string.Join("\n", new[]
+        {
+            "schemaVersion=4",
+            "model=" + Convert.ToBase64String("local-model"u8),
+            "question=" + Convert.ToBase64String("What should I improve?"u8),
+            "installedAvailableDlcs=",
+            "maxResponseBytes=0"
+        });
+
+        if (!SessionProtocol.TryParseRequest(Encoding.UTF8.GetBytes(payload), out CompanionRequest request) ||
+            GetMaximumResponseBytes(request) != 0)
+        {
+            throw new InvalidOperationException("Schema v4 with no optional groups and unlimited responses should be accepted.");
+        }
+    }
+
+    private static void AcceptsSchemaV4WithAllCityDataGroups()
+    {
+        string[] values =
+        {
+            "electricityCapacity=100", "electricityConsumption=20",
+            "waterCapacity=100", "waterConsumption=20",
+            "sewageCapacity=100", "sewageAccumulation=20",
+            "garbageAmount=10", "garbageCapacity=100",
+            "garbageAccumulation=5", "incinerationCapacity=30",
+            "residentialBuildingCount=1", "residentialBuildingArea=10",
+            "commercialBuildingCount=2", "commercialBuildingArea=20",
+            "industrialBuildingCount=3", "industrialBuildingArea=30",
+            "officeBuildingCount=4", "officeBuildingArea=40",
+            "trafficFlow=70", "averagePassengers=50",
+            "policeCriminalAmount=2", "policeCriminalCapacity=10", "policeExtraCriminals=0",
+            "fireCoverageMeanByte=128.5", "fireCoverageSegmentCount=10",
+            "healthSickCount=3", "healthCapacity=12", "healthCareProductivity=8"
+        };
+        var lines = new List<string>
+        {
+            "schemaVersion=4",
+            "model=" + Convert.ToBase64String("local-model"u8),
+            "question=" + Convert.ToBase64String("What should I improve?"u8),
+            "installedAvailableDlcs=",
+            "maxResponseBytes=1048576"
+        };
+        lines.AddRange(values);
+
+        if (!SessionProtocol.TryParseRequest(Encoding.UTF8.GetBytes(string.Join("\n", lines)), out CompanionRequest request))
+        {
+            throw new InvalidOperationException("Schema v4 with complete city data groups and a configured response limit should be accepted.");
+        }
+        if (GetMaximumResponseBytes(request) != 1048576 ||
+            request.Utilities?.ElectricityCapacity != 100 ||
+            request.Zoning?.OfficeBuildingArea != 40 ||
+            request.TrafficTransit?.AveragePassengers != 50 ||
+            request.ServiceStatus?.FireCoverageMeanByte != 128.5f)
+        {
+            throw new InvalidOperationException("Schema v4 response limit or city data group values were not parsed correctly.");
+        }
+    }
+
+    private static void RejectsMissingResponseLimit()
+    {
+        string payload = string.Join("\n", new[]
+        {
+            "schemaVersion=4",
+            "model=" + Convert.ToBase64String("local-model"u8),
+            "question=" + Convert.ToBase64String("What should I improve?"u8),
+            "installedAvailableDlcs="
+        });
+
+        if (SessionProtocol.TryParseRequest(Encoding.UTF8.GetBytes(payload), out _))
+        {
+            throw new InvalidOperationException("Schema v4 without maxResponseBytes should be rejected.");
+        }
+    }
+
+    private static void RejectsNegativeResponseLimit()
+    {
+        string payload = string.Join("\n", new[]
+        {
+            "schemaVersion=4",
+            "model=" + Convert.ToBase64String("local-model"u8),
+            "question=" + Convert.ToBase64String("What should I improve?"u8),
+            "installedAvailableDlcs=",
+            "maxResponseBytes=-1"
+        });
+
+        if (SessionProtocol.TryParseRequest(Encoding.UTF8.GetBytes(payload), out _))
+        {
+            throw new InvalidOperationException("A negative maxResponseBytes value should be rejected.");
+        }
+    }
+
+    private static void RejectsPartialCityDataGroup()
+    {
+        string payload = string.Join("\n", new[]
+        {
+            "schemaVersion=4",
+            "model=" + Convert.ToBase64String("local-model"u8),
+            "question=" + Convert.ToBase64String("What should I improve?"u8),
+            "installedAvailableDlcs=",
+            "maxResponseBytes=0",
+            "electricityCapacity=100"
+        });
+
+        if (SessionProtocol.TryParseRequest(Encoding.UTF8.GetBytes(payload), out _))
+        {
+            throw new InvalidOperationException("A partial optional city data group should be rejected.");
         }
     }
 
@@ -104,6 +306,19 @@ internal static class Program
         {
             throw new InvalidOperationException($"Unexpected bytes for {testName}.");
         }
+    }
+
+    private static int GetMaximumResponseBytes(CompanionRequest request)
+    {
+        PropertyInfo? property = typeof(CompanionRequest).GetProperty(
+            "MaximumResponseBytes",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        if (property == null || property.GetValue(request, null) is not int maximumResponseBytes)
+        {
+            throw new InvalidOperationException("The parsed request did not expose its response limit.");
+        }
+
+        return maximumResponseBytes;
     }
 }
 
@@ -155,6 +370,13 @@ internal sealed class NonSeekableReadStream : Stream
     public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
     public override void SetLength(long value) => throw new NotSupportedException();
     public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+}
+
+internal static class CompanionBuildInfo
+{
+    internal const string Edition = "release";
+    internal const string Version = "0.4.0";
+    internal const string ProtocolVersion = "1";
 }
 
 // Implementation update signed by OpenAI-Codex.

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using ColossalFramework.UI;
 using ICities;
 using UnityEngine;
@@ -59,6 +60,89 @@ namespace AIGaming
             ExpandRow(root, label);
         }
 
+        internal static void SetTextFieldLabel(UIHelperBase group, UITextField field, string text)
+        {
+            if (field == null || field.parent == null) return;
+
+            UILabel label = field.parent.Find("Label", typeof(UILabel)) as UILabel;
+            if (label == null) return;
+
+            label.text = text ?? string.Empty;
+            label.autoSize = false;
+            label.wordWrap = true;
+            label.autoHeight = true;
+
+            UIComponent root = Root(group);
+            if (root == null) return;
+            if (root.width > 60f) label.width = root.width - 48f;
+            ExpandRow(root, label);
+        }
+
+        internal static void RelocalizeExistingControls(UIHelperBase group, string previousLanguage)
+        {
+            UIComponent root = Root(group);
+            if (root == null) return;
+
+            Dictionary<string, string> replacements =
+                Localization.GetTextReplacements(previousLanguage, Localization.CurrentLanguage);
+            UnityEngine.Component[] textFields = root.GetComponentsInChildren(typeof(UITextField), true);
+            var textFieldRows = new HashSet<UIComponent>();
+            for (int i = 0; i < textFields.Length; i++)
+            {
+                UITextField field = textFields[i] as UITextField;
+                if (field != null && field.parent != null) textFieldRows.Add(field.parent);
+            }
+
+            UnityEngine.Component[] labels = root.GetComponentsInChildren(typeof(UILabel), true);
+            string[] labelTexts = new string[labels.Length];
+            for (int i = 0; i < labels.Length; i++)
+            {
+                UILabel label = labels[i] as UILabel;
+                labelTexts[i] = label == null ? string.Empty : label.text ?? string.Empty;
+            }
+
+            UnityEngine.Component[] buttons = root.GetComponentsInChildren(typeof(UIButton), true);
+            string[] buttonTexts = new string[buttons.Length];
+            for (int i = 0; i < buttons.Length; i++)
+            {
+                UIButton button = buttons[i] as UIButton;
+                buttonTexts[i] = button == null ? string.Empty : button.text ?? string.Empty;
+            }
+
+            for (int i = 0; i < labels.Length; i++)
+            {
+                UILabel label = labels[i] as UILabel;
+                string translated;
+                if (label != null && !IsInTextFieldRow(label, root, textFieldRows) &&
+                    replacements.TryGetValue(labelTexts[i], out translated))
+                {
+                    label.text = translated;
+                    ExpandRow(root, label);
+                }
+            }
+
+            for (int i = 0; i < buttons.Length; i++)
+            {
+                UIButton button = buttons[i] as UIButton;
+                string translated;
+                if (button != null && replacements.TryGetValue(buttonTexts[i], out translated))
+                {
+                    button.text = translated;
+                    FitButton(group, button);
+                }
+            }
+        }
+
+        private static bool IsInTextFieldRow(UIComponent component, UIComponent root, HashSet<UIComponent> textFieldRows)
+        {
+            while (component != null && component != root)
+            {
+                if (textFieldRows.Contains(component)) return true;
+                component = component.parent;
+            }
+            return false;
+        }
+
         private static void ExpandRow(UIComponent root, UIComponent child)
         {
             while (child != null && child.parent != null && child.parent != root)
@@ -74,3 +158,4 @@ namespace AIGaming
     }
 }
 // Implementation update signed by OpenAI-Codex_Responsible: AI Gaming.
+// Implementation update signed by OpenAI-Codex.

@@ -1,18 +1,18 @@
 # AI Gaming Local Companion Protocol
 
-**Status:** Implemented source for the 0.4.0 Ollama Local preview; static Release builds pass. The game runtime and self-contained Windows x64 publish have not been verified.
+**Status:** Implemented source for the 0.4.0 Ollama Local preview, including companion request schemaVersion 4, schemaVersion 3 city snapshot fields, optional city data groups, game-detected DLC identifiers, and a user-configurable Ollama response-body limit that defaults to unlimited. The companion transport protocol and `/v1` route remain version 1. Release builds and companion checks pass; the game runtime and self-contained Windows x64 publish have not been verified.
 
-**Scope:** Windows x64 companion, player-confirmed Ollama Local advice, schemaVersion 1 aggregate city data. This document does not describe or authorize cloud providers, API keys, game control, or calls to other Modpack capabilities.
+**Scope:** Windows x64 companion, player-confirmed Ollama Local advice, schemaVersion 4 request data carrying schemaVersion 3 city snapshot fields, selected aggregate city fields, optional utilities/zoning/traffic-transit/service groups, automatically detected installed-and-available DLC identifiers, and the configured maximum response-body byte count. The separate city-summary log remains schemaVersion 1. This document does not describe or authorize cloud providers, API keys, game control, or calls to other Modpack capabilities.
 
 ## 1. User-visible request flow
 
-1. The settings page asks for an Ollama model name and a player-written question. The six schemaVersion 1 fields have individual checkboxes, start checked, and can be selected again with the Select All button.
-2. The player prepares a preview. AI Gaming queues the selected aggregate reads through `SimulationManager.AddAction`, then dispatches the result to the UI thread. The UI does not wait for the simulation callback.
-3. A multi-line read-only text field shows the destination, model, exact selected values, and question. The user must review the complete preview and press the separate confirmation button. Changing any selection, model, question, or companion-start preference invalidates the pending preview.
+1. The settings page asks for an Ollama model name, a response-body limit in MiB (`0` means unlimited), and a player-written question. The six base city fields and four optional groups (utilities, built zoning, traffic/transit, and service status) start checked and can be selected with the Select All button. The game-detected installed-and-available DLC identifier list is always included; it has no separate checkbox.
+2. The player prepares a preview. AI Gaming queues the selected aggregate city reads through `SimulationManager.AddAction`, then dispatches the result to the UI thread. On that UI dispatcher, it requires a ready platform DLC state and collects identifiers that both game API checks report as installed and available. Failure prevents preview preparation and sends no request. The UI does not wait for the simulation callback.
+3. A multi-line read-only text field shows the destination, model, response-body limit, exact selected values, complete DLC identifier list, and question. It labels unverified utility units/statistic windows and clarifies that zoning covers built buildings, traffic flow is not a congestion percentage, police/health values are not geographic coverage, and fire coverage is unavailable when no segments are sampled. The DLC names are the game's enum identifiers, not guaranteed store display names or account-ownership claims. The user must review the complete preview and press the separate confirmation button. Changing any selection, model, response limit, question, or companion-start preference invalidates the pending preview.
 4. Companion auto-start permission defaults off and resets on game restart. The companion starts only after that request's confirmation and only while this permission is enabled. No later request inherits the confirmation.
 5. The model response is displayed as advice only. It is not interpreted as a game action and does not change simulation state. The mod does not automatically retry or switch providers.
 
-The request contains schemaVersion 1 and only selected values from `gameDate`, `population`, `fundsCents`, `residentialDemand`, `commercialDemand`, and `workplaceDemand`, plus the selected model name and free-text player question. The player question is not scanned; do not enter a city name, account information, secrets, personal data, or other prohibited content. The mod does not attach saves, logs, object lists, screenshots, or files.
+The request contains schemaVersion 4 and only the six base fields, the selected optional groups, the required `installedAvailableDlcs` list, selected model name, configured `maxResponseBytes`, and free-text player question. `maxResponseBytes=0` means no application-level `/api/chat` response-body cap; a positive value is a byte count. DLC identifiers are included automatically after the separate per-request confirmation. Each selected group is encoded as a complete set; partial groups are rejected. The player question is not scanned; do not enter a city name, account information, secrets, personal data, or other prohibited content. The mod does not attach saves, logs, object lists, screenshots, or files.
 
 ## 2. Companion packaging and local cache
 
@@ -59,22 +59,32 @@ The PID/path/name checks are not publisher-signature authentication. A same-user
 - The request carries protocol, edition, sequence, body hash, and proof headers. The companion requires the next sequence exactly (`1`, then previous + 1), validates the proof with a fixed-time byte comparison, reads the declared body, checks its hash, then validates its fields and types before contacting Ollama.
 - A successful HTTP response includes the protocol, edition, same sequence, response-body hash, and an HMAC over protocol, edition, sequence, status code, method, route, and response hash. The mod validates all values and discards unauthenticated, mismatched, malformed, or replayed responses.
 - Loopback HTTP is not encrypted. HMAC protects authenticity and replay within this session; it does not protect the payload from software able to read/inject into either process or inspect their memory. The accepted threat model does not defend against privileged local software with those abilities.
-- No application request-size or request-frequency caps are implemented, per the approved user decision. The connection has a ten-minute deadline. The companion processes one client at a time and a mod request ends the session. Request size and repeated local use can still consume memory/CPU; these are residual risks. The application applies no response-size cap to Ollama `/api/chat`; large answers can consume substantial memory. The `/api/tags` model-list response remains limited to 1 MiB before JSON parsing, with oversized bodies mapped to the sanitized `invalid_response` category without logging response content.
+- No application request-size or request-frequency caps are implemented, per the approved user decision. The connection has a ten-minute deadline. The companion processes one client at a time and a mod request ends the session. Request size and repeated local use can still consume memory/CPU; these are residual risks. The complete raw Ollama `/api/chat` HTTP response body, including its JSON envelope, is unlimited by default (`maxResponseBytes=0`). A positive user setting caps the body at 1–2047 MiB; an oversized body is discarded before JSON parsing and maps to the sanitized `response_limit_exceeded` category, with no partial answer. This byte-size setting is not a generated-token cap or a cap on total process memory; parsing and copying the body may require additional memory. The unlimited default still depends on available memory and the existing request deadline. The `/api/tags` model-list response remains limited to 1 MiB before JSON parsing, with oversized bodies mapped to the sanitized `invalid_response` category without logging response content.
 
 ## 5. Request encoding and Ollama adapter
 
-The bridge body is UTF-8 newline-delimited key/value text, not JSON. Model and question are Base64-encoded UTF-8 strings. Numeric snapshot values are invariant-culture decimal; the date is `yyyy-MM-dd`. Only the schema version, model, question, and selected snapshot fields are accepted. Unknown keys, duplicate keys, invalid types, malformed UTF-8, and invalid dates are rejected.
+The bridge body is UTF-8 newline-delimited key/value text, not JSON. Model, question, and `installedAvailableDlcs` are Base64-encoded UTF-8 strings. The DLC value decodes to a sorted, unique, LF-separated list of canonical `SteamHelper.DLC` enum identifiers; an empty decoded value means the ready game API reported no installed-and-available catalog items. The companion accepts only ASCII letter/digit/underscore identifiers in strictly increasing ordinal order. Numeric values are invariant-culture decimal; the date is `yyyy-MM-dd`. Only schemaVersion 4, model, question, nonnegative integer `maxResponseBytes`, selected base fields, complete selected groups, and the required DLC list are accepted. `maxResponseBytes` is a raw byte count; zero means unlimited. The city data described in the model prompt remains city snapshot schemaVersion 3. Unknown keys, duplicate keys, partial groups, invalid types, malformed UTF-8, invalid dates, or invalid DLC identifiers are rejected.
 
-Before inference, the companion requests `GET /api/tags` from Ollama on `localhost` and requires the selected name to match a listed model entry with a positive `size`. Names ending in `:cloud` or `-cloud` are rejected. The player supplies the model name; names are not hard-coded. The companion then sends `POST /api/chat` with the selected model, one user message, and `stream=false`. It accepts only `message.content`; provider error bodies are not forwarded to the game log.
+Optional group keys are:
+
+- Utilities: `electricityCapacity`, `electricityConsumption`, `waterCapacity`, `waterConsumption`, `sewageCapacity`, `sewageAccumulation`, `garbageAmount`, `garbageCapacity`, `garbageAccumulation`, `incinerationCapacity`. These are raw district values; physical units are unverified.
+- Built zoning: `residentialBuildingCount` / `residentialBuildingArea`, `commercialBuildingCount` / `commercialBuildingArea`, `industrialBuildingCount` / `industrialBuildingArea`, and `officeBuildingCount` / `officeBuildingArea`. These describe constructed buildings, not vacant zoned cells; area units are game-defined and unverified.
+- Traffic/transit: `trafficFlow` and `averagePassengers`. These are latest game-reported integer statistics with unspecified scale/time window; `trafficFlow` is not a congestion percentage.
+- Service status: `policeCriminalAmount`, `policeCriminalCapacity`, `policeExtraCriminals`, `fireCoverageMeanByte`, `fireCoverageSegmentCount`, `healthSickCount`, `healthCapacity`, and `healthCareProductivity`. Police/health are citywide workload/capacity, not geographic coverage. Fire coverage averages the raw byte across created network segments; a count of zero means unavailable.
+
+The `/v1/ollama/local/chat` path and HMAC transport version remain unchanged because the framing and session authentication did not change.
+
+Before inference, the companion requests `GET /api/tags` from Ollama on `localhost` and requires the selected name to match a listed model entry with a positive `size`. Names ending in `:cloud` or `-cloud` are rejected. The player supplies the model name; names are not hard-coded. The generated prompt includes the exact schemaVersion 3 city values and DLC identifiers, preserves the caveats above, and tells the model that DLC availability does not prove the current save uses that content. The companion then sends `POST /api/chat` with the selected model, one user message, and `stream=false`. It accepts only `message.content`; provider error bodies are not forwarded to the game log.
 
 Ollama documents that cloud models can be accessed through Ollama's app/CLI and that cloud model inference is performed on Ollama's servers. The tag/size check and cloud-tag rejection are practical filters, not a guarantee about routing inside the user's Ollama installation. AI Gaming does not edit or inspect Ollama's configuration; for stricter local-only use, the player can disable Ollama cloud features (`OLLAMA_NO_CLOUD=1` or `disable_ollama_cloud=true`) and restart Ollama.
 
-Errors map to sanitized categories, including `ollama_unavailable`, `model_not_found`, `local_model_required`, `local_authentication_failed`, `timeout`, `invalid_response`, `cancelled`, and `ollama_error`. The mod displays a localized category, logs only a coarse success/failure status, and never retries or falls back.
+Errors map to sanitized categories, including `ollama_unavailable`, `model_not_found`, `local_model_required`, `local_authentication_failed`, `timeout`, `invalid_response`, `response_limit_exceeded`, `cancelled`, and `ollama_error`. The mod displays a localized category, logs only a coarse success/failure status, and never retries or falls back.
 
 ## 6. Static verification boundary and sources
 
 - Release build of `AIGaming.csproj`: 0 warnings, 0 errors.
 - Release build of `Companion/AIGaming.Companion.csproj`: 0 warnings, 0 errors, framework-dependent output only.
+- Companion checks cover bounded model-list parsing, unlimited and user-capped `/api/chat` response reading, and schemaVersion 4 requests with schemaVersion 3 city data.
 - The self-contained publish, Steam Workshop packaging, process launch in Cities: Skylines/Unity Mono, UI rendering/scrolling, actual Ollama calls, and update while the companion is running have not been verified.
 - A Windows CLR probe verified a redirected anonymous-pipe round trip with a non-secret payload. It does not establish Unity Mono behavior.
 
@@ -87,4 +97,10 @@ Official Ollama documentation checked 2026-10-25:
 
 Implementation documentation signed by OpenAI-Codex.
 
+Implementation update signed by OpenAI-Codex_Responsible: AI Gaming.
+
 Documentation update signed by OpenAI-Codex_Responsible: AI Gaming.
+
+Implementation update signed by OpenAI-Codex.
+
+Implementation update signed by OpenAI-Codex_Responsible: AI Gaming.

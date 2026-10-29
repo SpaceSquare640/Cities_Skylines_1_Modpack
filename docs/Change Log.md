@@ -2,8 +2,14 @@
 
 ## Unreleased
 
+- Added selectable English, Traditional Chinese, Simplified Chinese, Japanese, and Korean settings UI languages. English is the default; the saved selection applies immediately.
 - Adjusted settings layout to reserve space for wrapped text and expanding preview and response fields; updated the Development version description.
-- Removed the application response-size limit for Ollama `/api/chat` answers. The `/api/tags` model-list response remains limited to 1 MiB before JSON parsing.
+- Added a user-configurable size limit for the complete raw Ollama `/api/chat` HTTP response body. It defaults to 0 (unlimited); a configured 1-2047 MiB limit discards the entire oversized response. The limit includes the JSON envelope and does not set generated tokens. `/api/tags` remains limited to 1 MiB.
+- Added automatic detection of game API-reported installed-and-available DLC identifiers to each confirmed local AI request. The request preview displays the full list; the request schema is version 4 while the companion transport protocol remains version 1.
+- Added optional utility, built-zoning, traffic/transit, and service-status data groups to the confirmed request preview and city snapshot schema version 3.
+- Added required `maxResponseBytes` to companion request schema version 4 so the configured response-body limit is enforced before JSON parsing.
+- Separated city-capture and AI-response generations so changing preview inputs discards stale captures without dropping a response that is already in progress.
+- Clarified request schema version 4 versus city snapshot schema version 3 in all five UI languages.
 
 ## 0.4.0 — Early preview
 
@@ -16,3 +22,13 @@
 Documentation update signed by OpenAI-Codex.
 
 Documentation update signed by OpenAI-Codex_Responsible: AI Gaming.
+
+Implementation update signed by OpenAI-Codex_Responsible: AI Gaming.
+
+Implementation update signed by OpenAI-Codex.
+
+Implementation update signed by OpenAI-Codex_Responsible: AI Gaming.
+
+Implementation update signed by OpenAI-Codex.
+
+Implementation update signed by OpenAI-Codex_Responsible: AI Gaming.

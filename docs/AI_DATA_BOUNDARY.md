@@ -1,27 +1,31 @@
 # AI Gaming Data Boundary and Consent Design
 
-**Status:** Implementation record for the approved 0.4.0 Ollama Local companion milestone. The source implementation and framework-dependent Release builds have been completed; in-game behavior and the Windows x64 self-contained publish have not been verified. This status does not authorize cloud providers, credentials, extra data fields, or game control.
+**Status:** Implementation record for the approved 0.4.0 Ollama Local companion milestone. Companion request schema version 4 carries schemaVersion 3 city fields, the previously approved installed-and-available DLC context, optional utility, built-zoning, traffic/transit, and service-status groups, and a user-configurable `/api/chat` response-body limit that defaults to unlimited. Release build and subscribed-game verification status is recorded below. This status does not authorize cloud providers, credentials, or game control.
 
 **Evidence labels:** `[Verified]` describes facts confirmed from the current branch, static assembly inspection, or completed static build. `[Approved]` records a design decision explicitly approved by the user. `[Inferred]` marks a proposal that still needs implementation review and runtime validation. `[To decide]` marks an unresolved choice for the user and Lead Architect.
 
 ## 1. Confirmed baseline and design gate
 
-- `[Verified]` AI Gaming 0.3.0 added a read-only `schemaVersion=1` city snapshot log action. AI Gaming 0.4.0 adds a separate player-confirmed Ollama Local request path through the companion; it does not send request payloads or model responses to the game log.
-- `[Verified]` The current allowlist contains only `gameDate`, `population`, `fundsCents`, `residentialDemand`, `commercialDemand`, and `workplaceDemand`, in addition to the schema version.
+- `[Verified]` AI Gaming 0.3.0 added a read-only `schemaVersion=1` city snapshot log action. The log remains schema version 1 and does not include DLC identifiers or the optional groups. The companion request has a separate schema version: version 2 added DLC context, and version 3 adds the four optional data groups.
+- `[Verified]` The schemaVersion 1 city-summary log contains only `gameDate`, `population`, `fundsCents`, `residentialDemand`, `commercialDemand`, and `workplaceDemand`. The companion request schema version 4 can include those six base fields, the required `installedAvailableDlcs` list, any selected optional group, the selected model and player-written question, and `maxResponseBytes` (`0` means no application-level Ollama response-body cap).
 - `[Verified]` The 0.4.0 source connects only to an opt-in companion over authenticated IPv4 loopback HTTP, and the companion connects only to Ollama Local at `localhost:11434` through an IPv4 loopback socket. It has no cloud provider adapter, API-key field or persistence, save-file write, Harmony patch, or simulation-state mutation. Neither 0.3.0 nor 0.4.0 has been tested in Cities: Skylines.
-- `[Inferred]` Any future model request must use an explicit, versioned allowlist derived from schema version 1. A new field requires a documented source, type, unit, and in-game UI comparison, user approval, and a schema-version increment before it can be sent.
+- `[Approved]` Each optional group has a documented source and type and is sent only when selected and separately confirmed. Values remain unverified against the subscribed-game UI until the subscribed-game check.
 - `[Inferred]` A future data-export milestone requires its own implementation plan and approval. This proposal alone does not approve transmission or model access.
 
 ## 2. Outbound data boundary
 
-### 2.1 Schema version 1 allowlist
+### 2.1 Schema versions and allowlists
 
-- `[Verified]` `schemaVersion`: integer value `1`; identifies the snapshot definition.
+- `[Verified]` The local city-summary log remains `schemaVersion=1`; the companion request uses `schemaVersion=4` and carries city snapshot fields version 3. `maxResponseBytes` is a required nonnegative byte count: zero means unlimited, while a positive value discards the whole Ollama `/api/chat` response body if it exceeds the configured limit. Transport protocol version and `/v1` route remain version 1.
+- `[Verified]` The six selectable companion city fields remain `gameDate`, `population`, `fundsCents`, `residentialDemand`, `commercialDemand`, and `workplaceDemand` with the types and sources below.
 - `[Verified]` `gameDate`: string formatted as `yyyy-MM-dd`; sourced from the current game date.
 - `[Verified]` `population`: unsigned integer; sourced from the HUD population value at district 0, `m_populationData.m_finalCount`.
 - `[Verified]` `fundsCents`: 64-bit integer in cents; sourced from `EconomyManager.playerMoney`. Static IL inspection confirmed the getter multiplies `LastCashAmount` by 100. In-game HUD equality is not yet verified.
 - `[Verified]` `residentialDemand`, `commercialDemand`, and `workplaceDemand`: integer values sourced from the corresponding `ZoneManager` demand fields used by the game information panel and tooltips. In-game value and label matching is not yet verified.
-- `[Verified]` The 0.4.0 settings page exposes one checkbox per schemaVersion 1 field, all checked by default, plus a Select All control. The player may uncheck any subset; only selected values are serialized. The player-written question and selected model name are also shown in a preview and sent after a separate confirmation.
+- `[Approved]` Companion request schema version 2 added required `installedAvailableDlcs`; schema version 3 retains it. It is a sorted list of canonical `SteamHelper.DLC` enum identifiers. The game enumerates the DLC, creator-pack, and radio-station catalog using `SteamHelper.DLCs` and includes an identifier only when `SteamHelper.IsDLCOwned` and `SteamHelper.IsDLCAvailable` both return true. Static IL inspection shows `IsDLCOwned` calls `PlatformService.IsDlcInstalled(UInt32)`; it is treated as an installation check, not account ownership. The code also requires `PlatformService.IsDLCStateReady`. No Steam App ID or account identifier is sent.
+- `[Verified]` DLC detection runs on the UI dispatcher after the city values are captured on the simulation thread. If platform DLC state is not ready or a detection call throws, no preview is prepared and no request is sent. An empty list means the DLC state was ready and no catalog item passed both game API checks.
+- `[Verified]` The settings page keeps the six base city fields and four optional data groups checked by default, plus Select All. DLC identifiers are detected and included automatically with no separate checkbox. The exact identifier list, selected values, model, and question appear in the preview before a distinct confirmation.
+- `[Approved]` The optional groups are captured only when selected: (1) utilities use district capacity, consumption, amount, and accumulation getters for electricity, water, sewage, and garbage, plus incineration capacity; physical units are not verified; (2) zoning reports built building count and area for residential, commercial, industrial, and office uses, not vacant zoned cells; (3) traffic/transit includes the latest raw `TrafficFlow` and `AveragePassengers` game statistics, whose scale and averaging window are unspecified, and traffic flow is not a congestion percentage; (4) service status reports citywide police and healthcare workload/capacity plus mean fire-coverage byte across created network segments. Police and healthcare are not geographic coverage. A zero fire-segment sample count means coverage is unavailable.
 
 ### 2.2 Prohibited data
 
@@ -30,11 +34,11 @@
 - `[Inferred]` Never send API keys, access tokens, authentication headers, passwords, private prompts containing credentials, or other secrets.
 - `[Inferred]` Never send game logs, crash reports, mod configuration files, arbitrary files, or data collected from another mod unless a separately approved schema explicitly defines the field and its provider has authorized that use.
 - `[Inferred]` Never treat model-generated code, commands, URLs, or text as permission to read files, run code, or change the game.
-- `[Approved]` The 0.4.0 request is limited to player-selected schemaVersion 1 values, the entered model name, and the player-written question shown in the consent preview. Any additional game field requires source/type/unit verification, in-game UI verification, explicit approval, and a schema-version increment.
+- `[Approved]` The 0.4.0 request contains only the six base city values, player-selected schema version 3 optional groups, game-reported installed-and-available DLC identifiers, the entered model name, the configured `maxResponseBytes`, and the player-written question shown in the consent preview. The complete response limit setting appears in the preview. DLC identifiers are included automatically, but transmission still requires the existing per-request confirmation. The optional groups require selection and the same separate per-request confirmation.
 
 ## 3. Player consent and revocation
 
-- `[Verified]` Every local request has a separate prepare-and-review step followed by a distinct confirm action. The preview identifies Ollama Local at `http://localhost:11434`, the model name, exact selected snapshot values, and the exact question. The mod captures selected values asynchronously on the simulation thread, then returns to the UI thread; it does not wait for capture in the UI.
+- `[Verified]` Every local request has a separate prepare-and-review step followed by a distinct confirm action. The preview identifies Ollama Local at `http://localhost:11434`, the model name, exact selected snapshot values, complete detected DLC identifier list, and exact question. The mod captures city values asynchronously on the simulation thread, then detects DLC on the UI dispatcher; it does not wait for simulation capture in the UI.
 - `[Verified]` Companion auto-start permission defaults off and resets on game restart. Even when enabled, the companion starts only after the player confirms that request; this permission is not blanket consent to send future data.
 - `[Verified]` The companion transport is fixed to loopback. The Ollama connector accepts only `localhost:11434` and opens an IPv4 socket to `127.0.0.1`; it does not use a proxy or redirect. The selected model must also appear in the local model list with a positive local size; cloud model tags are rejected.
 - `[Inferred]` Do not start a background request or retry after failure without a new, explicit confirmation. Do not send a later snapshot under consent given for an earlier snapshot.
@@ -65,7 +69,7 @@
 
 ## 6. Log and diagnostic redaction
 
-- `[Verified]` The separate 0.3.0 city-summary button writes an aggregate schema version 1 line to the local game log. The 0.4.0 AI request path does not write selected values, prompt text, model output, credentials, session tokens, or provider error bodies to the game log.
+- `[Verified]` The separate 0.3.0 city-summary button continues to write only its aggregate schema version 1 line to the local game log; it does not include DLC identifiers. The 0.4.0 AI request path does not write selected values, DLC identifiers, prompt text, model output, credentials, session tokens, or provider error bodies to the game log.
 - `[Inferred]` Future local diagnostics may record only allowlisted operational metadata such as a random request correlation value that is not sent to the provider, local/cloud mode, coarse duration, and success or failure category. They must not include snapshot values unless a separate, visible local diagnostic action explicitly requests them.
 - `[Inferred]` Redact or omit prompt text, model responses, account identifiers, credentials, authorization headers, full request URLs containing query secrets, raw payloads, and provider error bodies. Sanitize exception messages before logging.
 - `[Inferred]` Never upload the game log, crash report, or diagnostic bundle as part of a model request. Do not log model text as an executable or trusted instruction.
@@ -91,7 +95,7 @@
 
 ### 7.2 One provider-neutral request and response
 
-- `[Inferred]` Route provider-specific work through one provider-neutral request shape containing a protocol version, temporary request ID, source ID, player-selected model name, player-written prompt, and the explicitly consented schemaVersion 1 snapshot fields. Do not include credentials in this request object.
+- `[Inferred]` Route provider-specific work through one provider-neutral request shape containing a protocol version, temporary request ID, source ID, player-selected model name, player-written prompt, and the explicitly consented schemaVersion 3 snapshot fields, including the game-reported DLC identifiers. Do not include credentials in this request object.
 - `[Inferred]` Normalize all four providers to one response shape containing the request ID, status, source ID, selected/actual model name when available, suggestion text, and a sanitized error category. The response must not contain executable instructions or game actions.
 - `[Inferred]` Keep provider adapters responsible for translating the common request and response to each provider's native API. Never hard-code model names; let the player choose a model from provider availability or enter a model name, then report a missing or unavailable model without silently substituting another.
 - `[Verified]` The local 0.4.0 bridge encoding and HMAC/session protocol are documented in `docs/COMPANION_PROTOCOL.md`. A shared request/response abstraction across all four model sources remains a future design item.
@@ -159,7 +163,7 @@
 ## 8. Failure and safe degradation
 
 - `[Verified]` **Companion missing, hash unconfigured/mismatched, cache unavailable, launch failure, or identity/version mismatch:** report a localized category and send no request. Keep snapshot logging and interop discovery available. No direct model fallback or retry is attempted.
-- `[Verified]` **Ollama Local not started:** return a sanitized `ollama_unavailable` result. **Cloud model name or model not installed locally:** return `local_model_required` or `model_not_found`. **Authentication rejected:** return `local_authentication_failed` without logging authentication details. **Timeout, malformed response, or other provider error:** return a category only and do not retry.
+- `[Verified]` **Ollama Local not started:** return a sanitized `ollama_unavailable` result. **Cloud model name or model not installed locally:** return `local_model_required` or `model_not_found`. **Authentication rejected:** return `local_authentication_failed` without logging authentication details. **Configured `/api/chat` response-body limit exceeded:** discard the complete response body and return `response_limit_exceeded`; no partial answer is shown. **Timeout, malformed response, or other provider error:** return a category only and do not retry.
 - `[Inferred]` **Ollama Cloud unavailable or key rejected:** show the provider and sanitized authentication/unavailable category. Confirm whether a credential is required before implementation; never log it.
 - `[Inferred]` **OpenAI or Anthropic key invalid:** keep the key inside the companion, report a sanitized authentication failure, and let the player re-enter it there. Never echo the key into the mod or logs.
 - `[Inferred]` **Cloud quota or usage limit reached:** report the provider limit and stop. Do not silently change providers or consume another provider's key.
@@ -169,7 +173,7 @@
 
 ## 9. Remaining decisions and release gates
 
-- `[Approved]` The 0.4.0 request uses only player-selected schemaVersion 1 values, the entered model name, and the player-written question. The question is free text and is not scanned; the player must not enter secrets or prohibited data.
+- `[Approved]` The 0.4.0 request uses the six base city values, any player-selected optional groups, automatically included installed-and-available DLC identifiers, the entered model name, `maxResponseBytes`, and the player-written question. The companion request schema is version 4 and carries city snapshot schema version 3; the local city-summary log stays version 1. The response limit defaults to zero (unlimited); positive settings cap the full Ollama `/api/chat` HTTP response body before JSON parsing, but do not set generated tokens or total process memory. The question is free text and is not scanned; the player must not enter secrets or prohibited data.
 - `[Verified]` Request preview, per-request confirmation, cancellation, and suggestion display are on the settings page. Cancellation aborts the current request where possible; data already accepted by Ollama cannot be recalled.
 - `[Approved]` Support Windows first. No built-in request-size or request-frequency limits; player-facing copy must tell users to configure provider-side cloud usage caps where available.
 - `[Approved]` The 32-byte CSPRNG secret, per-start rotation, anonymous-pipe handoff, per-request HMAC and sequence anti-replay checks, constant-time comparison, process/version identity checks, and versioned `%LOCALAPPDATA%` cache direction are approved and present in source. Only static builds and a Windows CLR pipe probe have been performed; game-runtime behavior remains pending.
@@ -182,10 +186,17 @@
 
 ## 10. Approval boundary
 
-- `[Verified]` AI Gaming 0.4.0 implements the approved Ollama Local-only request path. It has not been tested in Cities: Skylines, and the self-contained win-x64 publish has not been produced or verified in this environment.
+- `[Verified]` AI Gaming 0.4.0 implements the approved Ollama Local-only request path with schemaVersion 4 companion requests, schemaVersion 3 city snapshot fields, and a configurable `/api/chat` response-body limit that defaults to unlimited. It has not been tested in Cities: Skylines, and the self-contained win-x64 publish has not been produced or verified in this environment.
+- `[Verified]` Release builds of `AIGaming.csproj` and `Companion/AIGaming.Companion.csproj` and the schema/response-reader checks cover the configurable response limit. This is compile/check evidence only; no subscribed-game test was run.
 - `[Approved]` The approved implementation does not include cloud adapters, API-key entry/storage, credential persistence, gameplay actions, or interop capability calls. Those require later plans and approval; check Ollama Cloud authentication and each provider's terms before a cloud phase.
 
 
 ---
 
 Implementation update signed by OpenAI-Codex.
+
+Implementation update signed by OpenAI-Codex_Responsible: AI Gaming.
+
+Implementation update signed by OpenAI-Codex.
+
+Implementation update signed by OpenAI-Codex_Responsible: AI Gaming.
