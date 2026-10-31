@@ -2,6 +2,12 @@
 
 Planning-stage component of Cities Skylines 1 Modpack. The intended scope is vehicle traffic rules, signals, turning restrictions and lane allocation. No game behavior is implemented yet.
 
+## Project links
+
+- [Canonical repository](https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack)
+- [Module branch](https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack/tree/Realistic_Vehicle_Traffic_Control)
+- [Project website](https://kingsleyhk0323.github.io/Cities_Skylines_1_Modpack/)
+
 ## Development status
 
 This branch contains documentation and a cloud repository baseline check only. There is no project file, game DLL, installer, or validated gameplay feature.
