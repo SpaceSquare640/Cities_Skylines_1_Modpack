@@ -16,6 +16,23 @@ jobs:
     steps:
       - name: Check out module
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out pinned encrypted references and restore helper
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: 7b8a5e7c10f2db84388e8dd8af2084f239957b13
+          path: build-dependencies
+          persist-credentials: false
+          sparse-checkout: |
+            build-references/cs1/v1
+            tools/build-references
+      - name: Restore authenticated game references
+        shell: pwsh
+        env:
+          CS1_GAME_REFERENCES_KEY: ${{ secrets.CS1_GAME_REFERENCES_KEY }}
+        run: |
+          $gameRoot = Join-Path $env:RUNNER_TEMP 'cs1-game-root'
+          & ./build-dependencies/tools/build-references/Restore-GameReferences.ps1 -BundleDirectory ./build-dependencies/build-references/cs1/v1 -GameRoot $gameRoot
+          "CS1_GAME_ROOT=$gameRoot" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
       - name: Locate Visual Studio MSBuild
         shell: pwsh
         run: |
@@ -25,11 +42,17 @@ jobs:
           & $msbuild -version -nologo
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           "APTP_MSBUILD=$msbuild" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
-      - name: Rebuild Development DLL against isolated empty game root
+      - name: Rebuild Development DLL against verified game references
         shell: pwsh
         run: |
-          $gameRoot = Join-Path $env:RUNNER_TEMP 'aptp-empty-game-root'
-          New-Item -ItemType Directory -Path $gameRoot -ErrorAction Stop | Out-Null
-          Write-Host "Game reference root: $gameRoot (intentionally empty; no approved dependency source)"
+          $gameRoot = $env:CS1_GAME_ROOT
           & $env:APTP_MSBUILD AutomatedPublicTransportPlanning.csproj /t:Rebuild /p:Configuration=Release /p:DevTools=true /p:ModsDir= "/p:CitiesSkylinesDir=$gameRoot" "/p:CSInstallPath=$gameRoot" /verbosity:normal /nologo
           exit $LASTEXITCODE
+      - name: Assert compiled module outputs
+        shell: pwsh
+        run: |
+          foreach ($name in @('AutomatedPublicTransportPlanning.dll', 'AutomatedPublicTransportPlanning.pdb')) {
+            $file = Get-Item -LiteralPath (Join-Path 'bin/Release' $name) -ErrorAction Stop
+            if ($file.Length -le 0) { throw "Compiled output is empty: $name" }
+            Write-Host "$name exists and is nonempty ($($file.Length) bytes)."
+          }

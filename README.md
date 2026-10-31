@@ -51,3 +51,9 @@ Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
 `cloud-compile-test.yml` uses GitHub-hosted Windows and Visual Studio MSBuild located through `vswhere`. It performs a real `Rebuild` with `Configuration=Release`, `DevTools=true`, and an empty `ModsDir`. Both game-path properties point to a newly created empty directory under `RUNNER_TEMP`; the project safeguards and `NoStdLib` remain intact. Missing game assemblies are expected to produce a genuine nonzero build result. This diagnostic publishes no artifacts or releases and performs no Workshop operation. It runs manually or when this workflow file changes on this module branch; ordinary source pushes do not trigger it. This legacy project has no package restore or companion stage.
 
 Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
+
+### Verified reference compilation update — 2026-10-31
+
+The compile diagnostic now restores the approved encrypted reference bundle from fixed commit `7b8a5e7c10f2db84388e8dd8af2084f239957b13` in this repository using a sparse checkout. Only the restore step receives `CS1_GAME_REFERENCES_KEY`; the authenticated helper verifies the ciphertext and all eight file hashes before writing references under `RUNNER_TEMP/cs1-game-root`. MSBuild uses that isolated game root. The workflow asserts that the compiled module DLL and PDB both exist and are nonempty. The earlier empty-root diagnostic and unavailable-source descriptions above describe the previous setup; the manual readiness workflow is retained unchanged. No decrypted references or build outputs are uploaded, cached, or released. Ordinary source pushes still do not trigger this diagnostic.
+
+Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning

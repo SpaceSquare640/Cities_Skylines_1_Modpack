@@ -32,3 +32,9 @@ Copyright © Kingsley.
 - Added a narrowly triggered GitHub-hosted Windows MSBuild Rebuild attempt using an isolated empty game root, retaining original missing-reference errors and nonzero exit status.
 - No game references, artifacts, releases, or Workshop uploads are provisioned by this diagnostic.
 - Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
+
+## 2026-10-31 — Authenticated references for cloud compilation
+
+- Connected the compile diagnostic to the fixed encrypted reference bundle and step-scoped Actions Secret, restoring only under RUNNER_TEMP.
+- Added assertions for nonempty compiled DLL and PDB outputs; retained read-only permissions and no artifact, release, or Workshop publishing.
+- Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
