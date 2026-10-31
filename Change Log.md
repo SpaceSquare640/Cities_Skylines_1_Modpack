@@ -25,3 +25,10 @@ Signature: OpenAI-Codex_Responsible: AI_Improve
   to runner temporary storage. No publication or artifact upload is enabled.
 
 Signature: OpenAI-Codex_Responsible: AI_Improve
+
+## Verified cloud references — 2026-10-31
+
+- Connect the isolated cloud compile test to pinned encrypted reference restoration
+  and assert real DLL outputs without enabling publication or the LateMergeProbe.
+
+Signature: OpenAI-Codex_Responsible: AI_Improve

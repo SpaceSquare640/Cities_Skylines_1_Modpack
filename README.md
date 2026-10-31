@@ -41,3 +41,16 @@ This diagnostic does not upload artifacts, create Releases, or upload to Worksho
 A successful toolchain setup or restore does not establish successful DLL compilation.
 
 Signature: OpenAI-Codex_Responsible: AI_Improve
+
+### Verified encrypted references
+
+The compile test now restores the eight approved game reference files from the
+same repository at commit `7b8a5e7c10f2db84388e8dd8af2084f239957b13`.
+Only the isolated restore step receives `CS1_GAME_REFERENCES_KEY`; the helper
+verifies authenticated encryption and checksums before extracting into RUNNER_TEMP.
+No decrypted references enter artifacts or caches. The build uses that temporary
+game root and asserts nonempty AIImprove.dll, CitiesHarmony.API.dll, and the
+redirected temporary deployment DLL. This supersedes the empty-root diagnostic
+above; it still publishes no artifacts or Releases.
+
+Signature: OpenAI-Codex_Responsible: AI_Improve

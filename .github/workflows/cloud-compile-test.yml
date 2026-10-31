@@ -12,16 +12,40 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check out encrypted build references
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: 7b8a5e7c10f2db84388e8dd8af2084f239957b13
+          path: build-dependencies
+          sparse-checkout: |
+            build-references/cs1/v1
+            tools/build-references
+          persist-credentials: false
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: '10.0.x'
-      - name: Diagnose Development DLL compilation
+      - name: Restore verified game references
+        shell: pwsh
+        env:
+          CS1_GAME_REFERENCES_KEY: ${{ secrets.CS1_GAME_REFERENCES_KEY }}
+        run: |
+          $gameRoot = Join-Path $env:RUNNER_TEMP 'cs1-game-root'
+          & ./build-dependencies/tools/build-references/Restore-GameReferences.ps1 -BundleDirectory ./build-dependencies/build-references/cs1/v1 -GameRoot $gameRoot
+          "CS1_GAME_ROOT=$gameRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Build Development DLL and verify outputs
         shell: pwsh
         run: |
-          $gameRoot = Join-Path $env:RUNNER_TEMP 'ai-improve-game-root'
           $modsOutput = Join-Path $env:RUNNER_TEMP 'ai-improve-mods-output'
-          New-Item -ItemType Directory -Force -Path $gameRoot, $modsOutput | Out-Null
+          New-Item -ItemType Directory -Force -Path $modsOutput | Out-Null
           dotnet --info
-          dotnet build AIImprove.csproj --configuration Release --no-incremental -p:DevTools=true "-p:CSInstallPath=$gameRoot" "-p:CitiesSkylinesDir=$gameRoot" "-p:CSDataPath=$modsOutput"
-          exit $LASTEXITCODE
+          dotnet build AIImprove.csproj --configuration Release --no-incremental -p:DevTools=true "-p:CSInstallPath=$env:CS1_GAME_ROOT" "-p:CitiesSkylinesDir=$env:CS1_GAME_ROOT" "-p:CSDataPath=$modsOutput"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          foreach ($path in @('bin/Release/AIImprove.dll', 'bin/Release/CitiesHarmony.API.dll', (Join-Path $modsOutput 'AIImprove.dll'))) {
+            if (-not (Test-Path -LiteralPath $path -PathType Leaf) -or (Get-Item -LiteralPath $path).Length -le 0) {
+              throw "Required build output missing or empty: $path"
+            }
+          }
+          Write-Output 'Verified nonempty AIImprove.dll, CitiesHarmony.API.dll and temporary deployment DLL.'
 # Signature: OpenAI-Codex_Responsible: AI_Improve
