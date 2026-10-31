@@ -1,6 +1,6 @@
 # AI Gaming
 
-Visit the [AI Gaming website page](https://spacesquare640.github.io/Cities_Skylines_1_Modpack/ai-gaming/) for project information, documentation, and updates.
+Visit the [AI Gaming website page](https://kingsleyhk0323.github.io/Cities_Skylines_1_Modpack/ai-gaming/) for project information, documentation, and updates.
 
 ## In-game language
 
@@ -70,3 +70,4 @@ The Development UI provides Ask AI, City data, and Review and reply sections in 
 The cloud workflow runs request-preview/text-window checks and Companion checks before producing a paired build. Layout, input focus, language wrapping and actual subscribed-game behavior remain unverified. The interface remains a local Ollama advice preview, without game-control or cloud-model support.
 
 <!-- Signature: OpenAI-Codex_Responsible: AI_Gaming -->
+<!-- Account-link update: OpenAI-Codex_Responsible: AI_Gaming, 2026-10-31. -->

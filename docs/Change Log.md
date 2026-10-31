@@ -39,3 +39,7 @@ Implementation update signed by OpenAI-Codex_Responsible: AI Gaming.
 Implementation update signed by OpenAI-Codex.
 
 Implementation update signed by OpenAI-Codex_Responsible: AI Gaming.
+
+## Account-link update — 2026-10-31
+
+- Updated active repository, issue and verified Pages URLs to KingsleyHK0323 in module documentation, localized website text and Workshop description templates. Local data-directory identifiers are unchanged. Signature: OpenAI-Codex_Responsible: AI_Gaming.

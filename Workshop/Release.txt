@@ -18,9 +18,11 @@
 
 [list]
 [*]Testing builds are published as the [url=https://steamcommunity.com/sharedfiles/filedetails/?id=3823740277]Development Version[/url] – never subscribe to both.
-[*][url=https://spacesquare640.github.io/Cities_Skylines_1_Modpack/ai-gaming/]Project page[/url]
-[*][url=https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/tree/AI_Gaming]Source code (PolyForm Noncommercial License 1.0.0)[/url]
+[*][url=https://kingsleyhk0323.github.io/Cities_Skylines_1_Modpack/ai-gaming/]Project page[/url]
+[*][url=https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack/tree/AI_Gaming]Source code (PolyForm Noncommercial License 1.0.0)[/url]
 [/list]
 
 Part of the Cities: Skylines 1 Modpack by Kingsley.
 <!-- Updated by OpenAI-Codex_relicense_ai_gaming on 2026-10-27. -->
+
+Account-link update: OpenAI-Codex_Responsible: AI_Gaming, 2026-10-31.

@@ -6,8 +6,10 @@
 The current build is an early preview: it does not control the game, makes no network connections and asks for no API keys. Future developer tools will appear in this version first.
 
 [list]
-[*][url=https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/issues/new/choose]Report a bug[/url]
-[*][url=https://spacesquare640.github.io/Cities_Skylines_1_Modpack/change-log/]Change log[/url]
+[*][url=https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack/issues/new/choose]Report a bug[/url]
+[*][url=https://kingsleyhk0323.github.io/Cities_Skylines_1_Modpack/change-log/]Change log[/url]
 [/list]
 
 Part of the Cities: Skylines 1 Modpack by Kingsley.
+
+Account-link update: OpenAI-Codex_Responsible: AI_Gaming, 2026-10-31.

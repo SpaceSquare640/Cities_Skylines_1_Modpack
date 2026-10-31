@@ -29,7 +29,7 @@ namespace AIGaming
                     ["settings.versionShort"] = "Version 0.4.0 - Early preview",
                     ["settings.status"] = "Status: local AI suggestions are available after confirmation; game control is unavailable.",
                     ["settings.description"] = "After each confirmation, this preview can send selected city snapshot schema v3 fields inside request schema v4—including utility totals, built zoning counts and area, traffic and public-transport statistics, and service indicators—plus game-reported installed-and-available DLC identifiers to local Ollama through an optional companion. The local AI response body limit defaults to unlimited and can be set in the settings. It does not connect to cloud models or control the simulation.",
-                    ["settings.website"] = "Website: https://spacesquare640.github.io/Cities_Skylines_1_Modpack/ai-gaming/",
+                    ["settings.website"] = "Website: https://kingsleyhk0323.github.io/Cities_Skylines_1_Modpack/ai-gaming/",
                     ["settings.interop.title"] = "Optional Modpack modules (discovery only):",
                     ["settings.summaryButton"] = "Write city snapshot to log",
                     ["localAi.title"] = "Local AI suggestions (Ollama Local only)",
@@ -150,7 +150,7 @@ namespace AIGaming
                     ["settings.versionShort"] = "版本 0.4.0－早期預覽",
                     ["settings.status"] = "狀態：確認後可取得本機 AI 建議；此版本不提供遊戲控制。",
                     ["settings.description"] = "每次確認後，此預覽版可透過選用 companion，將所選城市快照 schema v3 欄位（request schema v4，包含公用事業、已建分區統計、交通與公共運輸統計、服務指標）及遊戲回報已安裝且可用的 DLC 識別名稱送至本機 Ollama。本機 AI 回應本文上限預設為無上限，使用者可在設定中自行設定。它不連接雲端模型，也不控制模擬。",
-                    ["settings.website"] = "網站：https://spacesquare640.github.io/Cities_Skylines_1_Modpack/ai-gaming/",
+                    ["settings.website"] = "網站：https://kingsleyhk0323.github.io/Cities_Skylines_1_Modpack/ai-gaming/",
                     ["settings.interop.title"] = "選用 Modpack 模組（只探索狀態）：",
                     ["settings.summaryButton"] = "將城市快照寫入記錄",
                     ["localAi.title"] = "本機 AI 建議（僅 Ollama Local）",
@@ -271,7 +271,7 @@ namespace AIGaming
                     ["settings.versionShort"] = "版本 0.4.0 - 早期预览",
                     ["settings.status"] = "状态：确认后可获取本地 AI 建议；此版本不提供游戏控制。",
                     ["settings.description"] = "每次确认后，此预览版可通过可选 companion 将所选城市快照 schema v3 字段（request schema v4，包含公用事业、已建分区统计、交通与公共交通统计、服务指标）及游戏报告已安装且可用的 DLC 标识发送到本地 Ollama。本地 AI 响应正文上限默认为无限制，用户可在设置中自行指定。它不连接云端模型，也不控制模拟。",
-                    ["settings.website"] = "网站：https://spacesquare640.github.io/Cities_Skylines_1_Modpack/ai-gaming/",
+                    ["settings.website"] = "网站：https://kingsleyhk0323.github.io/Cities_Skylines_1_Modpack/ai-gaming/",
                     ["settings.interop.title"] = "可选 Modpack 模组（仅检测状态）：",
                     ["settings.summaryButton"] = "将城市快照写入日志",
                     ["localAi.title"] = "本地 AI 建议（仅 Ollama Local）",
@@ -392,7 +392,7 @@ namespace AIGaming
                     ["settings.versionShort"] = "バージョン 0.4.0 - 早期プレビュー",
                     ["settings.status"] = "状態：確認後にローカル AI の提案を利用できます。このバージョンではゲームを操作できません。",
                     ["settings.description"] = "各リクエストの確認後、request schema v4 内の city snapshot schema v3 フィールド（公共サービス、建設済み用途別統計、交通・公共交通統計、サービス指標）と、ゲームがインストール済みかつ利用可能と判定した DLC 識別子を、オプションの companion 経由でローカル Ollama へ送信できます。ローカル AI 応答本文の上限はデフォルトで無制限で、設定から変更できます。クラウドモデルには接続せず、シミュレーションも操作しません。",
-                    ["settings.website"] = "ウェブサイト：https://spacesquare640.github.io/Cities_Skylines_1_Modpack/ai-gaming/",
+                    ["settings.website"] = "ウェブサイト：https://kingsleyhk0323.github.io/Cities_Skylines_1_Modpack/ai-gaming/",
                     ["settings.interop.title"] = "オプションの Modpack モジュール（検出状態のみ）：",
                     ["settings.summaryButton"] = "都市スナップショットをログに記録",
                     ["localAi.title"] = "ローカル AI の提案（Ollama Local のみ）",
@@ -513,7 +513,7 @@ namespace AIGaming
                     ["settings.versionShort"] = "버전 0.4.0 - 얼리 프리뷰",
                     ["settings.status"] = "상태: 확인 후 로컬 AI 제안을 받을 수 있습니다. 이 버전은 게임을 제어하지 않습니다.",
                     ["settings.description"] = "요청마다 확인한 뒤 request schema v4 안의 city snapshot schema v3 필드(공공시설, 건축된 용도별 통계, 교통·대중교통 통계, 서비스 지표)와 게임이 설치 및 사용 가능하다고 보고한 DLC 식별자를 선택적 companion을 통해 로컬 Ollama로 보낼 수 있습니다. 로컬 AI 응답 본문 제한은 기본적으로 무제한이며 설정에서 지정할 수 있습니다. 클라우드 모델에 연결하지 않으며 시뮬레이션을 제어하지 않습니다.",
-                    ["settings.website"] = "웹사이트: https://spacesquare640.github.io/Cities_Skylines_1_Modpack/ai-gaming/",
+                    ["settings.website"] = "웹사이트: https://kingsleyhk0323.github.io/Cities_Skylines_1_Modpack/ai-gaming/",
                     ["settings.interop.title"] = "선택적 Modpack 모듈(검색된 상태만 표시):",
                     ["settings.summaryButton"] = "도시 스냅샷을 로그에 기록",
                     ["localAi.title"] = "로컬 AI 제안(Ollama Local 전용)",
@@ -764,3 +764,4 @@ namespace AIGaming
 // Implementation update signed by OpenAI-Codex.
 // Implementation update signed by OpenAI-Codex_Responsible: AI Gaming.
 // Integration verification: OpenAI-Codex_Responsible: AI_Gaming.
+// Account-link update: OpenAI-Codex_Responsible: AI_Gaming, 2026-10-31.
