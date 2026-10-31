@@ -21,7 +21,7 @@ foreach ($line in $lines) {
     $seen += $name
     if ((Get-FileHash -LiteralPath (Join-Path $AssetDirectory $name) -Algorithm SHA256).Hash.ToLowerInvariant() -cne $hash) { throw "Checksum mismatch: $name" }
 }
-$tag = "ai-improve-dev-$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT"
+$tag = "AI_Improve-dev-$env:GITHUB_RUN_ID-$env:GITHUB_RUN_ATTEMPT"
 $headers = @{ Authorization = "Bearer $env:GH_TOKEN"; Accept = 'application/vnd.github+json'; 'X-GitHub-Api-Version' = '2022-11-28' }
 foreach ($endpoint in @("git/ref/tags/$tag", "releases/tags/$tag")) {
     try {
@@ -31,7 +31,7 @@ foreach ($endpoint in @("git/ref/tags/$tag", "releases/tags/$tag")) {
         if ($null -eq $_.Exception.Response -or [int]$_.Exception.Response.StatusCode -ne 404) { throw }
     }
 }
-gh release create $tag --repo $env:GITHUB_REPOSITORY --target $env:GITHUB_SHA --draft --prerelease --latest=false --title "AI Improve Development $tag" --notes-file (Join-Path $AssetDirectory 'README.md')
+gh release create $tag --repo $env:GITHUB_REPOSITORY --target $env:GITHUB_SHA --draft --prerelease --latest=false --title 'AI Improve — Development Build' --notes-file (Join-Path $AssetDirectory 'README.md')
 if ($LASTEXITCODE -ne 0) { throw 'Draft creation failed.' }
 foreach ($file in $files) {
     gh release upload $tag $file.FullName --repo $env:GITHUB_REPOSITORY

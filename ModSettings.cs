@@ -501,6 +501,9 @@ namespace AIImprove
             // setting is not finished until it is in this method.
             ShowAdvancedTuning.value = false;
 
+            // Reset the optional diagnostic as well. Signature: OpenAI-Codex_Responsible: AI_Improve
+            LaneBottleneckDetectionEnabled.value = false;
+
             FireResponseCapEnabled.value = true;
             TmpeEmergencyCostAdjustmentEnabled.value = true;
             TmpeEmergencyCongestionPatch.SetAdjustmentEnabled(true);

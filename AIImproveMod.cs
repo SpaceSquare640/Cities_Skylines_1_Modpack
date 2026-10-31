@@ -40,7 +40,7 @@ namespace AIImprove
 
             // Deliberately at level load, not after patching - other mods apply their patches when
             // a city loads, so asking at startup finds nobody. See Patcher.ReportSharedMethods.
-            ColossalFramework.Singleton<LoadingManager>.instance.m_levelLoaded += _ => Patcher.ReportSharedMethods();
+            ColossalFramework.Singleton<LoadingManager>.instance.m_levelLoaded += ReportSharedMethodsOnLevelLoaded;
             ColossalFramework.Singleton<LoadingManager>.instance.m_levelUnloaded += IngameUI.OnLevelUnloading;
             ColossalFramework.Singleton<LoadingManager>.instance.m_levelUnloaded += CitizenCarProbabilityPatch.ReportAndResetForLevel;
 
@@ -61,12 +61,20 @@ namespace AIImprove
             ColossalFramework.Singleton<LoadingManager>.instance.m_levelLoaded -= IngameUI.OnLevelLoaded;
             ColossalFramework.Singleton<LoadingManager>.instance.m_levelLoaded -= CitizenCarProbabilityPatch.ResetForNewLevel;
             ColossalFramework.Singleton<LoadingManager>.instance.m_levelLoaded -= IntercityServiceInventory.OnLevelLoaded;
+            ColossalFramework.Singleton<LoadingManager>.instance.m_levelLoaded -= ReportSharedMethodsOnLevelLoaded;
             ColossalFramework.Singleton<LoadingManager>.instance.m_levelUnloaded -= IngameUI.OnLevelUnloading;
             ColossalFramework.Singleton<LoadingManager>.instance.m_levelUnloaded -= CitizenCarProbabilityPatch.ReportAndResetForLevel;
             ColossalFramework.Singleton<LoadingManager>.instance.m_levelUnloaded -= TrackerReset.ResetAll;
             IngameUI.OnLevelUnloading();
             CitizenCarProbabilityPatch.ReportAndResetForLevel();
             TrackerReset.ResetAll();
+        }
+
+        // Keep the same delegate available for disable-time unsubscription.
+        // Signature: OpenAI-Codex_Responsible: AI_Improve
+        private static void ReportSharedMethodsOnLevelLoaded(SimulationManager.UpdateMode mode)
+        {
+            Patcher.ReportSharedMethods();
         }
 
         // Content Manager's per-mod options page - the "detailed settings" half of the TM:PE-style

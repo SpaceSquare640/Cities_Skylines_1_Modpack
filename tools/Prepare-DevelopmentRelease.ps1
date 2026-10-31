@@ -27,6 +27,16 @@ foreach ($name in $files.Keys) {
     if ($source.Length -le 0 -or $source.PSIsContainer -or ($source.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw "Invalid release file: $name" }
     Copy-Item -LiteralPath $source.FullName -Destination (Join-Path $OutputDirectory $name)
 }
+$releaseReadme = Join-Path $OutputDirectory 'README.md'
+$buildDetails = @(
+    "Source commit: $env:GITHUB_SHA",
+    "Shared references: 7b8a5e7c10f2db84388e8dd8af2084f239957b13",
+    "Cloud run: $env:GITHUB_RUN_ID; attempt: $env:GITHUB_RUN_ATTEMPT",
+    'Build flags: DevTools=true; EnableLateMergeProbe=false.'
+) -join "`n`n"
+$readmeText = [IO.File]::ReadAllText($releaseReadme)
+if (-not $readmeText.Contains('<!-- BUILD_INFORMATION -->')) { throw 'Missing release provenance placeholder.' }
+[IO.File]::WriteAllText($releaseReadme, $readmeText.Replace('<!-- BUILD_INFORMATION -->', $buildDetails), [Text.UTF8Encoding]::new($false))
 @{
     sourceSHA = $env:GITHUB_SHA
     sharedReferencesSHA = '7b8a5e7c10f2db84388e8dd8af2084f239957b13'

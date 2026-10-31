@@ -44,3 +44,13 @@ Signature: OpenAI-Codex_Responsible: AI_Improve
   the published-release-by-tag endpoint does not find unpublished drafts.
 
 Signature: OpenAI-Codex_Responsible: AI_Improve
+
+## Lifecycle and settings corrections — 2026-10-31
+
+- Unsubscribe shared-patch diagnostics on disable so ordinary disable/re-enable
+  cycles do not accumulate the previous anonymous level-loaded handler.
+- Reset the optional lane bottleneck diagnostic to its default disabled state.
+- Apply the approved full-name Development release title, module-prefixed tag,
+  eight-section installation notes, and exact source/run information in new releases.
+
+Signature: OpenAI-Codex_Responsible: AI_Improve

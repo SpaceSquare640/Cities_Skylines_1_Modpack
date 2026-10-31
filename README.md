@@ -73,3 +73,15 @@ Release assets are individual files, with no binary ZIP. This delivery test does
 not establish Workshop subscribed-game acceptance.
 
 Signature: OpenAI-Codex_Responsible: AI_Improve
+
+## Lifecycle and reset behavior
+
+Disabling AI Improve now unsubscribes shared-patch diagnostics from level-loaded
+notifications. Reset to defaults also disables lane bottleneck diagnostics.
+These corrections do not enable the experimental LateMergeProbe. Game lifecycle
+and settings behavior still need validation in the subscribed Workshop build.
+New prereleases use the full title `AI Improve — Development Build`, tags of the
+form `AI_Improve-dev-<Run ID>-<Attempt>`, and the approved eight-section release notes.
+Existing tags, drafts and public versions are preserved.
+
+Signature: OpenAI-Codex_Responsible: AI_Improve
