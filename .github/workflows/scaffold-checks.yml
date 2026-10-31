@@ -1,0 +1,35 @@
+name: Wireless Utilities scaffold checks
+
+on:
+  push:
+    branches: [Wireless_Utilities_And_Global_Coverage]
+  pull_request:
+    branches: [Wireless_Utilities_And_Global_Coverage]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scaffold:
+    if: github.ref == 'refs/heads/Wireless_Utilities_And_Global_Coverage' || github.base_ref == 'Wireless_Utilities_And_Global_Coverage'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out this revision
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Verify scaffold documents and license integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in README.md LICENSE.md NOTICE.md 'Change Log.md'; do
+            test -s "$file"
+          done
+          git diff-tree --check --root HEAD
+          printf '%s  %s\n' 'c0ea4a896d2c8c394b29f9427589996db826cd501c512279ff0ed3ef48fabbe5' 'LICENSE.md' | sha256sum --check --strict
+          grep -Fq 'There is no game implementation' README.md
+          printf '%s\n' 'Scaffold checks only: no DLL build or gameplay validation.'
+
+# Signature: OpenAI-Codex_Responsible: Wireless_Utilities_And_Global_Coverage
