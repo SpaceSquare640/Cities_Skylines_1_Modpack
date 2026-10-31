@@ -8,6 +8,10 @@ permissions:
   contents: read
 jobs:
   compile:
+    # Signature: OpenAI-Codex_release_format_audit
+    outputs:
+      artifact-id: ${{ steps.public-assets.outputs.artifact-id }}
+      build-attempt: ${{ steps.build-identity.outputs.attempt }}
     if: github.ref == 'refs/heads/AI_Gaming'
     runs-on: windows-latest
     timeout-minutes: 20
@@ -15,6 +19,10 @@ jobs:
       run:
         shell: pwsh
     steps:
+      - name: Record successful build identity
+        id: build-identity
+        shell: pwsh
+        run: '"attempt=$env:GITHUB_RUN_ATTEMPT" >> $env:GITHUB_OUTPUT'
       - uses: actions/checkout@v4
       - uses: actions/checkout@v4
         with:
@@ -87,6 +95,7 @@ jobs:
       - name: Prepare allowlisted release assets
         run: ./tools/release/Prepare-Assets.ps1
       - uses: actions/upload-artifact@v4
+        id: public-assets
         with:
           name: ai-gaming-release-${{ github.run_id }}-${{ github.run_attempt }}
           if-no-files-found: error
@@ -114,10 +123,14 @@ jobs:
           persist-credentials: false
       - uses: actions/download-artifact@v4
         with:
-          name: ai-gaming-release-${{ github.run_id }}-${{ github.run_attempt }}
+          artifact-ids: ${{ needs.compile.outputs.artifact-id }}
+          github-token: ${{ github.token }}
+          run-id: ${{ github.run_id }}
+          merge-multiple: true
           path: ${{ runner.temp }}/release-assets
       - name: Verify draft assets and publish prerelease
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_BUILD_ATTEMPT: ${{ needs.compile.outputs.build-attempt }}
         run: ./tools/release/Publish-Assets.ps1

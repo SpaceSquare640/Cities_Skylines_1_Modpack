@@ -76,3 +76,11 @@ The cloud workflow runs request-preview/text-window checks and Companion checks 
 
 A request cancelled before its queued worker enters CompanionClient.Send now returns the cancelled result before Companion startup. Cancellation racing with startup remains handled by the existing post-start cancellation guard; this does not promise that a launch already in progress can be undone. The added compiled-module regression check is pending cloud execution while push/publication authorization is blocked.
 <!-- Signature: OpenAI-Codex_Responsible: AI_Gaming -->
+
+## Retrying a Development publication
+
+The compile job passes its immutable artifact ID and build attempt to the publisher. Re-running only a failed publish job reuses that successful build; re-running all jobs produces a new artifact for the new build attempt. Source SHA, run ID, build attempt, reference provenance and file hashes remain checked before publication. Build provenance records the compilation attempt, while the release tag keeps the publication run attempt. Artifacts expire after one day; if the original artifact is unavailable, re-run all jobs instead of bypassing verification. No retry deletes or publishes a previous failed draft automatically.
+
+<!-- Signature: OpenAI-Codex_release_format_audit -->
+
+<!-- Controlled merge: OpenAI-Codex_Responsible: AI_Gaming; retained local cancellation and release-audit documentation. -->
