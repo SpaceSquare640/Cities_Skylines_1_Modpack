@@ -28,5 +28,9 @@
     <Compile Include="Source\**\*.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <!-- Every reference is compile-only; prevent transitive runtime copies as well. -->
+  <Target Name="PreventReferenceCopies" AfterTargets="ResolveReferences">
+    <ItemGroup><ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)" /></ItemGroup>
+  </Target>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

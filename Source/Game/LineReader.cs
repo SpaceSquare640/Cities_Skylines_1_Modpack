@@ -38,6 +38,12 @@ namespace AutomatedPublicTransportVehicleManagement.Game
                     result = new LineObservation(new LineKey(session, lineId, sequence), null, null, ObservationQuality.Unavailable);
                     return true;
                 }
+                if ((vehicles.m_vehicles.m_buffer[vehicle].m_flags & Vehicle.Flags.Created) == 0 ||
+                    vehicles.m_vehicles.m_buffer[vehicle].m_transportLine != lineId)
+                {
+                    result = new LineObservation(new LineKey(session, lineId, sequence), null, null, ObservationQuality.Unavailable);
+                    return true;
+                }
                 count++;
                 vehicle = vehicles.m_vehicles.m_buffer[vehicle].m_nextLineVehicle;
             }
@@ -47,4 +53,3 @@ namespace AutomatedPublicTransportVehicleManagement.Game
         }
     }
 }
-

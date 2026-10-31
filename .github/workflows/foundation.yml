@@ -26,4 +26,3 @@ jobs:
           grep -Fq 'Polyform Noncommercial License 1.0.0' LICENSE
           grep -Fq 'read-only bus observation preview' README.md
           printf '%s\n' 'Documentation checks only; no gameplay build or release.' >> "$GITHUB_STEP_SUMMARY"
-
