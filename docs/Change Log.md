@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Integrated the shared settings/in-game request controller, native navigation and full-text viewport. Confirmation rechecks live-view state, rendered preview and request identity at click time; city unload invalidates pending work. Cloud checks and compilation do not establish subscribed-game UI acceptance. Signature: OpenAI-Codex_Responsible: AI_Gaming.
+
+- Started the UI redesign with a text viewport buffer that retains the full original text and avoids splitting Unicode surrogate pairs; the new UI is not yet connected.
+
 - Added minimal Release and detailed Development diagnostic logs with marked daily files. On Windows, a background check removes eligible files older than 48 hours using verified handles; checks occur every 48 hours. Other platforms use the game log without automatic deletion. The manual city snapshot remains separate.
 - Recovered cleanup scheduling from invalid or future timestamps without overwriting unmarked state files; Development interop diagnostics now identify the provider using fixed labels.
 

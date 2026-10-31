@@ -34,6 +34,16 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
+      - name: Run request preview, text viewport and Companion checks
+        run: |
+          $checks = @('LoggingChecks/LoggingChecks.csproj', 'Companion/Checks/AIGaming.Companion.Checks.csproj')
+          for ($i = 0; $i -lt $checks.Count; $i++) {
+            $root = Join-Path $env:RUNNER_TEMP "checks-$i"
+            $bin = (Join-Path $root 'bin') + [IO.Path]::DirectorySeparatorChar
+            $obj = (Join-Path $root 'obj') + [IO.Path]::DirectorySeparatorChar
+            dotnet run --project $checks[$i] -c Release "-p:BaseOutputPath=$bin" "-p:BaseIntermediateOutputPath=$obj" "-p:MSBuildProjectExtensionsPath=$obj"
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
       - name: Validate pairing and publish development Companion
         run: |
           [xml]$mod = Get-Content AIGaming.csproj

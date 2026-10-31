@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using ColossalFramework.UI;
 using ICities;
 using UnityEngine;
@@ -15,6 +14,28 @@ namespace AIGaming
             UIPanel panel = root as UIPanel;
             if (panel != null) panel.autoFitChildrenVertically = true;
             return root;
+        }
+
+        internal static UILabel AddInfoLabel(UIHelperBase group, string text)
+        {
+            UIComponent root = Root(group);
+            if (root == null) return null;
+            UILabel label = root.AddUIComponent<UILabel>();
+            label.autoSize = false;
+            label.wordWrap = true;
+            label.width = Math.Max(120f, root.width - 32f);
+            label.autoHeight = true;
+            label.textScale = 0.9f;
+            label.text = text ?? string.Empty;
+            return label;
+        }
+
+        internal static void SetInfoLabel(UIHelperBase group, UILabel label, string text)
+        {
+            if (label == null) return;
+            label.text = text ?? string.Empty;
+            UIComponent root = Root(group);
+            if (root != null) ExpandRow(root, label);
         }
 
         internal static void FitTextField(UIHelperBase group, UITextField field)
@@ -78,69 +99,11 @@ namespace AIGaming
             ExpandRow(root, label);
         }
 
-        internal static void RelocalizeExistingControls(UIHelperBase group, string previousLanguage)
+        internal static void SetControlLabel(UIComponent control, string text)
         {
-            UIComponent root = Root(group);
-            if (root == null) return;
-
-            Dictionary<string, string> replacements =
-                Localization.GetTextReplacements(previousLanguage, Localization.CurrentLanguage);
-            UnityEngine.Component[] textFields = root.GetComponentsInChildren(typeof(UITextField), true);
-            var textFieldRows = new HashSet<UIComponent>();
-            for (int i = 0; i < textFields.Length; i++)
-            {
-                UITextField field = textFields[i] as UITextField;
-                if (field != null && field.parent != null) textFieldRows.Add(field.parent);
-            }
-
-            UnityEngine.Component[] labels = root.GetComponentsInChildren(typeof(UILabel), true);
-            string[] labelTexts = new string[labels.Length];
-            for (int i = 0; i < labels.Length; i++)
-            {
-                UILabel label = labels[i] as UILabel;
-                labelTexts[i] = label == null ? string.Empty : label.text ?? string.Empty;
-            }
-
-            UnityEngine.Component[] buttons = root.GetComponentsInChildren(typeof(UIButton), true);
-            string[] buttonTexts = new string[buttons.Length];
-            for (int i = 0; i < buttons.Length; i++)
-            {
-                UIButton button = buttons[i] as UIButton;
-                buttonTexts[i] = button == null ? string.Empty : button.text ?? string.Empty;
-            }
-
-            for (int i = 0; i < labels.Length; i++)
-            {
-                UILabel label = labels[i] as UILabel;
-                string translated;
-                if (label != null && !IsInTextFieldRow(label, root, textFieldRows) &&
-                    replacements.TryGetValue(labelTexts[i], out translated))
-                {
-                    label.text = translated;
-                    ExpandRow(root, label);
-                }
-            }
-
-            for (int i = 0; i < buttons.Length; i++)
-            {
-                UIButton button = buttons[i] as UIButton;
-                string translated;
-                if (button != null && replacements.TryGetValue(buttonTexts[i], out translated))
-                {
-                    button.text = translated;
-                    FitButton(group, button);
-                }
-            }
-        }
-
-        private static bool IsInTextFieldRow(UIComponent component, UIComponent root, HashSet<UIComponent> textFieldRows)
-        {
-            while (component != null && component != root)
-            {
-                if (textFieldRows.Contains(component)) return true;
-                component = component.parent;
-            }
-            return false;
+            if (control == null || control.parent == null) return;
+            UILabel label = control.parent.Find("Label", typeof(UILabel)) as UILabel;
+            if (label != null) label.text = text ?? string.Empty;
         }
 
         private static void ExpandRow(UIComponent root, UIComponent child)
@@ -159,3 +122,4 @@ namespace AIGaming
 }
 // Implementation update signed by OpenAI-Codex_Responsible: AI Gaming.
 // Implementation update signed by OpenAI-Codex.
+// Integration verification: OpenAI-Codex_Responsible: AI_Gaming.

@@ -23,8 +23,44 @@ internal static class Program
         Check(DiagnosticLogPolicy.GetProviderLabel("com.spacesquare640.ai-improve") == "AI Improve", "AI Improve identity");
         Check(DiagnosticLogPolicy.GetProviderLabel("com.spacesquare640.automated-public-transport-planning") == "Transport", "transport identity");
         Check(DiagnosticLogPolicy.GetProviderLabel("untrusted\nsecret") == "unknown", "unrecognized identity is sanitized");
+        CheckFullScrollableText();
+        CheckPreviewIdentity();
         InspectWindowsCandidateWithoutDeleting();
         Console.WriteLine("PASS: log retention and edition policy checks.");
+    }
+
+    private static void CheckPreviewIdentity()
+    {
+        object prepared = new object();
+        object stale = new object();
+        Check(RequestPreviewSafety.CanConfirm(true, true, prepared, prepared), "matching visible preview permits confirmation");
+        Check(!RequestPreviewSafety.CanConfirm(true, true, stale, prepared), "stale view cannot confirm new request");
+        Check(!RequestPreviewSafety.CanConfirm(true, true, null, prepared), "failed view refresh cannot confirm");
+        Check(!RequestPreviewSafety.CanConfirm(true, false, prepared, prepared), "missing preview control cannot confirm");
+        Check(!RequestPreviewSafety.CanConfirm(false, true, prepared, prepared), "disabled confirmation stays disabled");
+        Check(!RequestPreviewSafety.CanConfirm(true, true, null, null), "no request cannot confirm");
+    }
+
+    private static void CheckFullScrollableText()
+    {
+        string value = new string('a', 10000) + "😀" + new string('b', 12000);
+        var buffer = new ScrollableTextBuffer(value);
+        var result = new System.Text.StringBuilder();
+        int index = 0;
+        while (index < buffer.Length)
+        {
+            int next;
+            string segment = buffer.ReadWindow(index, 1, out next);
+            Check(next > index, "viewport advances");
+            Check(!char.IsHighSurrogate(segment[segment.Length - 1]), "viewport does not split surrogate pair");
+            result.Append(segment);
+            index = next;
+        }
+        Check(result.ToString() == value, "all response content remains accessible");
+        int afterPair;
+        Check(buffer.ReadWindow(10001, 1, out afterPair) == "😀" && afterPair == 10002, "backward viewport preserves surrogate pair");
+        int end;
+        Check(new ScrollableTextBuffer(null).ReadWindow(0, 8, out end) == "" && end == 0, "empty viewport");
     }
 
     private static void InspectWindowsCandidateWithoutDeleting()
@@ -108,3 +144,4 @@ internal static class Program
 }
 // Implementation update signed by OpenAI-Codex.
 // Implementation update signed by OpenAI-Codex_Responsible: AI Gaming.
+// Integration verification: OpenAI-Codex_Responsible: AI_Gaming.

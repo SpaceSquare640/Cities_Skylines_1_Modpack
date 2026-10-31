@@ -14,9 +14,9 @@ foreach ($line in Get-Content (Join-Path $assets 'SHA256SUMS.txt')) {
 }
 $info = Get-Content (Join-Path $assets 'build-info.json') -Raw | ConvertFrom-Json
 if ($info.sourceSHA -cne $env:GITHUB_SHA -or $info.runId -ne $env:GITHUB_RUN_ID -or -not $info.DevTools) { throw 'Source provenance mismatch' }
-$tag = "ai-gaming-dev-$($env:GITHUB_RUN_ID)-$($env:GITHUB_RUN_ATTEMPT)"
+$tag = "AI_Gaming-dev-$($env:GITHUB_RUN_ID)-$($env:GITHUB_RUN_ATTEMPT)"
 $repo = $env:GITHUB_REPOSITORY
-Invoke-Gh @('--repo',$repo,'release','create',$tag,'--target',$env:GITHUB_SHA,'--draft','--prerelease','--latest=false','--title',"AI Gaming Development $tag",'--notes-file',(Join-Path $assets 'README.md'))
+Invoke-Gh @('--repo',$repo,'release','create',$tag,'--target',$env:GITHUB_SHA,'--draft','--prerelease','--latest=false','--title','AI Gaming — Development Build','--notes-file',(Join-Path $assets 'README.md'))
 foreach ($file in $files) { Invoke-Gh @('--repo',$repo,'release','upload',$tag,$file.FullName) }
 $drafts = (Invoke-Gh @('api',"repos/$repo/releases?per_page=100")) | ConvertFrom-Json
 $matching = @($drafts | Where-Object tag_name -CEQ $tag)

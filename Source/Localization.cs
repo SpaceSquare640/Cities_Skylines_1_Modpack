@@ -19,6 +19,12 @@ namespace AIGaming
                 ["en"] = new Dictionary<string, string>
                 {
                     ["settings.language"] = "Language",
+                    ["ui.ask"] = "Ask AI",
+                    ["ui.data"] = "City data",
+                    ["ui.review"] = "Review and reply",
+                    ["ui.previous"] = "Previous",
+                    ["ui.next"] = "Next",
+                    ["ui.close"] = "Close",
                     ["settings.title"] = "AI Gaming - Early Preview",
                     ["settings.versionShort"] = "Version 0.4.0 - Early preview",
                     ["settings.status"] = "Status: local AI suggestions are available after confirmation; game control is unavailable.",
@@ -134,6 +140,12 @@ namespace AIGaming
                 ["zh-tw"] = new Dictionary<string, string>
                 {
                     ["settings.language"] = "語言",
+                    ["ui.ask"] = "詢問 AI",
+                    ["ui.data"] = "城市資料",
+                    ["ui.review"] = "預覽與回覆",
+                    ["ui.previous"] = "上一頁",
+                    ["ui.next"] = "下一頁",
+                    ["ui.close"] = "關閉",
                     ["settings.title"] = "AI Gaming－早期預覽",
                     ["settings.versionShort"] = "版本 0.4.0－早期預覽",
                     ["settings.status"] = "狀態：確認後可取得本機 AI 建議；此版本不提供遊戲控制。",
@@ -249,6 +261,12 @@ namespace AIGaming
                 ["zh-cn"] = new Dictionary<string, string>
                 {
                     ["settings.language"] = "语言",
+                    ["ui.ask"] = "询问 AI",
+                    ["ui.data"] = "城市数据",
+                    ["ui.review"] = "预览与回复",
+                    ["ui.previous"] = "上一页",
+                    ["ui.next"] = "下一页",
+                    ["ui.close"] = "关闭",
                     ["settings.title"] = "AI Gaming - 早期预览",
                     ["settings.versionShort"] = "版本 0.4.0 - 早期预览",
                     ["settings.status"] = "状态：确认后可获取本地 AI 建议；此版本不提供游戏控制。",
@@ -364,6 +382,12 @@ namespace AIGaming
                 ["ja"] = new Dictionary<string, string>
                 {
                     ["settings.language"] = "言語",
+                    ["ui.ask"] = "AI に質問",
+                    ["ui.data"] = "都市データ",
+                    ["ui.review"] = "確認と回答",
+                    ["ui.previous"] = "前へ",
+                    ["ui.next"] = "次へ",
+                    ["ui.close"] = "閉じる",
                     ["settings.title"] = "AI Gaming - 早期プレビュー",
                     ["settings.versionShort"] = "バージョン 0.4.0 - 早期プレビュー",
                     ["settings.status"] = "状態：確認後にローカル AI の提案を利用できます。このバージョンではゲームを操作できません。",
@@ -479,6 +503,12 @@ namespace AIGaming
                 ["ko"] = new Dictionary<string, string>
                 {
                     ["settings.language"] = "언어",
+                    ["ui.ask"] = "AI에 질문",
+                    ["ui.data"] = "도시 데이터",
+                    ["ui.review"] = "검토 및 답변",
+                    ["ui.previous"] = "이전",
+                    ["ui.next"] = "다음",
+                    ["ui.close"] = "닫기",
                     ["settings.title"] = "AI Gaming - 얼리 프리뷰",
                     ["settings.versionShort"] = "버전 0.4.0 - 얼리 프리뷰",
                     ["settings.status"] = "상태: 확인 후 로컬 AI 제안을 받을 수 있습니다. 이 버전은 게임을 제어하지 않습니다.",
@@ -733,3 +763,4 @@ namespace AIGaming
 // Implementation update signed by OpenAI-Codex_Responsible: AI Gaming.
 // Implementation update signed by OpenAI-Codex.
 // Implementation update signed by OpenAI-Codex_Responsible: AI Gaming.
+// Integration verification: OpenAI-Codex_Responsible: AI_Gaming.

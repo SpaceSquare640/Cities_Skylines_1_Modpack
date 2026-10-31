@@ -62,3 +62,11 @@ The compile diagnostic now restores the approved encrypted game references from 
 
 The former diagnostic workflow now builds and publishes Development prereleases on every AI_Gaming push and manual dispatch, using approved encrypted references. A separate publisher uploads only individually allowlisted DLL, paired self-contained Companion, installation instructions, licenses, checksums and build information after draft verification. See [Development installation](docs/Development-Installation.md) and [automation changes](docs/Development-Release-Changes.md). The earlier diagnostic status descriptions above are historical; public prerelease automation supersedes them. The baseline remains a separate metadata check. No Workshop upload is dispatched.
 <!-- Signature: OpenAI-Codex_Responsible: AI_Gaming -->
+
+## Shared settings and in-game preview UI
+
+The Development UI provides Ask AI, City data, and Review and reply sections in mod settings and a movable in-game panel. Both attach to one request controller. Closing the panel hides it; unloading a city invalidates pending capture and response callbacks. Opening or changing sections does not submit a request. Preview confirmation requires a live view showing the current prepared request; changing request inputs invalidates that preview. Long preview and response text remains stored in full and is accessible through previous/next display windows, with surrogate pairs preserved.
+
+The cloud workflow runs request-preview/text-window checks and Companion checks before producing a paired build. Layout, input focus, language wrapping and actual subscribed-game behavior remain unverified. The interface remains a local Ollama advice preview, without game-control or cloud-model support.
+
+<!-- Signature: OpenAI-Codex_Responsible: AI_Gaming -->

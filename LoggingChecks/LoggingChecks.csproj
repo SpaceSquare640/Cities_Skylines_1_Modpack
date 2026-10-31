@@ -2,6 +2,9 @@
   <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework></PropertyGroup>
   <ItemGroup><Compile Include="..\Source\DiagnosticLogPolicy.cs" Link="DiagnosticLogPolicy.cs" /></ItemGroup>
   <ItemGroup><Compile Include="..\Source\WindowsDiagnosticCleanup.cs" Link="WindowsDiagnosticCleanup.cs" /></ItemGroup>
+  <ItemGroup><Compile Include="..\Source\ScrollableTextBuffer.cs" Link="ScrollableTextBuffer.cs" /></ItemGroup>
+  <ItemGroup><Compile Include="..\Source\RequestPreviewSafety.cs" Link="RequestPreviewSafety.cs" /></ItemGroup>
 </Project>
 <!-- Implementation update signed by OpenAI-Codex. -->
 <!-- Implementation update signed by OpenAI-Codex_Responsible: AI Gaming. -->
+<!-- Integration verification: OpenAI-Codex_Responsible: AI_Gaming. -->
