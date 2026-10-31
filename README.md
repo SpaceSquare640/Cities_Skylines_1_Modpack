@@ -70,3 +70,9 @@ The Development UI provides Ask AI, City data, and Review and reply sections in 
 The cloud workflow runs request-preview/text-window checks and Companion checks before producing a paired build. Layout, input focus, language wrapping and actual subscribed-game behavior remain unverified. The interface remains a local Ollama advice preview, without game-control or cloud-model support.
 
 <!-- Signature: OpenAI-Codex_Responsible: AI_Gaming -->
+
+## Retrying a Development publication
+
+The compile job passes its immutable artifact ID and build attempt to the publisher. Re-running only a failed publish job reuses that successful build; re-running all jobs produces a new artifact for the new build attempt. Source SHA, run ID, build attempt, reference provenance and file hashes remain checked before publication. Build provenance records the compilation attempt, while the release tag keeps the publication run attempt. Artifacts expire after one day; if the original artifact is unavailable, re-run all jobs instead of bypassing verification. No retry deletes or publishes a previous failed draft automatically.
+
+<!-- Signature: OpenAI-Codex_release_format_audit -->

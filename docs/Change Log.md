@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Fixed failed-publisher retries to use the successful compile job's immutable artifact ID and build attempt instead of the current publish attempt. Full reruns retain distinct immutable artifacts. Preserved source/reference provenance and checksum checks. Signature: OpenAI-Codex_release_format_audit.
+- Resolve newly created Development drafts by their returned release ID, avoiding first-page release-list lookup. Signature: OpenAI-Codex_release_format_audit.
+
+
 - Integrated the shared settings/in-game request controller, native navigation and full-text viewport. Confirmation rechecks live-view state, rendered preview and request identity at click time; city unload invalidates pending work. Cloud checks and compilation do not establish subscribed-game UI acceptance. Signature: OpenAI-Codex_Responsible: AI_Gaming.
 
 - Started the UI redesign with a text viewport buffer that retains the full original text and avoids splitting Unicode surrogate pairs; the new UI is not yet connected.
