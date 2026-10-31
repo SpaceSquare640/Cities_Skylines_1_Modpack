@@ -25,7 +25,7 @@ assert len((root / 'SHA256SUMS').read_text().splitlines()) == 5
 assert f"sourceSHA={os.environ['GITHUB_SHA']}" in (root / 'build-info.txt').read_text(encoding='utf-8-sig')
 repo = os.environ['GITHUB_REPOSITORY']
 tag = f"aptp-dev-{os.environ['GITHUB_RUN_ID']}-{os.environ['GITHUB_RUN_ATTEMPT']}"
-created = json.loads(gh('api', '--method', 'POST', f'repos/{repo}/releases', '-f', f'tag_name={tag}', '-f', f'target_commitish={os.environ[''GITHUB_SHA'']}', '-F', 'draft=true', '-F', 'prerelease=true', '-f', 'make_latest=false', '-f', f'name=APTP Development {tag}', '-f', 'body=' + (root / 'README.md').read_text(encoding='utf-8-sig')))
+created = json.loads(gh('api', '--method', 'POST', f'repos/{repo}/releases', '-f', f'tag_name={tag}', '-f', f'target_commitish={os.environ['GITHUB_SHA']}', '-F', 'draft=true', '-F', 'prerelease=true', '-f', 'make_latest=false', '-f', f'name=APTP Development {tag}', '-f', 'body=' + (root / 'README.md').read_text(encoding='utf-8-sig')))
 release_id = created['id']
 gh('release', 'upload', tag, '--repo', repo, *[str(root / n) for n in sorted(names)])
 release = json.loads(gh('api', f'repos/{repo}/releases/{release_id}'))
@@ -40,4 +40,3 @@ gh('release', 'edit', tag, '--repo', repo, '--draft=false', '--prerelease', '--l
 release = json.loads(gh('api', f'repos/{repo}/releases/{release_id}'))
 assert not release['draft'] and release['prerelease']
 print(release['html_url'])
-
