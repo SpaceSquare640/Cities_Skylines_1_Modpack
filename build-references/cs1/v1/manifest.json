@@ -1,0 +1,65 @@
+{
+  "SchemaVersion": 1,
+  "Algorithm": "AES-256-GCM",
+  "Signature": "OpenAI-Codex",
+  "GameVersionVerified": false,
+  "CiphertextSHA256": "a547b2c4049eb8806c6fd42bf6a8288afb9a6a9a87e1e560112b73182d772da0",
+  "Files": [
+    {
+      "Name": "ICities.dll",
+      "Bytes": 33280,
+      "SHA256": "466586adb50dcc2e1382d9f7683fa50feba82a376d736fb65f1c34a53d0b9c90",
+      "AssemblyIdentity": "ICities, Version=1.17.0.0, Culture=neutral, PublicKeyToken=null",
+      "FileVersion": "1.0.0.0"
+    },
+    {
+      "Name": "Assembly-CSharp.dll",
+      "Bytes": 6674432,
+      "SHA256": "df557994a03c93d8bb4a14f80b1fbcc0fb29d547658442445d078d069bcdd9fe",
+      "AssemblyIdentity": "Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null",
+      "FileVersion": "0.0.0.0"
+    },
+    {
+      "Name": "ColossalManaged.dll",
+      "Bytes": 816640,
+      "SHA256": "34701f61def31f5f9df79d573ce19e0bc52575879bcc395d51b39f6d746a58b9",
+      "AssemblyIdentity": "ColossalManaged, Version=0.3.0.0, Culture=neutral, PublicKeyToken=null",
+      "FileVersion": "0.3.0.0"
+    },
+    {
+      "Name": "UnityEngine.dll",
+      "Bytes": 1393152,
+      "SHA256": "879924003f092619e29ba6da93f599e82df671868494ae1b32927d9d5b3fd66d",
+      "AssemblyIdentity": "UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null",
+      "FileVersion": "0.0.0.0"
+    },
+    {
+      "Name": "mscorlib.dll",
+      "Bytes": 2590208,
+      "SHA256": "57e3a820a75c409fa1965a550d8f0d74eb4e1364d98afd0424a7f617c7b4487f",
+      "AssemblyIdentity": "mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089",
+      "FileVersion": "2.0.50727.1433"
+    },
+    {
+      "Name": "System.dll",
+      "Bytes": 1679360,
+      "SHA256": "0c085a45cd9704019cfbd14f797eada2ba5027398b40e4b144b9b6660c36b7ec",
+      "AssemblyIdentity": "System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089",
+      "FileVersion": "2.0.50727.1433"
+    },
+    {
+      "Name": "System.Core.dll",
+      "Bytes": 297472,
+      "SHA256": "bee0286ae2fd663a44ace8c89380dd7d3d41c8a40a4f782eff3c4b4bd36ca398",
+      "AssemblyIdentity": "System.Core, Version=3.5.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089",
+      "FileVersion": "3.5.21022.8"
+    },
+    {
+      "Name": "System.Xml.dll",
+      "Bytes": 1270272,
+      "SHA256": "03d7c5bf3f27841084e80545b5f41ffe9405f66facdee6d8e2ec41536a93720a",
+      "AssemblyIdentity": "System.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089",
+      "FileVersion": "2.0.50727.1433"
+    }
+  ]
+}
