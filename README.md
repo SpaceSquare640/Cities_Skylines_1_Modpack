@@ -48,3 +48,9 @@ The AI Gaming cloud baseline checks required files and project XML metadata on G
 The legacy Development Workshop dispatch job is disabled unconditionally. Future releases are intended to provide the mod DLL and matching Companion files directly as this module's GitHub Release assets, without ZIP packaging. Automatic public releases remain unconfigured pending dependency provisioning and build validation.
 
 <!-- Signature: OpenAI-Codex_Responsible: AI_Gaming -->
+
+### Diagnostic compilation
+
+The separately scoped cloud compile diagnostic runs on GitHub-hosted Windows when its workflow file changes on AI_Gaming, or by manual dispatch. It publishes a self-contained win-x64 single-file development Companion with .NET 10, verifies matching project version and protocol metadata, computes its SHA256, and passes that pairing to a real DevTools mod build. An empty game root deliberately exposes the unresolved game references through the build tool's original errors. A failed build remains failed. No artifacts, archives, releases, or Workshop uploads are produced.
+
+<!-- Signature: OpenAI-Codex_Responsible: AI_Gaming -->

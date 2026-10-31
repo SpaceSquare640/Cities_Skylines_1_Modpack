@@ -1,0 +1,45 @@
+name: AI Gaming cloud compile diagnostic
+# Signature: OpenAI-Codex_Responsible: AI_Gaming
+on:
+  workflow_dispatch:
+  push:
+    branches: [AI_Gaming]
+    paths: ['.github/workflows/cloud-compile-test.yml']
+permissions:
+  contents: read
+jobs:
+  compile:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Validate pairing and publish development Companion
+        run: |
+          [xml]$mod = Get-Content AIGaming.csproj
+          [xml]$companion = Get-Content Companion/AIGaming.Companion.csproj
+          $version = [string]$mod.Project.PropertyGroup.Version
+          $protocol = [string]$mod.Project.PropertyGroup.CompanionProtocolVersion
+          if ($version -ne [string]$companion.Project.PropertyGroup.Version) { throw 'Version mismatch' }
+          if ($protocol -ne [string]$companion.Project.PropertyGroup.CompanionProtocolVersion) { throw 'Protocol mismatch' }
+          $output = Join-Path $env:RUNNER_TEMP 'companion-development'
+          dotnet --info
+          dotnet publish Companion/AIGaming.Companion.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:CompanionEdition=development "-p:Version=$version" "-p:CompanionProtocolVersion=$protocol" -o $output
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $exe = Join-Path $output 'AIGaming.Companion.exe'
+          $sha = (Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          "PAIR_VERSION=$version" >> $env:GITHUB_ENV
+          "PAIR_PROTOCOL=$protocol" >> $env:GITHUB_ENV
+          "PAIR_SHA256=$sha" >> $env:GITHUB_ENV
+          "Companion published: edition=development version=$version protocol=$protocol SHA256=$sha" | Tee-Object -FilePath $env:GITHUB_STEP_SUMMARY -Append
+      - name: Compile development DLL against empty game root
+        run: |
+          $gameRoot = Join-Path $env:RUNNER_TEMP 'empty-game-root'
+          New-Item -ItemType Directory -Path $gameRoot -Force | Out-Null
+          dotnet build AIGaming.csproj -c Release -p:DevTools=true -p:CompanionEdition=development "-p:CompanionVersion=$env:PAIR_VERSION" "-p:CompanionProtocolVersion=$env:PAIR_PROTOCOL" "-p:CompanionSha256=$env:PAIR_SHA256" "-p:CSInstallPath=$gameRoot" "-p:CitiesSkylinesDir=$gameRoot"
+          exit $LASTEXITCODE
