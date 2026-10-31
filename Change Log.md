@@ -81,3 +81,14 @@ Signature: OpenAI-Codex_Responsible: AI_Improve
   handling still require subscribed-game validation. LateMergeProbe stays disabled.
 
 Signature: OpenAI-Codex_Responsible: AI_Improve
+
+## TM:PE rejection diagnostics — 2026-10-31
+
+- Warn at the transpiler rejection point so later Harmony rebuild failures have a
+  reason in the game log even after the initial installation check has finished.
+- Limit this warning to once per configuration cycle using an atomic flag; reset
+  the flag with configuration. Keep the original IL and existing failure state.
+- This adds diagnostics only; it does not change routing costs or establish live
+  compatibility with other mods. LateMergeProbe remains disabled.
+
+Signature: OpenAI-Codex_Responsible: AI_Improve

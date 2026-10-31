@@ -30,6 +30,9 @@ namespace AIImprove
         private static bool queueItemIsValueType;
         private static bool transpilerApplied;
         private static string failureReason;
+        // Bounded patch-time diagnostics, including later Harmony rebuilds.
+        // Signature: OpenAI-Codex_Responsible: AI_Improve
+        private static int rejectionWarningLogged;
         private static long emergencyAdjustmentApplications;
         private static bool patchApplied;
 
@@ -256,6 +259,12 @@ namespace AIImprove
         {
             transpilerApplied = false;
             failureReason = reason;
+            if (Interlocked.Exchange(ref rejectionWarningLogged, 1) == 0)
+            {
+                UnityEngine.Debug.LogWarning(
+                    "[AIImprove] TMPE emergency congestion transpiler rejected; original IL retained: " + reason +
+                    " Further rejection warnings are suppressed until configuration resets.");
+            }
             return original;
         }
 
@@ -269,6 +278,7 @@ namespace AIImprove
 
         private static void ResetConfiguration()
         {
+            Interlocked.Exchange(ref rejectionWarningLogged, 0);
             globalConfigurationField = null;
             advancedVehicleAiField = null;
             trafficCostFactorField = null;

@@ -10,11 +10,11 @@ controls; compilation and release checks do not establish in-game acceptance.
 
 <!-- BUILD_INFORMATION -->
 
-This update explicitly returns a false pathfinding result when aircraft are
-refused for thunderstorms or airport saturation, even if an earlier Harmony
-prefix supplied a true result. Existing saturation cleanup and allowed-flight
-branches are unchanged. This code-level correction still requires subscribed-game
-validation with other aircraft patches. Full provenance is in `build-info.json`.
+This update reports the first rejected TM:PE emergency congestion transpiler
+attempt in each configuration cycle, including later Harmony rebuilds. Rejections
+retain the original IL and further warnings are suppressed until configuration
+resets. This is diagnostic visibility, not a routing behavior change or proof of
+TM:PE compatibility. Full provenance is in `build-info.json`.
 
 ## Development Build Risk Warning
 

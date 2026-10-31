@@ -103,3 +103,13 @@ Signature: OpenAI-Codex_Responsible: AI_Improve
 The compile job passes its immutable artifact ID and build attempt to the publisher. Re-running only a failed publish job reuses that successful build; re-running all jobs produces a new artifact for the new build attempt. Source SHA, run ID, build attempt, reference provenance and file hashes remain checked before publication. Build provenance records the compilation attempt, while the release tag keeps the publication run attempt. Artifacts expire after one day; if the original artifact is unavailable, re-run all jobs instead of bypassing verification. No retry deletes or publishes a previous failed draft automatically.
 
 <!-- Signature: OpenAI-Codex_release_format_audit -->
+## TM:PE rejected patch diagnostics
+
+A rejected emergency congestion transpiler now logs its reason once per
+configuration cycle, including when another mod causes a later Harmony rebuild.
+Further rejection warnings are suppressed until configuration resets. The latest
+failure reason remains available to the existing status check, and rejected IL is
+returned unchanged. This is a diagnostic change; subscribed-game validation with
+late patch rebuilds is still required.
+
+Signature: OpenAI-Codex_Responsible: AI_Improve
