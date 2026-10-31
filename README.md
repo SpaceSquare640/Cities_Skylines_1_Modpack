@@ -57,3 +57,8 @@ The separately scoped cloud compile diagnostic runs on GitHub-hosted Windows whe
 
 The compile diagnostic now restores the approved encrypted game references from fixed dependency commit `7b8a5e7c10f2db84388e8dd8af2084f239957b13`. Only the restore step receives the decryption secret; plaintext stays under the cloud runner temporary directory. Successful compilation must also produce a nonempty mod DLL and paired Companion. This workflow still publishes no assets and does not establish gameplay acceptance.
 <!-- Signature: OpenAI-Codex_Responsible: AI_Gaming -->
+
+## Development prereleases
+
+The former diagnostic workflow now builds and publishes Development prereleases on every AI_Gaming push and manual dispatch, using approved encrypted references. A separate publisher uploads only individually allowlisted DLL, paired self-contained Companion, installation instructions, licenses, checksums and build information after draft verification. See [Development installation](docs/Development-Installation.md) and [automation changes](docs/Development-Release-Changes.md). The earlier diagnostic status descriptions above are historical; public prerelease automation supersedes them. The baseline remains a separate metadata check. No Workshop upload is dispatched.
+<!-- Signature: OpenAI-Codex_Responsible: AI_Gaming -->

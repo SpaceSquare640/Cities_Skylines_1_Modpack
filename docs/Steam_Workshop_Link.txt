@@ -1,0 +1,6 @@
+Stable Workshop links recorded in project source (not live Steam status verification):
+AI Gaming: https://steamcommunity.com/sharedfiles/filedetails/?id=3823740106
+AI Improve: https://steamcommunity.com/sharedfiles/filedetails/?id=3782858610
+Automated Public Transport Planning: https://steamcommunity.com/sharedfiles/filedetails/?id=3823739383
+Harmony (required by AI Improve, not by AI Gaming): https://steamcommunity.com/sharedfiles/filedetails/?id=2040656402
+Signature: OpenAI-Codex_Responsible: AI_Gaming

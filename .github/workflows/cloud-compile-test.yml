@@ -1,14 +1,14 @@
-name: AI Gaming cloud compile diagnostic
+name: AI Gaming Development release
 # Signature: OpenAI-Codex_Responsible: AI_Gaming
 on:
   workflow_dispatch:
   push:
     branches: [AI_Gaming]
-    paths: ['.github/workflows/cloud-compile-test.yml']
 permissions:
   contents: read
 jobs:
   compile:
+    if: github.ref == 'refs/heads/AI_Gaming'
     runs-on: windows-latest
     timeout-minutes: 20
     defaults:
@@ -47,7 +47,7 @@ jobs:
           $companionObj = (Join-Path $env:RUNNER_TEMP 'companion-obj') + [IO.Path]::DirectorySeparatorChar
           $output = Join-Path $env:RUNNER_TEMP 'companion-development'
           dotnet --info
-          dotnet publish Companion/AIGaming.Companion.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:CompanionEdition=development "-p:Version=$version" "-p:CompanionProtocolVersion=$protocol" "-p:BaseOutputPath=$companionBin" "-p:BaseIntermediateOutputPath=$companionObj" "-p:MSBuildProjectExtensionsPath=$companionObj" -o $output
+          dotnet publish Companion/AIGaming.Companion.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:CompanionEdition=development "-p:Version=$version" "-p:CompanionProtocolVersion=$protocol" "-p:BaseOutputPath=$companionBin" "-p:BaseIntermediateOutputPath=$companionObj" "-p:MSBuildProjectExtensionsPath=$companionObj" -o $output
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           if (Test-Path Companion/bin) { throw 'Companion/bin polluted checkout' }
           if (Test-Path Companion/obj) { throw 'Companion/obj polluted checkout' }
@@ -67,3 +67,40 @@ jobs:
           $exe = Get-Item -LiteralPath (Join-Path $env:RUNNER_TEMP 'companion-development/AIGaming.Companion.exe')
           if ($dll.Length -le 0 -or $exe.Length -le 0) { throw 'Empty paired build output' }
           "Verified nonempty mod DLL ($($dll.Length) bytes) and paired Companion ($($exe.Length) bytes)." >> $env:GITHUB_STEP_SUMMARY
+      - name: Prepare allowlisted release assets
+        run: ./tools/release/Prepare-Assets.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ai-gaming-release-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          retention-days: 1
+          path: |
+            ${{ runner.temp }}/release-assets/AIGaming.dll
+            ${{ runner.temp }}/release-assets/AIGaming.Companion.exe
+            ${{ runner.temp }}/release-assets/README.md
+            ${{ runner.temp }}/release-assets/LICENSE
+            ${{ runner.temp }}/release-assets/Steam_Workshop_Link.txt
+            ${{ runner.temp }}/release-assets/DOTNET-LICENSE.txt
+            ${{ runner.temp }}/release-assets/DOTNET-THIRD-PARTY-NOTICES.txt
+            ${{ runner.temp }}/release-assets/build-info.json
+            ${{ runner.temp }}/release-assets/SHA256SUMS.txt
+  publish:
+    needs: compile
+    if: github.ref == 'refs/heads/AI_Gaming'
+    runs-on: windows-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: ai-gaming-release-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/release-assets
+      - name: Verify draft assets and publish prerelease
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: ./tools/release/Publish-Assets.ps1
