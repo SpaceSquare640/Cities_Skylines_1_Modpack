@@ -1,6 +1,6 @@
 # AI Improve
 
-Visit the [AI Improve website page](https://spacesquare640.github.io/Cities_Skylines_1_Modpack/ai-improve/) for project information, documentation, and updates.
+Visit the [AI Improve website page](https://kingsleyhk0323.github.io/Cities_Skylines_1_Modpack/ai-improve/) for project information, documentation, and updates.
 
 Author: Kingsley
 
@@ -85,3 +85,5 @@ form `AI_Improve-dev-<Run ID>-<Attempt>`, and the approved eight-section release
 Existing tags, drafts and public versions are preserved.
 
 Signature: OpenAI-Codex_Responsible: AI_Improve
+
+<!-- Canonical links updated by OpenAI-Codex_Responsible: AI_Improve on 2026-10-31. -->

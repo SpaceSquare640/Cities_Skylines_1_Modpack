@@ -15,12 +15,14 @@ Only use this version on a copy of your save, and only if you know why you need 
 
 [h2]How to help[/h2]
 [list]
-[*]Note what you changed and what happened, then [url=https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/issues/new/choose]report it[/url] with your mod list and output log.
+[*]Note what you changed and what happened, then [url=https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack/issues/new/choose]report it[/url] with your mod list and output log.
 [*]Each update's change note shows the source commit, so problems can be traced to an exact change.
 [/list]
 
-Requires [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2040656402]Harmony[/url]. Features and settings match the Release Version unless the [url=https://spacesquare640.github.io/Cities_Skylines_1_Modpack/change-log/]change log[/url] says otherwise.
+Requires [url=https://steamcommunity.com/sharedfiles/filedetails/?id=2040656402]Harmony[/url]. Features and settings match the Release Version unless the [url=https://kingsleyhk0323.github.io/Cities_Skylines_1_Modpack/change-log/]change log[/url] says otherwise.
 
 Part of the Cities: Skylines 1 Modpack by Kingsley.
 
 <!-- Updated by OpenAI-Codex. -->
+
+<!-- Canonical links updated by OpenAI-Codex_Responsible: AI_Improve on 2026-10-31. -->

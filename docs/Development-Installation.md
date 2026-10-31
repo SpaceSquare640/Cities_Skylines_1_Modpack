@@ -12,6 +12,7 @@ controls; compilation and release checks do not establish in-game acceptance.
 
 This update unsubscribes shared-patch diagnostics when the mod is disabled and
 restores the lane bottleneck diagnostic switch to false when resetting defaults.
+Active project links now use the verified KingsleyHK0323 repository and Pages site.
 These are code-level fixes; repeated enable/disable and settings UI behavior
 still require subscribed-game validation. Full provenance is in `build-info.json`.
 

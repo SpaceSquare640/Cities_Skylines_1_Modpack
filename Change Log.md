@@ -58,3 +58,13 @@ Signature: OpenAI-Codex_Responsible: AI_Improve
 - Follow the verified repository transfer to KingsleyHK0323 in the cloud job guard;
   the repository ID is unchanged and all branch/publication boundaries remain.
   Signature: OpenAI-Codex_Responsible: AI_Improve
+
+## Canonical account links — 2026-10-31
+
+- Update active repository, issue, website and change-log links in README,
+  Content Manager settings and local Workshop descriptions to KingsleyHK0323.
+- Verify the new Pages root, AI Improve page and change-log page respond with HTTP
+  200. Existing public releases, tags and historical records remain unchanged.
+- Local Workshop text changes do not constitute a Workshop upload.
+
+Signature: OpenAI-Codex_Responsible: AI_Improve

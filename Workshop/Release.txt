@@ -25,12 +25,14 @@ Vanilla Cities: Skylines makes many choices without looking at the current state
 
 [h2]Links[/h2]
 [list]
-[*][url=https://spacesquare640.github.io/Cities_Skylines_1_Modpack/ai-improve/]Project page and guide[/url]
-[*][url=https://spacesquare640.github.io/Cities_Skylines_1_Modpack/change-log/]Change log[/url]
-[*][url=https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/tree/AI_Improve]Source code (PolyForm Noncommercial License 1.0.0)[/url]
-[*][url=https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/issues/new/choose]Report a bug or suggest a feature[/url]
+[*][url=https://kingsleyhk0323.github.io/Cities_Skylines_1_Modpack/ai-improve/]Project page and guide[/url]
+[*][url=https://kingsleyhk0323.github.io/Cities_Skylines_1_Modpack/change-log/]Change log[/url]
+[*][url=https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack/tree/AI_Improve]Source code (PolyForm Noncommercial License 1.0.0)[/url]
+[*][url=https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack/issues/new/choose]Report a bug or suggest a feature[/url]
 [/list]
 
 Part of the Cities: Skylines 1 Modpack by Kingsley. The Modpack mods are built to work together without conflicting.
 
 <!-- Updated by OpenAI-Codex_relicense_ai_improve on 2026-10-27. -->
+
+<!-- Canonical links updated by OpenAI-Codex_Responsible: AI_Improve on 2026-10-31. -->

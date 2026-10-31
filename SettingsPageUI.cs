@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using ColossalFramework;
@@ -39,9 +39,10 @@ namespace AIImprove
         // The standalone Cities_Skylines_1_AI_Improve repository no longer exists (2026-10-21): the
         // mod now lives on the AI_Improve branch of the modpack repository, its Wiki is disabled,
         // and every branch's change log is published on the modpack website instead.
-        private const string RepoUrl = "https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack";
+        // Canonical account links verified 2026-10-31. Signature: OpenAI-Codex_Responsible: AI_Improve
+        private const string RepoUrl = "https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack";
         private const string BranchUrl = RepoUrl + "/tree/AI_Improve";
-        private const string WebsiteUrl = "https://spacesquare640.github.io/Cities_Skylines_1_Modpack/";
+        private const string WebsiteUrl = "https://kingsleyhk0323.github.io/Cities_Skylines_1_Modpack/";
         private const string WorkshopUrl = "https://steamcommunity.com/sharedfiles/filedetails/?id=3782858610";
 
         private const string DropdownTemplate = "OptionsDropdownTemplate";
