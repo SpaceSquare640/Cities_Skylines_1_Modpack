@@ -68,3 +68,13 @@ Signature: OpenAI-Codex_Responsible: AI_Improve
 - Local Workshop text changes do not constitute a Workshop upload.
 
 Signature: OpenAI-Codex_Responsible: AI_Improve
+
+## Aircraft refusal result — 2026-10-31
+
+- Explicitly set the pathfinding result to false before skipping the original
+  aircraft pathfinder for thunderstorm and airport-saturation refusals.
+- Preserve the existing saturation cleanup and all allowed-flight branches.
+- This corrects AI-06 from the dated audit; shared-prefix behavior and live flight
+  handling still require subscribed-game validation. LateMergeProbe stays disabled.
+
+Signature: OpenAI-Codex_Responsible: AI_Improve

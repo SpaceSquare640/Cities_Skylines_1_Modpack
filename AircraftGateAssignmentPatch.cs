@@ -251,7 +251,7 @@ namespace AIImprove
             // against both source and target so it catches this leg regardless of direction -
             // landing (target is the airport) or departing (source is the airport, target is an
             // outside connection and would otherwise skip the check below entirely). Refusing
-            // here reuses the same "return false, __result stays false" refusal path as ordinary
+            // here reuses the same explicit false-result refusal path as ordinary
             // saturation - the caller Unspawns the vehicle either way.
             if (ModSettings.AircraftThunderstormRefusalEnabled.value &&
                 WeatherDisasterDetector.IsThunderstormActive() &&
@@ -265,6 +265,9 @@ namespace AIImprove
                     Log.Verbose("[AIImprove] Aircraft " + vehicleID + " refused - airport closed for thunderstorm.");
                 }
 
+                // Do not retain a result written by an earlier Harmony prefix.
+                // Signature: OpenAI-Codex_Responsible: AI_Improve
+                __result = false;
                 return false;
             }
 
@@ -324,7 +327,7 @@ namespace AIImprove
                 // request, cutting the affected planes instead of keeping them alive and circling
                 // also reduces the live vehicle-model count during saturation, which was
                 // contributing to lag on top of the crash risk. Reverted to the original refusal
-                // behavior: return false with __result left false, which the caller (AircraftAI's
+                // behavior: return false with __result explicitly false, which the caller (AircraftAI's
                 // own StartPathFind wrapper) turns into an Unspawn - the plane simply vanishes
                 // instead of entering holding. HoldingPatternManager/HoldingPatternPatch are kept
                 // in the codebase (unused) as a record, same convention as this project's other
@@ -345,6 +348,9 @@ namespace AIImprove
                 // permanently; see VehicleStateCleanup for the full story.
                 VehicleStateCleanup.ReleaseAll(vehicleID);
 
+                // Match the refusal even if another prefix previously supplied a true result.
+                // Signature: OpenAI-Codex_Responsible: AI_Improve
+                __result = false;
                 return false;
             }
 

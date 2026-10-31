@@ -10,11 +10,11 @@ controls; compilation and release checks do not establish in-game acceptance.
 
 <!-- BUILD_INFORMATION -->
 
-This update unsubscribes shared-patch diagnostics when the mod is disabled and
-restores the lane bottleneck diagnostic switch to false when resetting defaults.
-Active project links now use the verified KingsleyHK0323 repository and Pages site.
-These are code-level fixes; repeated enable/disable and settings UI behavior
-still require subscribed-game validation. Full provenance is in `build-info.json`.
+This update explicitly returns a false pathfinding result when aircraft are
+refused for thunderstorms or airport saturation, even if an earlier Harmony
+prefix supplied a true result. Existing saturation cleanup and allowed-flight
+branches are unchanged. This code-level correction still requires subscribed-game
+validation with other aircraft patches. Full provenance is in `build-info.json`.
 
 ## Development Build Risk Warning
 

@@ -87,3 +87,13 @@ Existing tags, drafts and public versions are preserved.
 Signature: OpenAI-Codex_Responsible: AI_Improve
 
 <!-- Canonical links updated by OpenAI-Codex_Responsible: AI_Improve on 2026-10-31. -->
+
+## Aircraft refusal result
+
+Thunderstorm and airport-saturation refusals now explicitly set the pathfinding
+result to false before skipping the original method. This avoids inheriting a
+true result from an earlier Harmony prefix. The saturation cleanup and allowed
+flight paths are unchanged. This does not establish compatibility with every
+other prefix; shared-patch behavior remains subject to subscribed-game testing.
+
+Signature: OpenAI-Codex_Responsible: AI_Improve
