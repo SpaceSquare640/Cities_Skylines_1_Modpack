@@ -2,6 +2,7 @@
 
 ## 2026-10-31
 
+- Add verified project links under the renamed GitHub account, KingsleyHK0323.
 - Establish the module branch with planning status, license, and GitHub-hosted baseline checks.
 - Record unresolved game references and defer compilation, release publishing, and Workshop upload.
 

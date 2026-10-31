@@ -2,6 +2,12 @@
 
 This source-available Cities: Skylines 1 module is in initial planning. No game implementation, build project, DLL, or playable release exists yet.
 
+## Project links
+
+- [Canonical repository](https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack)
+- [Module branch](https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack/tree/Realistic_Railway_Traffic_Control)
+- [Modpack website](https://kingsleyhk0323.github.io/Cities_Skylines_1_Modpack/)
+
 ## Intended scope
 
 Railway signals, block occupancy, junction control, and train scheduling are proposed areas of work. Compatibility and behavior have not been designed or validated.
