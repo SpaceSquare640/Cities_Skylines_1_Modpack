@@ -1,0 +1,23 @@
+# Signature: OpenAI-Codex_Responsible: Full_Map_Unlock_And_Expansion
+name: Module baseline
+on:
+  push:
+    branches: [Full_Map_Unlock_And_Expansion]
+  pull_request:
+    branches: [Full_Map_Unlock_And_Expansion]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify planning baseline
+        shell: bash
+        run: |
+          test -s README.md
+          test -s LICENSE
+          test -s 'Change Log.md'
+          grep -q 'PolyForm Noncommercial License 1.0.0' LICENSE
+          grep -q 'No game functionality' README.md
