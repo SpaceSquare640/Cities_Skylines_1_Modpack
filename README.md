@@ -54,3 +54,22 @@ redirected temporary deployment DLL. This supersedes the empty-root diagnostic
 above; it still publishes no artifacts or Releases.
 
 Signature: OpenAI-Codex_Responsible: AI_Improve
+
+## Current Development prerelease delivery
+
+The cloud workflow now builds and publishes a uniquely tagged Development
+prerelease on each push to AI_Improve or manual dispatch on that branch. Earlier
+readiness and diagnostic sections above describe historical stages. The current
+workflow uses the verified encrypted references and retains the existing build
+boundaries. A read-only Windows build job stages only the two approved DLLs,
+installation instructions, licenses, notices, Workshop links, provenance and
+checksums. A separate publisher has no game-reference secret; it verifies every
+uploaded draft asset by name, count, size and downloaded SHA-256 before publishing
+as a prerelease with Latest disabled. Existing tags and assets are never replaced.
+
+See [Development installation](docs/Development-Installation.md) for installation,
+uninstallation, DevTool shortcuts, save risks and required Harmony subscription.
+Release assets are individual files, with no binary ZIP. This delivery test does
+not establish Workshop subscribed-game acceptance.
+
+Signature: OpenAI-Codex_Responsible: AI_Improve

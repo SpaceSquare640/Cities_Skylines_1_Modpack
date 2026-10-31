@@ -32,3 +32,13 @@ Signature: OpenAI-Codex_Responsible: AI_Improve
   and assert real DLL outputs without enabling publication or the LateMergeProbe.
 
 Signature: OpenAI-Codex_Responsible: AI_Improve
+
+## First public Development prerelease — 2026-10-31
+
+- Publish individual allowlisted DLLs and documentation through a separate,
+  least-privilege publisher after verified cloud compilation and draft asset checks.
+- Include the official CitiesHarmony MIT license, stable Workshop links, installation
+  and removal instructions, save-risk warnings, checksums and exact build provenance.
+- Use unique module-prefixed tags and retain existing public versions unchanged.
+
+Signature: OpenAI-Codex_Responsible: AI_Improve

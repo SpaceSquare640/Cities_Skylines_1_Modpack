@@ -1,14 +1,15 @@
-name: AI Improve cloud compile test
+name: AI Improve Development build and prerelease
 on:
   workflow_dispatch:
   push:
     branches: [AI_Improve]
-    paths:
-      - .github/workflows/cloud-compile-test.yml
 permissions:
   contents: read
 jobs:
   compile:
+    if: github.repository == 'SpaceSquare640/Cities_Skylines_1_Modpack' && github.ref == 'refs/heads/AI_Improve'
+    permissions:
+      contents: read
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -48,4 +49,38 @@ jobs:
             }
           }
           Write-Output 'Verified nonempty AIImprove.dll, CitiesHarmony.API.dll and temporary deployment DLL.'
+      - name: Prepare allowlisted release files
+        shell: pwsh
+        run: ./tools/Prepare-DevelopmentRelease.ps1 -OutputDirectory '${{ runner.temp }}/ai-improve-release'
+      - name: Transfer only allowlisted release files
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-improve-release-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/ai-improve-release/*
+          if-no-files-found: error
+          retention-days: 1
+  publish:
+    needs: compile
+    if: github.repository == 'SpaceSquare640/Cities_Skylines_1_Modpack' && github.ref == 'refs/heads/AI_Improve'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - name: Check out publisher only
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          sparse-checkout: tools
+      - name: Receive allowlisted release files
+        uses: actions/download-artifact@v4
+        with:
+          name: ai-improve-release-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/ai-improve-release
+      - name: Verify draft assets and publish prerelease
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: ./tools/Publish-DevelopmentRelease.ps1 -AssetDirectory '${{ runner.temp }}/ai-improve-release'
 # Signature: OpenAI-Codex_Responsible: AI_Improve
