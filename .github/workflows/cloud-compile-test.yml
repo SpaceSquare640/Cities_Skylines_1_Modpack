@@ -27,10 +27,15 @@ jobs:
           $protocol = $mod.SelectSingleNode('//CompanionProtocolVersion').InnerText
           if ($version -ne [string]$companion.Project.PropertyGroup.Version) { throw 'Version mismatch' }
           if ($protocol -ne $companion.SelectSingleNode('//CompanionProtocolVersion').InnerText) { throw 'Protocol mismatch' }
+          if ($protocol -notmatch '^[1-9][0-9]*$') { throw 'Invalid protocol format' }
+          $companionBin = (Join-Path $env:RUNNER_TEMP 'companion-bin') + [IO.Path]::DirectorySeparatorChar
+          $companionObj = (Join-Path $env:RUNNER_TEMP 'companion-obj') + [IO.Path]::DirectorySeparatorChar
           $output = Join-Path $env:RUNNER_TEMP 'companion-development'
           dotnet --info
-          dotnet publish Companion/AIGaming.Companion.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:CompanionEdition=development "-p:Version=$version" "-p:CompanionProtocolVersion=$protocol" -o $output
+          dotnet publish Companion/AIGaming.Companion.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:CompanionEdition=development "-p:Version=$version" "-p:CompanionProtocolVersion=$protocol" "-p:BaseOutputPath=$companionBin" "-p:BaseIntermediateOutputPath=$companionObj" "-p:MSBuildProjectExtensionsPath=$companionObj" -o $output
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if (Test-Path Companion/bin) { throw 'Companion/bin polluted checkout' }
+          if (Test-Path Companion/obj) { throw 'Companion/obj polluted checkout' }
           $exe = Join-Path $output 'AIGaming.Companion.exe'
           $sha = (Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash.ToLowerInvariant()
           "PAIR_VERSION=$version" >> $env:GITHUB_ENV
@@ -43,4 +48,3 @@ jobs:
           New-Item -ItemType Directory -Path $gameRoot -Force | Out-Null
           dotnet build AIGaming.csproj -c Release -p:DevTools=true -p:CompanionEdition=development "-p:CompanionVersion=$env:PAIR_VERSION" "-p:CompanionProtocolVersion=$env:PAIR_PROTOCOL" "-p:CompanionSha256=$env:PAIR_SHA256" "-p:CSInstallPath=$gameRoot" "-p:CitiesSkylinesDir=$gameRoot"
           exit $LASTEXITCODE
-
