@@ -8,3 +8,12 @@
 - Show the requested Development Version and save-risk warning in the in-game mod description when development tools are included. The Release description remains unchanged.
 
 Signed: OpenAI-Codex.
+
+## Cloud delivery preparation — 2026-10-31
+
+- Disable the legacy push-triggered Workshop dispatcher.
+- Add an explicit manual cloud-build dependency blocker and document direct DLL
+  release intent, missing references, and the existing local deployment target.
+- No gameplay code or automatic public release is changed.
+
+Signature: OpenAI-Codex_Responsible: AI_Improve

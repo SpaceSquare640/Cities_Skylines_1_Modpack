@@ -1,0 +1,14 @@
+name: AI Improve cloud build readiness
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  dependency-readiness:
+    runs-on: windows-latest
+    steps:
+      - name: Explain blocked cloud build
+        shell: pwsh
+        run: |
+          Write-Error 'Cloud DLL builds are blocked: an authorized, versioned source for ICities.dll, ColossalManaged.dll, Assembly-CSharp.dll and UnityEngine.dll is not configured. .NET Framework 3.5 reference assemblies and CitiesHarmony.API 2.2.0 are also required. No DLL, Release or ZIP is produced. Configure dependency acquisition and disable CopyToMods before enabling compilation. Workshop uploads remain local and manual.'
+# Signature: OpenAI-Codex_Responsible: AI_Improve
