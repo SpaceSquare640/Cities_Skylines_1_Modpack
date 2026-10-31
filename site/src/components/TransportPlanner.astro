@@ -8,8 +8,8 @@ const stages = zh
 ---
 
 <section class="transport-planner" data-transport-planner data-ready="false">
-	<p class="planned-label">{zh ? '規劃中功能示意' : 'Planned feature illustration'}</p>
-	<p>{zh ? '目前 0.2.0 Early Preview 只提供唯讀調查和診斷；可供玩家使用的自動路線規劃尚未提供。下圖是路線規劃概念流程，不是目前功能。' : 'The 0.2.0 early preview provides read-only surveys and diagnostics. Player-facing automatic route planning is not available yet. This diagram illustrates the planned workflow, not current behaviour.'}</p>
+	<p class="planned-label" lang="en">Planning concept illustration</p>
+	<p lang="en">This browser diagram illustrates a planning concept; it is not an in-game screenshot. The GitHub Development prototype can preview routes and attempt creation after confirmation. It may change saves, and game acceptance remains pending.</p>
 	<div class="planner-flow" role="tablist" aria-label={zh ? '規劃流程示意' : 'Illustrated planning steps'}>
 		{stages.map((stage, index) => <button type="button" role="tab" data-stage-tab={stage.id} aria-selected={index === 0 ? 'true' : 'false'} tabindex={index === 0 ? 0 : -1}>{index + 1}. {stage.label}</button>)}
 	</div>
@@ -67,3 +67,4 @@ const stages = zh
 	.planner-static { display: flex; flex-wrap: wrap; gap: 8px 25px; margin: 17px 0 0; padding-left: 1.2rem; color: var(--muted); font-size: 13px; }
 	@media(max-width: 640px) { .planner-static { display: grid; } }
 </style>
+<!-- Author: OpenAI-Codex_Responsible: Modpack_Website. -->

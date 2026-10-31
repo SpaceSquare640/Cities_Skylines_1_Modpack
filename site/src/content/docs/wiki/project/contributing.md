@@ -11,7 +11,7 @@ Never post Steam passwords, Steam Guard codes, API keys or other private informa
 
 ## Testing the Development Versions
 
-Each mod has a Development Version on the Workshop that receives changes before the Release Version. Testing it on a copy of your save and reporting what you find is one of the most useful ways to help.
+AI Gaming, AI Improve, and Automated Public Transport Planning have experimental GitHub Development prereleases. Back up your saves and use a separate test city. Enable only one copy of each mod, and read the [Development downloads and installation](/Cities_Skylines_1_Modpack/wiki/development-downloads/) guide before reporting results.
 
 ## Source code
 
@@ -29,3 +29,5 @@ Each mod lives on its own branch of the [Modpack repository](https://github.com/
 The Modpack is source-available and noncommercial. Mod and website code use the [**PolyForm Noncommercial License 1.0.0**](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/blob/Modpack_Website/LICENSE). Original website content, including text and images, is licensed under [**CC BY-NC-SA 4.0**](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/blob/Modpack_Website/LICENSE-CONTENT). Copyright © Kingsley. Third-party components and assets keep their own licenses.
 
 <!-- Updated by OpenAI-Codex on 2026-10-27. -->
+
+<!-- Author: OpenAI-Codex_Responsible: Modpack_Website. -->

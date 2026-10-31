@@ -3,7 +3,9 @@ title: 路線圖
 description: "各 Modpack 模組目前的進度與努力方向。"
 ---
 
-以下是方向，不是推出日期。每一步都要確定不會傷害存檔才會推出。
+> **Development build update, 31 October 2026:** Separate GitHub prereleases are available for AI Gaming, AI Improve, and Automated Public Transport Planning. AI Gaming has a matching Windows x64 Companion asset, while its game runtime remains unverified. Automated Public Transport Planning can attempt selected route creation after confirmation. See [Development downloads and installation](/Cities_Skylines_1_Modpack/wiki/development-downloads/).
+
+These are directions, not release dates. Experimental Development builds can damage saves; back up before testing.
 
 ## AI Improve
 
@@ -11,13 +13,13 @@ description: "各 Modpack 模組目前的進度與努力方向。"
 
 **下一步：**為本使用說明補上遊戲內截圖，並依玩家回報持續調整。
 
-## 公共運輸自動規劃
+## Automated Public Transport Planning
 
 | 階段 | 狀態 |
 | --- | --- |
-| 唯讀路網調查與診斷 | **現在** · 0.2.0 |
+| Network survey and diagnostics | Read-only survey; separate creation prototype may change saves |
 | 需求分析與候選市內公車路線 | Development 版測試中 |
-| 路線預覽，你檢查並接受後才建立 | 之後 |
+| Confirmed route-creation attempts | Development prototype; game acceptance pending |
 | 其他公共交通工具（電車、地鐵、火車、渡輪等），逐一加入 | 更後期 |
 
 目前只支援普通市內公車。
@@ -26,7 +28,7 @@ description: "各 Modpack 模組目前的進度與努力方向。"
 
 | 階段 | 狀態 |
 | --- | --- |
-| 逐次確認的 Ollama Local 建議 | 0.4.0 Development 原始碼；輔助程式套件與遊戲內執行待確認 |
+| Player-confirmed Ollama Local advice | Development assets include matching DLL and Companion; game runtime unverified |
 | AI 觀看城市及有限度遊戲操作 | 規劃中，尚未實作 |
 
 ## 所有模組
@@ -36,3 +38,5 @@ Modpack 的模組以協同運作為設計方向。AI Gaming 日後使用其他�
 進度請追蹤[更新紀錄](/Cities_Skylines_1_Modpack/zh-tw/change-log/)。
 
 <!-- Updated by OpenAI-Codex on 2026-10-26. -->
+
+<!-- Author: OpenAI-Codex_Responsible: Modpack_Website. -->

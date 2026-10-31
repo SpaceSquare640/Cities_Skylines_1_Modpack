@@ -3,7 +3,9 @@ title: Roadmap
 description: "Where each Modpack mod is today and what it is working towards."
 ---
 
-These are directions, not release dates. Every step ships only when it is safe for your save.
+> **Development build update, 31 October 2026:** Separate GitHub prereleases are available for AI Gaming, AI Improve, and Automated Public Transport Planning. AI Gaming has a matching Windows x64 Companion asset, while its game runtime remains unverified. Automated Public Transport Planning can attempt selected route creation after confirmation. See [Development downloads and installation](/Cities_Skylines_1_Modpack/wiki/development-downloads/).
+
+These are directions, not release dates. Experimental Development builds can damage saves; back up before testing.
 
 ## AI Improve
 
@@ -15,9 +17,9 @@ These are directions, not release dates. Every step ships only when it is safe f
 
 | Stage | Status |
 | --- | --- |
-| Read-only network survey and diagnostics | **Now** · 0.2.0 |
+| Network survey and diagnostics | Read-only survey; separate creation prototype may change saves |
 | Demand analysis and candidate city-bus lines | Being tested in the Development Version |
-| Line previews that you review and accept before anything is built | Then |
+| Confirmed route-creation attempts | Development prototype; game acceptance pending |
 | Other public transport types (trams, metro, trains, ferries and more), one at a time | Later |
 
 It currently covers regular city buses only.
@@ -26,7 +28,7 @@ It currently covers regular city buses only.
 
 | Stage | Status |
 | --- | --- |
-| Player-confirmed Ollama Local advice | 0.4.0 Development source; companion package and game runtime unverified |
+| Player-confirmed Ollama Local advice | Development assets include matching DLL and Companion; game runtime unverified |
 | Watch AI play and limited game actions | Planned; not implemented |
 
 ## All mods
@@ -36,3 +38,5 @@ The Modpack mods are designed to work together. Using their capabilities from AI
 Follow progress in the [change log](/Cities_Skylines_1_Modpack/change-log/).
 
 <!-- Updated by OpenAI-Codex on 2026-10-26. -->
+
+<!-- Author: OpenAI-Codex_Responsible: Modpack_Website. -->

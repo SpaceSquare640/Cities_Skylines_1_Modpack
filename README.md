@@ -2,6 +2,8 @@
 
 Visit the [Cities: Skylines 1 Modpack website](https://spacesquare640.github.io/Cities_Skylines_1_Modpack/) for project information, documentation, and updates.
 
+Experimental Development prereleases are available individually for [AI Gaming](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/releases/tag/ai-gaming-dev-41185662728-1), [AI Improve](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/releases/tag/ai-improve-dev-41185802009-1), and [Automated Public Transport Planning](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/releases/tag/aptp-dev-41185686621-1). Back up saves, use a separate test city, and follow each release's installation and dependency instructions. Stable versions remain on Steam Workshop. <!-- OpenAI-Codex_Responsible: Modpack_Website -->
+
 Author: OpenAI-Codex
 
 This is a source-available, noncommercial project.

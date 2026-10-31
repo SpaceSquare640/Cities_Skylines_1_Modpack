@@ -3,9 +3,9 @@ title: AI Improve 常見問題
 description: "AI Improve 的常見問題，以及如何回報問題。"
 ---
 
-## 可以同時訂閱 Release 版和 Development 版嗎？
+## Can I use multiple AI Improve editions together?
 
-不行。它們是同一個模組，會互相衝突。請擇一：一般遊玩用 Release 版，想搶先試用新修改就用 Development 版。
+No. Enable only one copy, whether it comes from Steam Workshop or a manually installed GitHub Development build. Back up saves and follow the [Development installation guide](/Cities_Skylines_1_Modpack/wiki/development-downloads/) before switching versions.
 
 ## 為什麼有些功能預設是關閉的？
 
@@ -33,3 +33,5 @@ Cities: Skylines 會把它寫在遊戲安裝資料夾裡的 `Cities_Data\output_
 4. 輸出記錄中的相關段落。
 
 張貼記錄前，請先刪除 Windows 使用者名稱等個人資料。
+
+<!-- Author: OpenAI-Codex_Responsible: Modpack_Website. -->

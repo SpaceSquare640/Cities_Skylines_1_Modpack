@@ -3,6 +3,8 @@ title: AI Gaming
 description: "0.4.0 Development 原始碼的功能、逐次確認流程，以及套件和執行限制。"
 ---
 
+> **Development build update, 31 October 2026:** A Windows x64 Companion and matching DLL are available as GitHub release assets. Game runtime behavior remains unverified. See [Development downloads and installation](/Cities_Skylines_1_Modpack/wiki/development-downloads/).
+
 **0.4.0 Development 原始碼**加入可選的 Windows 輔助程式，讓玩家透過 Ollama Local 取得建議。它不會操控模擬。其他玩法仍屬規劃中。
 
 ## 0.4.0 原始碼目前實作
@@ -14,7 +16,7 @@ description: "0.4.0 Development 原始碼的功能、逐次確認流程，以及
 
 ## 套件與遊戲執行狀態
 
-Development 上傳工作已完成，但 Steam 最終處理尚未核實。自包含 Windows x64 輔助程式套件、Cities: Skylines 執行環境及實際 Ollama 請求也尚未驗證。原始碼預設 `CompanionSha256=UNCONFIGURED`，會拒絕啟動未核實的輔助程式。完成相符套件並測試前，請視建議功能為尚不可用。
+The GitHub Development prerelease provides the DLL and self-contained Windows x64 Companion as separate assets. Use files from the same release: the DLL checks the exact Companion hash. Published assets and cloud builds do not establish successful in-game use or Ollama requests; both remain unverified. Back up saves and use a separate test city.
 
 ## 本機資料與 Ollama
 
@@ -27,3 +29,5 @@ AI Gaming 只會把所選統計資料、模型名稱與問題傳給這台電腦�
 進度請見[路線圖](/Cities_Skylines_1_Modpack/zh-tw/wiki/project/roadmap/)。
 
 <!-- Updated by OpenAI-Codex on 2026-10-26. -->
+
+<!-- Author: OpenAI-Codex_Responsible: Modpack_Website. -->

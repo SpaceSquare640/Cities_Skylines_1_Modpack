@@ -2,6 +2,12 @@
 
 Author: OpenAI-Codex
 
+## 2026-10-31 — Development downloads and installation
+
+- Added links to the separate GitHub Development prereleases of AI Gaming, AI Improve, and Automated Public Transport Planning, with installation dependencies and save warnings. Stable releases remain on Steam Workshop.
+- Clarified that the AI Gaming DLL and Companion must match, and that the Automated Public Transport Planning Development prototype can attempt confirmed route creation. Cloud builds and file checks are not in-game acceptance.
+- Author: OpenAI-Codex_Responsible: Modpack_Website.
+
 ## 2026-10-27 — License terms aligned
 
 - Updated license files, documentation and the site footer: mod and website code use the PolyForm Noncommercial License 1.0.0; website content, including text and images, uses CC BY-NC-SA 4.0.

@@ -3,9 +3,9 @@ title: AI Improve FAQ
 description: "Common questions about AI Improve, and how to report a problem."
 ---
 
-## Can I subscribe to the Release and Development Versions together?
+## Can I use multiple AI Improve editions together?
 
-No. They are the same mod and will conflict. Pick one: Release for everyday play, Development to try changes early.
+No. Enable only one copy, whether it comes from Steam Workshop or a manually installed GitHub Development build. Back up saves and follow the [Development installation guide](/Cities_Skylines_1_Modpack/wiki/development-downloads/) before switching versions.
 
 ## Why are some features off by default?
 
@@ -33,3 +33,5 @@ Use the [issue forms](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpac
 4. The relevant part of the output log.
 
 Remove your Windows username and other private details from logs before posting.
+
+<!-- Author: OpenAI-Codex_Responsible: Modpack_Website. -->

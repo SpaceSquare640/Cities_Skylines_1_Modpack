@@ -3,6 +3,8 @@ title: AI Gaming
 description: "What the 0.4.0 Development source does, its confirmation flow, and its packaging and runtime limits."
 ---
 
+> **Development build update, 31 October 2026:** A Windows x64 Companion and matching DLL are available as individual GitHub release assets. In-game behavior remains unverified. See [Development downloads and installation](/Cities_Skylines_1_Modpack/wiki/development-downloads/).
+
 The **0.4.0 Development source** adds an optional Windows companion for player-confirmed advice from Ollama Local. It does not control the simulation. Other play modes remain planned.
 
 ## What the 0.4.0 source implements
@@ -14,7 +16,7 @@ The **0.4.0 Development source** adds an optional Windows companion for player-c
 
 ## Package and runtime status
 
-The Development upload job completed, but final Steam processing has not been verified. A self-contained Windows x64 companion package, the Cities: Skylines runtime and actual Ollama requests have not been verified. The source defaults to `CompanionSha256=UNCONFIGURED` and refuses to launch an unverified companion. Treat the advice feature as unavailable until a matching package is prepared and tested.
+The GitHub Development prerelease provides the DLL and self-contained Windows x64 Companion as separate assets. Use files from the same release: the DLL checks the exact Companion hash. Published assets and cloud builds do not establish successful in-game use or Ollama requests; both remain unverified. Back up saves and use a separate test city.
 
 ## Local data and Ollama
 
@@ -27,3 +29,5 @@ Watching an AI build a city and letting it perform limited game actions are plan
 See the [roadmap](/Cities_Skylines_1_Modpack/wiki/project/roadmap/) for progress.
 
 <!-- Updated by OpenAI-Codex on 2026-10-26. -->
+
+<!-- Author: OpenAI-Codex_Responsible: Modpack_Website. -->

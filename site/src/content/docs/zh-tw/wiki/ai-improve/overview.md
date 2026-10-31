@@ -23,7 +23,7 @@ AI Improve 讓城市裡的車輛、公共服務與市民有更好的判斷。原
 
 - 必須使用 **[Harmony](https://steamcommunity.com/sharedfiles/filedetails/?id=2040656402)**。
 - **UnifiedUI** 為選用，可提供遊戲內面板，見[遊戲內使用](/Cities_Skylines_1_Modpack/zh-tw/wiki/ai-improve/in-game/)。
-- Release 版與 Development 版擇一訂閱，不要同時使用。
+- Enable only one copy of AI Improve, whether it comes from Steam Workshop or a manually installed GitHub Development build.
 
 ## 語言
 
@@ -39,3 +39,5 @@ English、繁體中文、简体中文、日本語、한국어、Deutsch、Franç
 - [遊戲內使用](/Cities_Skylines_1_Modpack/zh-tw/wiki/ai-improve/in-game/)
 - [相容性](/Cities_Skylines_1_Modpack/zh-tw/wiki/ai-improve/compatibility/)
 - [常見問題](/Cities_Skylines_1_Modpack/zh-tw/wiki/ai-improve/faq/)
+
+<!-- Author: OpenAI-Codex_Responsible: Modpack_Website. -->

@@ -1,13 +1,15 @@
 ---
 title: Automated Public Transport Planning
-description: "What the 0.2.0 early preview does today, how to use its diagnostics, and what is coming."
+description: "Survey diagnostics, Development route proposals and the limits of confirmed route-creation attempts."
 ---
 
-Automated Public Transport Planning will plan bus lines from your city's real demand. It will show every proposed line as a preview and build nothing until you accept it. It currently covers regular city buses only; other public transport types will be added one at a time later. Version **0.2.0** is an early preview that lays the groundwork.
+> **Development build update, 31 October 2026:** The GitHub Development prototype can attempt to create a selected route after arming and confirmation; it can change a save and is not read-only. Successful route creation and save/reload have not been established in subscribed-game acceptance. See [Development downloads and installation](/Cities_Skylines_1_Modpack/wiki/development-downloads/).
 
-## What 0.2.0 does
+Automated Public Transport Planning's Development prototype estimates city-bus routes and can attempt to create a selected proposal after arming and confirmation. The prototype may change saves and does not guarantee runnable routes. Other transport types remain a future direction.
 
-- **Surveys your city when it loads.** It reads roads, stops and the transit network in the background. It is read-only: nothing in your city or save is created, changed or removed.
+## Survey diagnostics
+
+- **Surveys your city when it loads.** It reads roads, stops and the transit network in the background. This survey is read-only; the separate Development creation prototype can change a save.
 - **Diagnostics in the mod options.** Each button writes its result to the game log:
 
 | Button | What it reports |
@@ -22,15 +24,17 @@ Automated Public Transport Planning will plan bus lines from your city's real de
 
 ## What it does not do yet
 
-The Release Version does not create, change or suggest bus lines, and no transport type other than city buses is planned yet. Automatic planning is in development; see the [roadmap](/Cities_Skylines_1_Modpack/wiki/project/roadmap/).
+The older 0.2.0 Release preview does not create, change or suggest bus lines. The Development prototype focuses on city buses; additional transport types remain future directions. See the [roadmap](/Cities_Skylines_1_Modpack/wiki/project/roadmap/).
 
 ## Development Version
 
 The Development Version is a public test build. Back up your save before using it.
 
 - **Planning preview (being tested).** The *Generate a read-only planning preview* button estimates city-bus lines from your city's demand and lists them with their scores. It does not create or change any line. The estimates are not yet checked against the game's own pathfinding.
-- **Save round-trip test.** It can **create a test bus line in the loaded city**. The create button must be switched on first, and every click asks you to confirm and reminds you to back up. You can delete the test line with the game's own transport tools, but changes to the simulation while it ran cannot be undone. Removing lines from the mod is disabled. Only use it on a copy of your save.
+- **Route-creation prototype.** A selected proposal can be submitted for creation after the feature is armed and each attempt is confirmed. Proposals do not guarantee connected or runnable routes. Successful creation and save/reload remain unverified in subscribed-game acceptance; use a backup and a separate test city.
 
 ## Helping test
 
 Run the diagnostics on cities of different sizes and include the log output when you [report results or problems](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/issues/new/choose). This helps tune the planner before it arrives.
+
+<!-- Author: OpenAI-Codex_Responsible: Modpack_Website. -->

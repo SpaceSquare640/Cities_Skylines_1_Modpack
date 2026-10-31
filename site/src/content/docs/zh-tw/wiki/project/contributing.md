@@ -11,7 +11,7 @@ description: "如何回報問題、提出建議，以及在哪裡找到 Modpack 
 
 ## 測試 Development 版
 
-每個模組在 Workshop 上都有 Development 版，會比 Release 版更早收到修改。在存檔副本上試用並回報你發現的狀況，是最有幫助的參與方式之一。
+AI Gaming, AI Improve, and Automated Public Transport Planning have experimental GitHub Development prereleases. Back up your saves and use a separate test city. Enable only one copy of each mod, and read the [Development downloads and installation](/Cities_Skylines_1_Modpack/wiki/development-downloads/) guide before reporting results.
 
 ## 原始碼
 
@@ -20,7 +20,7 @@ description: "如何回報問題、提出建議，以及在哪裡找到 Modpack 
 | 模組 | 分支 |
 | --- | --- |
 | AI Improve | [`AI_Improve`](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/tree/AI_Improve) |
-| 公共運輸自動規劃 | [`Automated_Public_Transport_Planning`](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/tree/Automated_Public_Transport_Planning) |
+| Automated Public Transport Planning | [`Automated_Public_Transport_Planning`](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/tree/Automated_Public_Transport_Planning) |
 | AI Gaming | [`AI_Gaming`](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/tree/AI_Gaming) |
 | 本網站 | [`Modpack_Website`](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/tree/Modpack_Website) |
 
@@ -29,3 +29,5 @@ description: "如何回報問題、提出建議，以及在哪裡找到 Modpack 
 Modpack 為原始碼可得的非商業專案。模組與網站程式碼採用 [**PolyForm Noncommercial License 1.0.0**](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/blob/Modpack_Website/LICENSE)；原創網站內容（包括文字與圖片）採用 [**CC BY-NC-SA 4.0**](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/blob/Modpack_Website/LICENSE-CONTENT)。版權所有 Kingsley。第三方元件與素材保留各自的授權。
 
 <!-- Updated by OpenAI-Codex on 2026-10-27. -->
+
+<!-- Author: OpenAI-Codex_Responsible: Modpack_Website. -->

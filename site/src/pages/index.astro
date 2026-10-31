@@ -11,12 +11,13 @@ const base = import.meta.env.BASE_URL;
 const recent = changeEntries.slice(0, 5);
 const projects = [
 	{ art: aiImproveArt, name: 'AI Improve', status: 'Available on the Workshop', text: 'Vehicles, services and citizens that react to what is actually happening in your city: jams, crowded platforms, nearby fires and full depots.', page: 'ai-improve/', wiki: 'wiki/ai-improve/overview/' },
-	{ art: transportArt, name: 'Automated Public Transport Planning', status: 'Early preview 0.2.0', text: 'Will plan bus lines from your city’s real demand and show every line as a preview before anything is built. Today it surveys the network.', page: 'automated-public-transport-planning/', wiki: 'wiki/transport/overview/' },
-	{ art: aiGamingArt, name: 'AI Gaming', status: 'Development preview 0.4.0 · runtime pending', text: 'The 0.4.0 source adds player-confirmed Ollama Local advice. Companion packaging and in-game testing are not verified; AI gameplay remains planned.', page: 'ai-gaming/', wiki: 'wiki/ai-gaming/overview/' },
+	{ art: transportArt, name: 'Automated Public Transport Planning', status: 'Development prototype · game acceptance pending', text: 'The Development prototype previews proposed bus routes and can attempt creation after confirmation. It may change saves; back up before testing.', page: 'automated-public-transport-planning/', wiki: 'wiki/transport/overview/' },
+	{ art: aiGamingArt, name: 'AI Gaming', status: 'Development preview · runtime unverified', text: 'The GitHub Development build includes a matching Windows x64 Companion for player-confirmed Ollama Local advice. Game runtime remains unverified.', page: 'ai-gaming/', wiki: 'wiki/ai-gaming/overview/' },
 ];
 ---
 
 <SiteLayout title="Cities: Skylines 1 Modpack" description="Three Cities: Skylines 1 mods by Kingsley: smarter city behaviour, bus planning in development, and an AI advice preview." active="home">
+	<section class="section soft"><div class="page-wrap"><p class="eyebrow">Development builds · 31 October 2026</p><h2>Test builds are available on GitHub.</h2><p>AI Gaming, AI Improve, and Automated Public Transport Planning have separate Development prereleases. Back up saves, use a test city, and enable only one copy of each mod.</p><a class="button secondary" href={base + 'wiki/development-downloads/'}>Development downloads and installation</a></div></section>
 	<section class="hero page-wrap">
 		<div class="hero-copy">
 			<p class="eyebrow">Cities: Skylines 1 mods by Kingsley</p>
@@ -41,7 +42,7 @@ const projects = [
 			<div class="text-stack"><p class="eyebrow">How to begin</p><h2>Three steps to your first city.</h2><p>Every mod page links to its Workshop items, and the Wiki explains each setting in detail.</p><div class="hero-actions"><a class="button" href={base + 'wiki/getting-started/'}>Read the full guide</a></div></div>
 			<ol class="steps">
 				<li><strong>Subscribe to Harmony</strong><p>AI Improve needs the <a href={harmonyUrl}>Harmony</a> mod, a shared library many Cities: Skylines mods depend on.</p></li>
-				<li><strong>Pick Release or Development</strong><p>Release is for everyday play. Development gets changes first and includes testing tools. Subscribe to one, never both.</p></li>
+				<li><strong>Pick a version</strong><p>Stable releases use Steam Workshop; GitHub Development builds are experimental. Enable only one copy of each mod.</p></li>
 				<li><strong>Enable it and adjust</strong><p>Turn the mod on in the Content Manager, then open its options to switch individual features on or off.</p></li>
 			</ol>
 		</div>
@@ -55,3 +56,5 @@ const projects = [
 	</section>
 </SiteLayout>
 <!-- Updated by OpenAI-Codex on 2026-10-26. -->
+
+<!-- Author: OpenAI-Codex_Responsible: Modpack_Website. -->

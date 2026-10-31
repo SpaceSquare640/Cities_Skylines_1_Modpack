@@ -23,7 +23,7 @@ The [feature list](/Cities_Skylines_1_Modpack/wiki/ai-improve/features/) describ
 
 - **[Harmony](https://steamcommunity.com/sharedfiles/filedetails/?id=2040656402)** is required.
 - **UnifiedUI** is optional; it adds an in-game panel. See [Using AI Improve in game](/Cities_Skylines_1_Modpack/wiki/ai-improve/in-game/).
-- Subscribe to either the Release or the Development Version, never both.
+- Enable only one copy of AI Improve, whether it comes from Steam Workshop or a manually installed GitHub Development build.
 
 ## Languages
 
@@ -39,3 +39,5 @@ Aircraft rerouting while taxiing does not trigger yet: measured taxiway congesti
 - [Using AI Improve in game](/Cities_Skylines_1_Modpack/wiki/ai-improve/in-game/)
 - [Compatibility](/Cities_Skylines_1_Modpack/wiki/ai-improve/compatibility/)
 - [FAQ](/Cities_Skylines_1_Modpack/wiki/ai-improve/faq/)
+
+<!-- Author: OpenAI-Codex_Responsible: Modpack_Website. -->

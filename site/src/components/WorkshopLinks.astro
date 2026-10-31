@@ -4,9 +4,16 @@ interface Props { mod: 'ai-improve' | 'transport' | 'ai-gaming'; locale?: 'en' |
 const { mod, locale = 'en' } = Astro.props;
 const zh = locale === 'zh-tw';
 const items = workshop[mod];
+// GitHub prereleases are separate from the Workshop editions. OpenAI-Codex_Responsible: Modpack_Website.
+const developmentReleases = {
+	'ai-gaming': { name: 'AI Gaming', tag: 'ai-gaming-dev-41185662728-1', status: 'The GitHub Development build includes a matching Windows x64 Companion; in-game behavior remains unverified.' },
+	'ai-improve': { name: 'AI Improve', tag: 'ai-improve-dev-41185802009-1', status: 'The GitHub Development build requires its matching CitiesHarmony.API.dll and the Harmony Workshop mod.' },
+	transport: { name: 'Automated Public Transport Planning', tag: 'aptp-dev-41185686621-1', status: 'The GitHub Development prototype can attempt to create a selected route after confirmation and may change a save; it is not read-only.' },
+} as const;
+const developmentRelease = developmentReleases[mod];
 const labels = {
-	release: zh ? 'Release 版（穩定）' : 'Release Version',
-	development: zh ? 'Development 版（測試）' : 'Development Version',
+	release: 'Steam Workshop Stable',
+	development: 'Steam Workshop Development',
 };
 ---
 
@@ -15,5 +22,14 @@ const labels = {
 		? <a class={edition === 'release' ? 'button' : 'button secondary'} href={workshopUrl(items[edition].id)}>{labels[edition]} <span aria-hidden="true">↗</span></a>
 		: <span class="button pending" aria-disabled="true">{labels[edition]} · {zh ? '尚未公開' : 'not yet public'}</span>)}
 </div>
-<p class="workshop-note">{zh ? 'Release 版適合一般遊玩；Development 版搶先收到修改並包含測試工具。兩者擇一訂閱，不要同時啟用。' : 'Release is for everyday play; Development gets changes first and includes testing tools. Subscribe to one, never both.'}</p>
+<p class="workshop-note" lang="en">Workshop and GitHub Development editions are separate and may differ. Enable only one copy of each mod.</p>
+<div class="development-notice" lang="en">
+	<p><strong>GitHub Development prerelease:</strong> {developmentRelease.status}</p>
+	<p>Back up saves and test on a separate city. Do not enable this build alongside another copy. <a href={'https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/releases/tag/' + developmentRelease.tag}>Download {developmentRelease.name} Development build</a> · <a href={import.meta.env.BASE_URL + 'wiki/development-downloads/'}>Installation and risks</a></p>
+</div>
+<style>
+	.development-notice { margin-top: 1rem; padding: 1rem; border: 1px solid currentColor; border-radius: 0.5rem; }
+	.development-notice p { margin: 0 0 0.6rem; }
+	.development-notice p:last-child { margin-bottom: 0; }
+</style>
 <!-- Updated by OpenAI-Codex on 2026-10-26. -->

@@ -3,24 +3,26 @@ title: 開始使用
 description: "在 Cities: Skylines 1 中訂閱、選擇正確版本並啟用 Modpack 模組。"
 ---
 
+> **Development build update, 31 October 2026:** The three mods also have experimental GitHub prereleases. See [Development downloads and installation](/Cities_Skylines_1_Modpack/wiki/development-downloads/) for current downloads, dependencies and save risks. Do not enable multiple copies of the same mod.
+
 ## 1. 訂閱依賴模組
 
 - **[Harmony](https://steamcommunity.com/sharedfiles/filedetails/?id=2040656402)**：AI Improve 必須使用。這是許多 Cities: Skylines 模組共用、用來安全修改遊戲行為的函式庫。
 - **UnifiedUI**：AI Improve 選用。安裝後，AI Improve 會在 UnifiedUI 工具列加上按鈕，不必離開城市就能調整設定。
 
-公共運輸自動規劃與 AI Gaming 不需要其他模組。
+Automated Public Transport Planning and AI Gaming do not require another mod. The AI Gaming GitHub Development build does require its matching Companion executable.
 
 ## 2. 選擇 Release 或 Development 版
 
-每個模組都有兩個 Workshop 項目：
+Stable editions use Steam Workshop. Experimental GitHub Development builds are downloaded and installed separately; older Development Workshop items may contain different versions.
 
-| | Release 版 | Development 版 |
+| | Stable Release | GitHub Development build |
 | --- | --- | --- |
-| 適合 | 一般遊玩 | 搶先試用新修改、協助測試 |
-| 更新時機 | 版本準備好時 | 每次修改都會自動更新 |
-| 測試工具 | 不包含 | 包含（詳見各模組頁） |
+| For | Everyday play | Trying changes early and helping test |
+| Updates | Through Steam Workshop when published | Download a published GitHub prerelease |
+| Testing tools | Not included | Included (see each mod's page) |
 
-**兩者只能擇一訂閱。**它們是同一個模組，同時啟用會互相衝突。各模組頁都有連結：[AI Improve](/Cities_Skylines_1_Modpack/zh-tw/ai-improve/)、[公共運輸自動規劃](/Cities_Skylines_1_Modpack/zh-tw/automated-public-transport-planning/)、[AI Gaming](/Cities_Skylines_1_Modpack/zh-tw/ai-gaming/)。尚未公開的項目會標示「尚未公開」。
+**Enable only one copy of each mod.** Disable other local or Workshop editions before testing a GitHub Development build. Links are on each mod's page: [AI Improve](/Cities_Skylines_1_Modpack/zh-tw/ai-improve/), [Automated Public Transport Planning](/Cities_Skylines_1_Modpack/zh-tw/automated-public-transport-planning/), [AI Gaming](/Cities_Skylines_1_Modpack/zh-tw/ai-gaming/).
 
 ## 3. 啟用與設定
 
@@ -33,3 +35,5 @@ description: "在 Cities: Skylines 1 中訂閱、選擇正確版本並啟用 Mod
 請使用 [Issue 表單](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/issues/new/choose) 回報，內容包括：模組名稱與版本、你使用的其他模組、發生問題的步驟，以及遊戲輸出記錄中的相關段落。記錄檔的位置請見[常見問題](/Cities_Skylines_1_Modpack/zh-tw/wiki/ai-improve/faq/)。張貼前請先刪除 Windows 使用者名稱等個人資料。
 
 <!-- Updated by OpenAI-Codex on 2026-10-26. -->
+
+<!-- Author: OpenAI-Codex_Responsible: Modpack_Website. -->

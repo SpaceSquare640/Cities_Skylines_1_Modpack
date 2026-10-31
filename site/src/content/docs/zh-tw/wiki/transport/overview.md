@@ -1,13 +1,15 @@
 ---
-title: 公共運輸自動規劃
-description: "0.2.0 早期預覽版目前能做什麼、診斷工具怎麼用，以及接下來的方向。"
+title: Automated Public Transport Planning
+description: "Survey diagnostics, Development route proposals and the limits of confirmed route-creation attempts."
 ---
 
-公共運輸自動規劃會依城市的真實需求規劃公車路線。每條提議的路線都會先預覽，你確認之前什麼都不會建立。目前只支援普通市內公車，其他公共交通工具之後會逐一加入。**0.2.0** 是打基礎的早期預覽版。
+> **Development build update, 31 October 2026:** The GitHub Development prototype can attempt to create a selected route after arming and confirmation; it can change a save and is not read-only. Successful route creation and save/reload have not been established in subscribed-game acceptance. See [Development downloads and installation](/Cities_Skylines_1_Modpack/wiki/development-downloads/).
 
-## 0.2.0 能做什麼
+Automated Public Transport Planning's Development prototype estimates city-bus routes and can attempt to create a selected proposal after arming and confirmation. The prototype may change saves and does not guarantee runnable routes. Other transport types remain a future direction.
 
-- **載入城市時進行調查。**在背景讀取道路、站點與大眾運輸網絡。這是唯讀的：城市與存檔中不會有任何東西被建立、修改或移除。
+## Survey diagnostics
+
+- **City survey.** The mod reads roads, stops and the transit network in the background. This survey is read-only; the separate Development creation prototype can change a save.
 - **模組選項中的診斷工具。**每個按鈕都會把結果寫入遊戲記錄：
 
 | 按鈕 | 回報內容 |
@@ -22,15 +24,17 @@ description: "0.2.0 早期預覽版目前能做什麼、診斷工具怎麼用，
 
 ## 目前還不能做什麼
 
-Release 版不會建立、修改或建議公車路線，也尚未規劃市內公車以外的交通工具。自動規劃仍在開發中，見[路線圖](/Cities_Skylines_1_Modpack/zh-tw/wiki/project/roadmap/)。
+The older 0.2.0 Release preview does not create, change or suggest bus lines. The Development prototype focuses on city buses; additional transport types remain future directions. See the [roadmap](/Cities_Skylines_1_Modpack/zh-tw/wiki/project/roadmap/).
 
 ## Development 版
 
 Development 版是公開測試版，使用前請先備份存檔。
 
 - **規劃預覽（測試中）。**按「Generate a read-only planning preview」，會依城市需求估算市內公車路線，並列出評分。不會建立或修改任何路線。這些估算尚未經遊戲本身的尋路驗證。
-- **存檔往返測試。**可以**在目前載入的城市中建立一條測試公車路線**。建立按鈕要先啟用，而且每次按下都會要求確認並提醒備份。測試路線可用遊戲本身的交通工具刪除，但運行期間的模擬變化無法還原。模組內的移除路線功能已停用。請只在存檔副本上使用。
+- **Route-creation prototype.** A selected proposal can be submitted for creation after the feature is armed and each attempt is confirmed. Proposals do not guarantee connected or runnable routes. Successful creation and save/reload remain unverified in subscribed-game acceptance; use a backup and a separate test city.
 
 ## 協助測試
 
 在不同規模的城市上執行診斷工具，並在[回報結果或問題](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/issues/new/choose)時附上記錄內容。這能幫助規劃器在推出前調整得更好。
+
+<!-- Author: OpenAI-Codex_Responsible: Modpack_Website. -->
