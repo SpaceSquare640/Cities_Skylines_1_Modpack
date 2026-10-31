@@ -44,3 +44,10 @@ Copyright © Kingsley.
 - Publish unique Development prereleases after cloud compilation with a strict six-file asset whitelist, unchanged license, install instructions and verified SHA-256 digests.
 - Separate read-only build and write-permitted publisher; no decrypted references, PDBs, public ZIP, or Workshop upload.
 - Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
+
+## 2026-10-31 — Cloud planning checks and unified release format
+
+- Build and execute the eight existing pure-data planning checks before allowing publication; the cloud executable uses an explicit CLR v4 host, not the game's Mono runtime.
+- Use the complete module name in future Development release titles and tags, with the eight approved release-description sections. Existing releases are preserved.
+- Editing existing bus routes remains unimplemented; no game behavior is changed by this iteration.
+- Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning

@@ -54,6 +54,21 @@ jobs:
             if ($file.Length -le 0) { throw "Compiled output is empty: $name" }
             Write-Host "$name exists and is nonempty ($($file.Length) bytes)."
           }
+      # Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
+      - name: Build existing planning engine checks
+        shell: pwsh
+        run: |
+          $checksOutput = Join-Path $env:RUNNER_TEMP 'aptp-planning-checks'
+          & $env:APTP_MSBUILD Tests/PlanningEngineChecks.csproj "/p:OutputPath=$checksOutput/" /t:Rebuild /p:Configuration=Release /p:ModsDir= "/p:CitiesSkylinesDir=$env:CS1_GAME_ROOT" /verbosity:normal /nologo
+          exit $LASTEXITCODE
+      - name: Run pure-data planning checks under cloud CLR v4
+        shell: pwsh
+        run: |
+          # This is a cloud test host, not the game's Mono runtime or in-game acceptance.
+          $exe = Join-Path $env:RUNNER_TEMP 'aptp-planning-checks/PlanningEngineChecks.exe'
+          '<configuration><startup useLegacyV2RuntimeActivationPolicy="true"><supportedRuntime version="v4.0" /></startup></configuration>' | Set-Content -LiteralPath "$exe.config" -Encoding utf8
+          & $exe
+          exit $LASTEXITCODE
       - name: Prepare whitelisted public assets
         shell: pwsh
         run: ./.github/scripts/Prepare-Release.ps1
@@ -82,4 +97,3 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: python3 .github/scripts/Publish-Release.py
-

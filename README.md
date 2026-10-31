@@ -63,3 +63,9 @@ Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
 Every push to this module branch or manual run now builds and publishes a unique `aptp-dev-<run_id>-<attempt>` prerelease. Only the module DLL, Development README, unchanged LICENSE, build-info.txt, Steam_Workshop_Link.txt and SHA256SUMS are transferred to an isolated publisher. Uploaded draft assets are checked for exact names, count, nonzero size and SHA-256 before publication. No PDB, game assemblies or public ZIP are attached. Prereleases are not marked Latest and are not gameplay acceptance. The earlier diagnostic-only trigger statements above describe historical setup.
 
 Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
+
+### Planning checks gate and full-name releases
+
+The cloud workflow now compiles and executes the eight existing planning-engine checks before asset preparation and publication. The .NET 3.5 test executable runs using an explicit cloud CLR v4 host; this does not change the mod target or establish game-Mono compatibility. Failures block publication. Future release titles use `Automated Public Transport Planning — Development Build`, with tags `Automated_Public_Transport_Planning-dev-<run_id>-<attempt>` and the approved eight-section installation/risk documentation. Historical diagnostic descriptions above do not describe the current all-push publication workflow. Editing existing bus routes remains unimplemented.
+
+Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning

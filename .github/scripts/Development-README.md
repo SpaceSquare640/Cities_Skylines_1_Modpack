@@ -1,19 +1,45 @@
-# APTP Development build
+# Automated Public Transport Planning — Development Build
 
-Experimental Development prototype: route creation has not passed subscribed-game acceptance. Back up saves and use a disposable copy. Development tools can damage saves. Never install alongside the stable Release/Workshop APTP copy.
+## Module Overview
 
-## Installation and Dev Tool
+Automated Public Transport Planning provides city-data capture, demand analysis and ordinary in-city bus planning previews. Route creation is a Development prototype; connected or runnable routes and save/reload are not established by a successful build.
 
-Close the game and disable/unsubscribe the stable APTP copy. Create `%LOCALAPPDATA%/Colossal Order/Cities_Skylines/Addons/Mods/APTPDevelopment` on Windows and place only `AutomatedPublicTransportPlanning.dll` there. Do not install game reference assemblies or System.Core.dll.
+## Build Information and Changes
 
-Start the game, enable the APTP Development entry in Content Manager > Mods, and open its Options page. Dev Tool controls are compiled in with `DevTools=true`; no additional DLL is needed. On a disposable save, request a planning preview under diagnostics, inspect and select a proposal, arm route creation using its checkbox, and explicitly confirm each creation. Proposals do not guarantee connected or runnable routes.
+This build uses Configuration=Release with DevTools=true. The accompanying build-info.txt identifies the exact source SHA, fixed shared-reference SHA, workflow run and attempt. This development iteration adds cloud execution of the existing pure-data planning checks and the approved full-name release format. The checks use a cloud CLR v4 host, not the game's Mono runtime. It does not implement editing existing bus routes.
 
-## Uninstall
+## Development Build Risk Warning
 
-Close the game and remove this Development copy from the Mods folder. Removing the DLL does not reverse saved city changes; restore your save backup where necessary. Re-enable the stable Workshop copy only after removing this copy.
+Back up saves and use a disposable copy. Development tools can damage saves. Never install alongside the stable Release/Workshop copy. Successful compilation and pure-data checks are not subscribed-game acceptance.
 
-## License and provenance
+## Downloaded Files and Their Purpose
 
-Copyright Kingsley. The original PolyForm Noncommercial License 1.0.0 is attached unchanged as LICENSE. See build-info.txt and SHA256SUMS for provenance and integrity. No game references or PDBs are distributed. Workshop links are project-source records, not a live Steam status check.
+| File | Purpose |
+| --- | --- |
+| AutomatedPublicTransportPlanning.dll | Development mod |
+| README.md | Installation, risks and usage |
+| LICENSE | Original PolyForm Noncommercial License 1.0.0 |
+| build-info.txt | Exact source and build provenance |
+| Steam_Workshop_Link.txt | Stable item links recorded in source |
+| SHA256SUMS | SHA-256 hashes of the other five assets |
+
+## Installation Instructions
+
+1. Close the game and disable/unsubscribe the stable Automated Public Transport Planning copy.
+2. Create `%LOCALAPPDATA%/Colossal Order/Cities_Skylines/Addons/Mods/APTPDevelopment` on Windows.
+3. Place only AutomatedPublicTransportPlanning.dll there. Do not add game assemblies, System.Core.dll or PDBs.
+4. Start the game and enable the Development entry in Content Manager > Mods. Use a disposable save copy.
+
+## Dev Tool Enablement and Usage
+
+Open the module's Options page. Dev Tool controls are compiled in; no additional DLL is required. Under Diagnostics, select "Generate a read-only planning preview". Inspect and select a proposal, tick "Arm route creation; every click still asks for confirmation", then explicitly confirm each creation. Arming resets when the settings page opens. Do not assume proposals guarantee connected or runnable routes.
+
+## Uninstallation and Return to Stable Release
+
+Close the game and remove this Development copy from the Mods folder. Removing the DLL does not reverse saved city changes; restore your backup where necessary. Re-enable the stable Workshop copy only after this Development copy is removed.
+
+## License, Dependencies, and Integrity Verification
+
+Copyright Kingsley. LICENSE contains the unchanged PolyForm Noncommercial License 1.0.0. No game references, PDBs or public ZIP assets are distributed. The mod requires a compatible Cities: Skylines installation. Workshop links are source records, not a live Steam visibility check. Use SHA256SUMS to verify downloaded files, for example `Get-FileHash AutomatedPublicTransportPlanning.dll -Algorithm SHA256` in PowerShell, and compare the exact digest.
 
 Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
