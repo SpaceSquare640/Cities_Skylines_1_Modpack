@@ -1,0 +1,3 @@
+# Preserve the exact official license bytes on Windows cloud runners.
+# Signature: OpenAI-Codex_Responsible: AI_Improve
+third-party/CitiesHarmony-LICENSE.txt -text
