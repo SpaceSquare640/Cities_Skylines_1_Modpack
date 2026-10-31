@@ -7,7 +7,7 @@ permissions:
   contents: read
 jobs:
   compile:
-    if: github.repository == 'SpaceSquare640/Cities_Skylines_1_Modpack' && github.ref == 'refs/heads/AI_Improve'
+    if: github.repository == 'KingsleyHK0323/Cities_Skylines_1_Modpack' && github.ref == 'refs/heads/AI_Improve'
     permissions:
       contents: read
     runs-on: windows-latest
@@ -61,7 +61,7 @@ jobs:
           retention-days: 1
   publish:
     needs: compile
-    if: github.repository == 'SpaceSquare640/Cities_Skylines_1_Modpack' && github.ref == 'refs/heads/AI_Improve'
+    if: github.repository == 'KingsleyHK0323/Cities_Skylines_1_Modpack' && github.ref == 'refs/heads/AI_Improve'
     runs-on: ubuntu-latest
     permissions:
       contents: write

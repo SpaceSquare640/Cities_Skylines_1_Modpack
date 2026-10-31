@@ -54,3 +54,7 @@ Signature: OpenAI-Codex_Responsible: AI_Improve
   eight-section installation notes, and exact source/run information in new releases.
 
 Signature: OpenAI-Codex_Responsible: AI_Improve
+
+- Follow the verified repository transfer to KingsleyHK0323 in the cloud job guard;
+  the repository ID is unchanged and all branch/publication boundaries remain.
+  Signature: OpenAI-Codex_Responsible: AI_Improve
