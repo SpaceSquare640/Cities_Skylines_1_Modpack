@@ -45,3 +45,9 @@ Required references are `mscorlib.dll`, `System.dll`, `System.Core.dll`, `System
 Automatic Development Workshop dispatch is disabled regardless of `WORKSHOP_DEV_AUTO_UPLOAD`. Workshop upload is a separately authorized local operation; this branch must not dispatch the Website upload workflow. No automatic public release is enabled.
 
 Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
+
+### Diagnostic cloud compilation
+
+`cloud-compile-test.yml` uses GitHub-hosted Windows and Visual Studio MSBuild located through `vswhere`. It performs a real `Rebuild` with `Configuration=Release`, `DevTools=true`, and an empty `ModsDir`. Both game-path properties point to a newly created empty directory under `RUNNER_TEMP`; the project safeguards and `NoStdLib` remain intact. Missing game assemblies are expected to produce a genuine nonzero build result. This diagnostic publishes no artifacts or releases and performs no Workshop operation. It runs manually or when this workflow file changes on this module branch; ordinary source pushes do not trigger it. This legacy project has no package restore or companion stage.
+
+Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning

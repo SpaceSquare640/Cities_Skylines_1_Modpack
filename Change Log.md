@@ -26,3 +26,9 @@ Copyright © Kingsley.
 - Added a manual, intentionally failing dependency-readiness gate and documented the unresolved game-reference source, independent branch ownership, and direct DLL release direction.
 - No compilation, public release, or Workshop upload is enabled by this change.
 - Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
+
+## 2026-10-31 — Real cloud compilation diagnostic
+
+- Added a narrowly triggered GitHub-hosted Windows MSBuild Rebuild attempt using an isolated empty game root, retaining original missing-reference errors and nonzero exit status.
+- No game references, artifacts, releases, or Workshop uploads are provisioned by this diagnostic.
+- Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning

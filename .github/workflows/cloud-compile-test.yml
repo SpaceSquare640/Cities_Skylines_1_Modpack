@@ -1,0 +1,35 @@
+name: APTP cloud compile test
+# Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
+on:
+  workflow_dispatch:
+  push:
+    branches: [Automated_Public_Transport_Planning]
+    paths:
+      - .github/workflows/cloud-compile-test.yml
+permissions:
+  contents: read
+jobs:
+  compile:
+    if: github.ref == 'refs/heads/Automated_Public_Transport_Planning'
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out module
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Locate Visual Studio MSBuild
+        shell: pwsh
+        run: |
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
+          $msbuild = & $vswhere -latest -products '*' -requires Microsoft.Component.MSBuild -find 'MSBuild/**/Bin/MSBuild.exe' | Select-Object -First 1
+          if (-not $msbuild) { throw 'Visual Studio MSBuild was not found.' }
+          & $msbuild -version -nologo
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          "APTP_MSBUILD=$msbuild" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
+      - name: Rebuild Development DLL against isolated empty game root
+        shell: pwsh
+        run: |
+          $gameRoot = Join-Path $env:RUNNER_TEMP 'aptp-empty-game-root'
+          New-Item -ItemType Directory -Path $gameRoot -ErrorAction Stop | Out-Null
+          Write-Host "Game reference root: $gameRoot (intentionally empty; no approved dependency source)"
+          & $env:APTP_MSBUILD AutomatedPublicTransportPlanning.csproj /t:Rebuild /p:Configuration=Release /p:DevTools=true /p:ModsDir= "/p:CitiesSkylinesDir=$gameRoot" "/p:CSInstallPath=$gameRoot" /verbosity:normal /nologo
+          exit $LASTEXITCODE
