@@ -2,9 +2,9 @@
 
 Author: OpenAI-Codex
 
-The static website for the public [Modpack repository](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack), intended for its `Modpack_Website` branch.
+The static website for the public [Modpack repository](https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack), intended for its `Modpack_Website` branch.
 
-The site identifies Kingsley as the collection creator and shows a small, inline SVG Hong Kong flag beside the footer credit. The repository URL retains its existing `SpaceSquare640` account name.
+The site identifies Kingsley as the collection creator and shows a small, inline SVG Hong Kong flag beside the footer credit. The current repository owner is KingsleyHK0323; historical records may retain the former account name.
 
 ## Pages
 
@@ -47,3 +47,5 @@ The project selector follows the [W3C WAI tabs pattern](https://www.w3.org/WAI/A
 The Modpack is source-available and noncommercial. Mod and website code are licensed under the [PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0/) (see [LICENSE](LICENSE)); website content, including text and images, is licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) (see [LICENSE-CONTENT](LICENSE-CONTENT)). Copyright © Kingsley. Third-party components keep their own licenses as listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), such as the MIT-licensed Uiverse component. Publishing, Git operations, third-party asset licensing, and GitHub Pages configuration require separate handling.
 
 Author: OpenAI-Codex
+
+<!-- Author: OpenAI-Codex_Responsible: Modpack_Website. -->

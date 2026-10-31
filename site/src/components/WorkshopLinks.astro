@@ -18,6 +18,7 @@ const labels = {
 ---
 
 <div class="workshop-links">
+	<a class="button github-development" href={'https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack/releases/tag/' + developmentRelease.tag}>Download {developmentRelease.name} Development build <span aria-hidden="true">↗</span></a>
 	{(['release', 'development'] as const).map((edition) => items[edition].public
 		? <a class={edition === 'release' ? 'button' : 'button secondary'} href={workshopUrl(items[edition].id)}>{labels[edition]} <span aria-hidden="true">↗</span></a>
 		: <span class="button pending" aria-disabled="true">{labels[edition]} · {zh ? '尚未公開' : 'not yet public'}</span>)}
@@ -25,9 +26,13 @@ const labels = {
 <p class="workshop-note" lang="en">Workshop and GitHub Development editions are separate and may differ. Enable only one copy of each mod.</p>
 <div class="development-notice" lang="en">
 	<p><strong>GitHub Development prerelease:</strong> {developmentRelease.status}</p>
-	<p>Back up saves and test on a separate city. Do not enable this build alongside another copy. <a href={'https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/releases/tag/' + developmentRelease.tag}>Download {developmentRelease.name} Development build</a> · <a href={import.meta.env.BASE_URL + 'wiki/development-downloads/'}>Installation and risks</a></p>
+	<p>Back up saves and test on a separate city. Do not enable this build alongside another copy. <a href={'https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack/releases/tag/' + developmentRelease.tag}>Download {developmentRelease.name} Development build</a> · <a href={import.meta.env.BASE_URL + 'wiki/development-downloads/'}>Installation and risks</a></p>
 </div>
 <style>
+	/* Prioritize the current GitHub build while preserving Workshop access.
+	   OpenAI-Codex_Responsible: Modpack_Website. */
+	.github-development { max-width: 100%; text-align: center; overflow-wrap: anywhere; }
+	.workshop-links a[href*="steamcommunity.com"] { background: transparent; color: var(--ink); border-color: var(--field); }
 	.development-notice { margin-top: 1rem; padding: 1rem; border: 1px solid currentColor; border-radius: 0.5rem; }
 	.development-notice p { margin: 0 0 0.6rem; }
 	.development-notice p:last-child { margin-bottom: 0; }

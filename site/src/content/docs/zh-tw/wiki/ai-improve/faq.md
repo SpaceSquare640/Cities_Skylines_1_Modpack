@@ -25,7 +25,7 @@ Cities: Skylines 會把它寫在遊戲安裝資料夾裡的 `Cities_Data\output_
 
 ## 如何回報問題？
 
-請使用 [Issue 表單](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/issues/new/choose)，並附上：
+請使用 [Issue 表單](https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack/issues/new/choose)，並附上：
 
 1. 模組版本（Release 或 Development）與遊戲版本。
 2. 完整的模組清單。

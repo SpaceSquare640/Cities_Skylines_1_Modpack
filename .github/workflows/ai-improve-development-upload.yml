@@ -44,7 +44,7 @@ concurrency:
 
 jobs:
   upload:
-    if: github.repository == 'SpaceSquare640/Cities_Skylines_1_Modpack'
+    if: github.repository == 'KingsleyHK0323/Cities_Skylines_1_Modpack'
     runs-on: [self-hosted, Windows, X64, cs1-workshop]
     timeout-minutes: 60
     steps:
@@ -86,3 +86,4 @@ jobs:
           & "$env:GITHUB_WORKSPACE\orchestrator\tools\steam-workshop\Upload-Mod.ps1" -Module "AI_Improve" -Edition "Development" -SourcePath "$env:GITHUB_WORKSPACE\mod-source" -PublishedFileId $env:PUBLISHED_FILE_ID -PreviewFileName $env:PREVIEW_FILE_NAME -ChangeNote $env:CHANGE_NOTE -ConfirmUpload $env:CONFIRM_UPLOAD
 # Author: OpenAI-Codex.
 # Modified by: Anthropic-Claude_Code.
+# Author: OpenAI-Codex_Responsible: Modpack_Website.

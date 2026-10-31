@@ -12,7 +12,7 @@ This applies to editions of the same mod; unrelated mods do not need to be disab
 
 ## AI Gaming
 
-[Download AI Gaming Development build](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/releases/tag/ai-gaming-dev-41185662728-1)
+[Download AI Gaming Development build](https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack/releases/tag/ai-gaming-dev-41185662728-1)
 
 1. Exit the game and disable other AI Gaming editions. Verify the downloaded files against `SHA256SUMS.txt`.
 2. Create `%LOCALAPPDATA%\Colossal Order\Cities_Skylines\Addons\Mods\AI Gaming Development` and put `AIGaming.dll` inside.
@@ -21,7 +21,7 @@ This applies to editions of the same mod; unrelated mods do not need to be disab
 
 ## AI Improve
 
-[Download AI Improve Development build](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/releases/tag/ai-improve-dev-41185802009-1)
+[Download AI Improve Development build](https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack/releases/tag/ai-improve-dev-41185802009-1)
 
 1. Exit the game and disable other AI Improve editions. Subscribe to and enable the [Harmony Workshop dependency](https://steamcommunity.com/sharedfiles/filedetails/?id=2040656402).
 2. Download `AIImprove.dll` and `CitiesHarmony.API.dll` from the **same release** and verify them against `SHA256SUMS`.
@@ -30,7 +30,7 @@ This applies to editions of the same mod; unrelated mods do not need to be disab
 
 ## Automated Public Transport Planning
 
-[Download Automated Public Transport Planning Development build](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/releases/tag/aptp-dev-41185686621-1)
+[Download Automated Public Transport Planning Development build](https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack/releases/tag/aptp-dev-41185686621-1)
 
 1. Exit the game and disable other Automated Public Transport Planning editions. Verify `AutomatedPublicTransportPlanning.dll` against `SHA256SUMS`.
 2. Create `%LOCALAPPDATA%\Colossal Order\Cities_Skylines\Addons\Mods\APTPDevelopment` and put the DLL there. Do not install game reference assemblies.

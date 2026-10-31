@@ -35,6 +35,6 @@ The Development Version is a public test build. Back up your save before using i
 
 ## Helping test
 
-Run the diagnostics on cities of different sizes and include the log output when you [report results or problems](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/issues/new/choose). This helps tune the planner before it arrives.
+Run the diagnostics on cities of different sizes and include the log output when you [report results or problems](https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack/issues/new/choose). This helps tune the planner before it arrives.
 
 <!-- Author: OpenAI-Codex_Responsible: Modpack_Website. -->

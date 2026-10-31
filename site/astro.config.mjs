@@ -7,7 +7,7 @@ const yamlBrowserEntrypoint = fileURLToPath(new URL('./node_modules/yaml/browser
 const siteViteCacheDir = fileURLToPath(new URL('../../../.tools/tmp/site-vite-cache/', import.meta.url));
 
 export default defineConfig({
-	site: 'https://spacesquare640.github.io',
+	site: 'https://kingsleyhk0323.github.io',
 	base: '/Cities_Skylines_1_Modpack',
 	trailingSlash: 'always',
 	vite: {
@@ -28,13 +28,16 @@ export default defineConfig({
 			favicon: '/icons/favicon-32.png',
 			customCss: ['./src/styles/starlight.css'],
 			components: { Header: './src/components/DocsHeader.astro', ThemeProvider: './src/components/DocsThemeProvider.astro' },
-			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack' }],
+			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack' }],
 			head: [
 				{ tag: 'meta', attrs: { property: 'og:type', content: 'website' } },
-				{ tag: 'meta', attrs: { property: 'og:image', content: 'https://spacesquare640.github.io/Cities_Skylines_1_Modpack/social-preview.webp' } },
+				{ tag: 'meta', attrs: { property: 'og:image', content: 'https://kingsleyhk0323.github.io/Cities_Skylines_1_Modpack/social-preview.webp' } },
 				{ tag: 'meta', attrs: { name: 'twitter:card', content: 'summary_large_image' } },
 			],
 			sidebar: [
+				// Always use the English guide, including from translated navigation.
+				// OpenAI-Codex_Responsible: Modpack_Website.
+				{ label: 'Downloads', items: [{ label: 'Development downloads', link: '/Cities_Skylines_1_Modpack/wiki/development-downloads/' }] },
 				{ label: 'Start here', translations: { 'zh-TW': '從這裡開始' }, items: [{ slug: 'wiki', label: 'Wiki home', translations: { 'zh-TW': 'Wiki 首頁' } }, { slug: 'wiki/getting-started', label: 'Getting started', translations: { 'zh-TW': '開始使用' } }] },
 				{ label: 'AI Improve', translations: { 'zh-TW': 'AI Improve' }, items: [
 					{ slug: 'wiki/ai-improve/overview', label: 'Overview', translations: { 'zh-TW': '總覽' } },

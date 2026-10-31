@@ -23,4 +23,6 @@ AI Improve 不會改變任何載具的載客量。
 
 ## 回報相容性問題
 
-如果和其他模組一起使用時出問題，請開一個 [Issue](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/issues/new/choose)，附上遊戲版本、完整模組清單、相關的 AI Improve 功能、重現步驟，以及輸出記錄的相關段落（見[常見問題](/Cities_Skylines_1_Modpack/zh-tw/wiki/ai-improve/faq/)）。
+如果和其他模組一起使用時出問題，請開一個 [Issue](https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack/issues/new/choose)，附上遊戲版本、完整模組清單、相關的 AI Improve 功能、重現步驟，以及輸出記錄的相關段落（見[常見問題](/Cities_Skylines_1_Modpack/zh-tw/wiki/ai-improve/faq/)）。
+
+<!-- Author: OpenAI-Codex_Responsible: Modpack_Website. -->

@@ -23,4 +23,6 @@ Do not enable both versions of AI Improve. They are the same mod and will confli
 
 ## Reporting a conflict
 
-If you see a problem with another mod, open an [issue](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/issues/new/choose) with your game version, full mod list, the AI Improve feature involved, steps to reproduce and the relevant part of the output log (see the [FAQ](/Cities_Skylines_1_Modpack/wiki/ai-improve/faq/)).
+If you see a problem with another mod, open an [issue](https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack/issues/new/choose) with your game version, full mod list, the AI Improve feature involved, steps to reproduce and the relevant part of the output log (see the [FAQ](/Cities_Skylines_1_Modpack/wiki/ai-improve/faq/)).
+
+<!-- Author: OpenAI-Codex_Responsible: Modpack_Website. -->

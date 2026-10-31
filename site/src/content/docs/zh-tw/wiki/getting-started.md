@@ -32,7 +32,7 @@ Stable editions use Steam Workshop. Experimental GitHub Development builds are d
 
 ## 4. 遇到問題時
 
-請使用 [Issue 表單](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/issues/new/choose) 回報，內容包括：模組名稱與版本、你使用的其他模組、發生問題的步驟，以及遊戲輸出記錄中的相關段落。記錄檔的位置請見[常見問題](/Cities_Skylines_1_Modpack/zh-tw/wiki/ai-improve/faq/)。張貼前請先刪除 Windows 使用者名稱等個人資料。
+請使用 [Issue 表單](https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack/issues/new/choose) 回報，內容包括：模組名稱與版本、你使用的其他模組、發生問題的步驟，以及遊戲輸出記錄中的相關段落。記錄檔的位置請見[常見問題](/Cities_Skylines_1_Modpack/zh-tw/wiki/ai-improve/faq/)。張貼前請先刪除 Windows 使用者名稱等個人資料。
 
 <!-- Updated by OpenAI-Codex on 2026-10-26. -->
 

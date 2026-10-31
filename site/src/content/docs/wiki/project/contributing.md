@@ -5,7 +5,7 @@ description: "How to report problems, suggest features and find the source code 
 
 ## Report a problem or suggest a feature
 
-Use the [issue forms](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/issues/new/choose). There are forms for bug and compatibility reports, feature suggestions and Workshop update requests. The [FAQ](/Cities_Skylines_1_Modpack/wiki/ai-improve/faq/) explains what to include in a bug report.
+Use the [issue forms](https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack/issues/new/choose). There are forms for bug and compatibility reports, feature suggestions and Workshop update requests. The [FAQ](/Cities_Skylines_1_Modpack/wiki/ai-improve/faq/) explains what to include in a bug report.
 
 Never post Steam passwords, Steam Guard codes, API keys or other private information in an issue.
 
@@ -15,18 +15,18 @@ AI Gaming, AI Improve, and Automated Public Transport Planning have experimental
 
 ## Source code
 
-Each mod lives on its own branch of the [Modpack repository](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack):
+Each mod lives on its own branch of the [Modpack repository](https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack):
 
 | Mod | Branch |
 | --- | --- |
-| AI Improve | [`AI_Improve`](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/tree/AI_Improve) |
-| Automated Public Transport Planning | [`Automated_Public_Transport_Planning`](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/tree/Automated_Public_Transport_Planning) |
-| AI Gaming | [`AI_Gaming`](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/tree/AI_Gaming) |
-| This website | [`Modpack_Website`](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/tree/Modpack_Website) |
+| AI Improve | [`AI_Improve`](https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack/tree/AI_Improve) |
+| Automated Public Transport Planning | [`Automated_Public_Transport_Planning`](https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack/tree/Automated_Public_Transport_Planning) |
+| AI Gaming | [`AI_Gaming`](https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack/tree/AI_Gaming) |
+| This website | [`Modpack_Website`](https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack/tree/Modpack_Website) |
 
 ## Current license terms
 
-The Modpack is source-available and noncommercial. Mod and website code use the [**PolyForm Noncommercial License 1.0.0**](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/blob/Modpack_Website/LICENSE). Original website content, including text and images, is licensed under [**CC BY-NC-SA 4.0**](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/blob/Modpack_Website/LICENSE-CONTENT). Copyright © Kingsley. Third-party components and assets keep their own licenses.
+The Modpack is source-available and noncommercial. Mod and website code use the [**PolyForm Noncommercial License 1.0.0**](https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack/blob/Modpack_Website/LICENSE). Original website content, including text and images, is licensed under [**CC BY-NC-SA 4.0**](https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack/blob/Modpack_Website/LICENSE-CONTENT). Copyright © Kingsley. Third-party components and assets keep their own licenses.
 
 <!-- Updated by OpenAI-Codex on 2026-10-27. -->
 

@@ -12,7 +12,7 @@ permissions:
   contents: read
 jobs:
   verify-references:
-    if: github.repository == 'SpaceSquare640/Cities_Skylines_1_Modpack' && github.ref == 'refs/heads/Modpack_Website'
+    if: github.repository == 'KingsleyHK0323/Cities_Skylines_1_Modpack' && github.ref == 'refs/heads/Modpack_Website'
     runs-on: windows-latest
     timeout-minutes: 10
     steps:
@@ -25,3 +25,5 @@ jobs:
           CS1_GAME_REFERENCES_KEY: ${{ secrets.CS1_GAME_REFERENCES_KEY }}
         run: |
           & ./tools/build-references/Restore-GameReferences.ps1 -BundleDirectory ./build-references/cs1/v1 -GameRoot (Join-Path $env:RUNNER_TEMP 'cs1-reference-validation')
+
+# Author: OpenAI-Codex_Responsible: Modpack_Website.

@@ -32,7 +32,7 @@ Stable editions use Steam Workshop. Experimental GitHub Development builds are d
 
 ## 4. If something goes wrong
 
-Open an issue with the [issue forms](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/issues/new/choose). Include the mod and version, your other mods, the steps that lead to the problem and the relevant part of the game's output log. The [FAQ](/Cities_Skylines_1_Modpack/wiki/ai-improve/faq/) explains where to find the log. Remove your Windows username or other private details before posting.
+Open an issue with the [issue forms](https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack/issues/new/choose). Include the mod and version, your other mods, the steps that lead to the problem and the relevant part of the game's output log. The [FAQ](/Cities_Skylines_1_Modpack/wiki/ai-improve/faq/) explains where to find the log. Remove your Windows username or other private details before posting.
 
 <!-- Updated by OpenAI-Codex on 2026-10-26. -->
 

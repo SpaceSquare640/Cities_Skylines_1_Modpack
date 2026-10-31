@@ -35,6 +35,6 @@ Development 版是公開測試版，使用前請先備份存檔。
 
 ## 協助測試
 
-在不同規模的城市上執行診斷工具，並在[回報結果或問題](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/issues/new/choose)時附上記錄內容。這能幫助規劃器在推出前調整得更好。
+在不同規模的城市上執行診斷工具，並在[回報結果或問題](https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack/issues/new/choose)時附上記錄內容。這能幫助規劃器在推出前調整得更好。
 
 <!-- Author: OpenAI-Codex_Responsible: Modpack_Website. -->

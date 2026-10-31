@@ -2,6 +2,14 @@
 
 Author: OpenAI-Codex
 
+## 2026-10-31 — Mobile documentation and download navigation
+
+- Updated active project URLs and workflow repository checks for the KingsleyHK0323 account name. Historical status records retain their original account names.
+
+- Kept the documentation header on one row at narrow widths, with language and theme controls available in the native mobile menu.
+- Added a prominent GitHub Development download button before the Workshop links and a Development downloads entry in the documentation sidebar.
+- Author: OpenAI-Codex_Responsible: Modpack_Website.
+
 ## 2026-10-31 — Development downloads and installation
 
 - Added links to the separate GitHub Development prereleases of AI Gaming, AI Improve, and Automated Public Transport Planning, with installation dependencies and save warnings. Stable releases remain on Steam Workshop.

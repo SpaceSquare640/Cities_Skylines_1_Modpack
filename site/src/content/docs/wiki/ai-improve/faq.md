@@ -25,7 +25,7 @@ Cities: Skylines writes it next to the game's data folder, as `output_log.txt` i
 
 ## How do I report a problem?
 
-Use the [issue forms](https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/issues/new/choose) and include:
+Use the [issue forms](https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack/issues/new/choose) and include:
 
 1. The mod version (Release or Development) and your game version.
 2. Your full mod list.

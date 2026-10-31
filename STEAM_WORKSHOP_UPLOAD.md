@@ -78,3 +78,9 @@ Steam's Workshop guide describes the SteamCMD Workshop route as intended for tes
 
 Author: OpenAI-Codex.
 Modified by: Anthropic-Claude_Code.
+
+## Account rename — 2026-10-31
+
+The current repository is https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack. The dated status table above retains the reviewer name recorded on 2026-10-21; the current environment reviewer configuration has not been verified.
+
+Author: OpenAI-Codex_Responsible: Modpack_Website
