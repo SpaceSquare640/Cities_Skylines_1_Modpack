@@ -71,3 +71,8 @@ The cloud workflow runs request-preview/text-window checks and Companion checks 
 
 <!-- Signature: OpenAI-Codex_Responsible: AI_Gaming -->
 <!-- Account-link update: OpenAI-Codex_Responsible: AI_Gaming, 2026-10-31. -->
+
+### Queued-request cancellation
+
+A request cancelled before its queued worker enters CompanionClient.Send now returns the cancelled result before Companion startup. Cancellation racing with startup remains handled by the existing post-start cancellation guard; this does not promise that a launch already in progress can be undone. The added compiled-module regression check is pending cloud execution while push/publication authorization is blocked.
+<!-- Signature: OpenAI-Codex_Responsible: AI_Gaming -->

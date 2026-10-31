@@ -43,3 +43,7 @@ Implementation update signed by OpenAI-Codex_Responsible: AI Gaming.
 ## Account-link update — 2026-10-31
 
 - Updated active repository, issue and verified Pages URLs to KingsleyHK0323 in module documentation, localized website text and Workshop description templates. Local data-directory identifiers are unchanged. Signature: OpenAI-Codex_Responsible: AI_Gaming.
+
+## Pending cancellation lifecycle verification
+
+- Added an early cancellation guard before Companion startup for already-cancelled queued requests and a compiled-module regression check. Cloud compilation and execution of this change are pending; no gameplay acceptance is claimed. Signature: OpenAI-Codex_Responsible: AI_Gaming.

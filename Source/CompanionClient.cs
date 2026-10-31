@@ -45,6 +45,8 @@ namespace AIGaming
 
         internal LocalAiResult Send(LocalAiRequest request)
         {
+            // A cancelled queued worker must not start a new Companion process.
+            if (IsCancelled()) return Error(request.ModelName, "cancelled");
             CompanionSession session = null;
             string errorCode;
             try
@@ -441,3 +443,4 @@ namespace AIGaming
 // Implementation update signed by OpenAI-Codex_Responsible: AI Gaming.
 // Implementation update signed by OpenAI-Codex.
 // Implementation update signed by OpenAI-Codex_Responsible: AI Gaming.
+// Cancellation lifecycle update: OpenAI-Codex_Responsible: AI_Gaming.

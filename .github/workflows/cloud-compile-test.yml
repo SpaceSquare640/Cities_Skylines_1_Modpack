@@ -77,6 +77,13 @@ jobs:
           $exe = Get-Item -LiteralPath (Join-Path $env:RUNNER_TEMP 'companion-development/AIGaming.Companion.exe')
           if ($dll.Length -le 0 -or $exe.Length -le 0) { throw 'Empty paired build output' }
           "Verified nonempty mod DLL ($($dll.Length) bytes) and paired Companion ($($exe.Length) bytes)." >> $env:GITHUB_STEP_SUMMARY
+      - name: Check cancellation against the compiled module
+        run: |
+          $env:AIGAMING_MODULE_PATH = Join-Path $env:RUNNER_TEMP 'mod-development/AIGaming.dll'
+          $bin = (Join-Path $env:RUNNER_TEMP 'checks-1/bin') + [IO.Path]::DirectorySeparatorChar
+          $obj = (Join-Path $env:RUNNER_TEMP 'checks-1/obj') + [IO.Path]::DirectorySeparatorChar
+          dotnet run --project Companion/Checks/AIGaming.Companion.Checks.csproj -c Release "-p:BaseOutputPath=$bin" "-p:BaseIntermediateOutputPath=$obj" "-p:MSBuildProjectExtensionsPath=$obj"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Prepare allowlisted release assets
         run: ./tools/release/Prepare-Assets.ps1
       - uses: actions/upload-artifact@v4

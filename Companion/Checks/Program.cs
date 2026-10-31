@@ -11,6 +11,7 @@ internal static class Program
 
     private static async Task Main()
     {
+        RejectsCancelledModuleRequestBeforeCompanionLaunch();
         ParsesZeroAsUnlimitedResponseSetting();
         ParsesConfiguredResponseLimitInMebibytes();
         ParsesMaximumSupportedResponseLimit();
@@ -29,6 +30,31 @@ internal static class Program
         RejectsNegativeResponseLimit();
         RejectsPartialCityDataGroup();
         Console.WriteLine("PASS: bounded model-list, configurable local response limits, independent capture/response generations, and schema v4 checks.");
+    }
+
+    private static void RejectsCancelledModuleRequestBeforeCompanionLaunch()
+    {
+        string? path = Environment.GetEnvironmentVariable("AIGAMING_MODULE_PATH");
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            Console.WriteLine("SKIP: compiled-module cancellation check requires AIGAMING_MODULE_PATH.");
+            return;
+        }
+        string modulePath = Path.GetFullPath(path);
+        if (Directory.Exists(Path.Combine(Path.GetDirectoryName(modulePath)!, "Companion")))
+            throw new InvalidOperationException("Cancellation fixture must not contain a launchable Companion directory.");
+        var assembly = Assembly.LoadFrom(modulePath);
+        var clientType = assembly.GetType("AIGaming.CompanionClient", true)!;
+        var requestType = assembly.GetType("AIGaming.LocalAiRequest", true)!;
+        const BindingFlags members = BindingFlags.Instance | BindingFlags.NonPublic;
+        object client = Activator.CreateInstance(clientType, true)!;
+        object request = Activator.CreateInstance(requestType, true)!;
+        requestType.GetProperty("ModelName", members)!.SetValue(request, "cancelled-request-check");
+        clientType.GetMethod("Cancel", members)!.Invoke(client, null);
+        object result = clientType.GetMethod("Send", members)!.Invoke(client, new[] { request })!;
+        string? code = result.GetType().GetProperty("ErrorCode", members)!.GetValue(result) as string;
+        if (code != "cancelled") throw new InvalidOperationException("Cancelled queued request entered Companion startup: " + code);
+        Console.WriteLine("PASS: cancelled queued module request stops before Companion startup.");
     }
 
     private static void RejectsCaptureInvalidatedByChangedSettings()
@@ -381,3 +407,4 @@ internal static class CompanionBuildInfo
 
 // Implementation update signed by OpenAI-Codex.
 // Implementation update signed by OpenAI-Codex_Responsible: AI Gaming.
+// Cancellation lifecycle regression: OpenAI-Codex_Responsible: AI_Gaming.
