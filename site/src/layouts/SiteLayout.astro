@@ -14,8 +14,8 @@ interface Props {
 const { title, description, locale = 'en', path = '', active = '' } = Astro.props;
 const base = import.meta.env.BASE_URL;
 const localPath = (locale === 'zh-tw' ? 'zh-tw/' : '') + path.replace(/^\//, '');
-const canonical = 'https://spacesquare640.github.io' + base + localPath;
-const alternate = 'https://spacesquare640.github.io' + base + (locale === 'zh-tw' ? path.replace(/^\//, '') : 'zh-tw/' + path.replace(/^\//, ''));
+const canonical = 'https://kingsleyhk0323.github.io' + base + localPath;
+const alternate = 'https://kingsleyhk0323.github.io' + base + (locale === 'zh-tw' ? path.replace(/^\//, '') : 'zh-tw/' + path.replace(/^\//, ''));
 const pageTitle = title + ' — Cities: Skylines 1 Modpack';
 const lang = locale === 'zh-tw' ? 'zh-TW' : 'en';
 ---
@@ -29,7 +29,7 @@ const lang = locale === 'zh-tw' ? 'zh-TW' : 'en';
 		<meta name="theme-color" content="#191d20" />
 		<link rel="canonical" href={canonical} />
 		<link rel="alternate" hreflang={locale === 'en' ? 'zh-TW' : 'en'} href={alternate} />
-		<link rel="alternate" hreflang="x-default" href={'https://spacesquare640.github.io' + base + path.replace(/^\//, '')} />
+		<link rel="alternate" hreflang="x-default" href={'https://kingsleyhk0323.github.io' + base + path.replace(/^\//, '')} />
 		<link rel="icon" type="image/png" sizes="32x32" href={base + 'icons/favicon-32.png'} />
 		<link rel="apple-touch-icon" sizes="180x180" href={base + 'icons/apple-touch-icon.png'} />
 		<link rel="manifest" href={base + 'site.webmanifest'} />
@@ -37,7 +37,7 @@ const lang = locale === 'zh-tw' ? 'zh-TW' : 'en';
 		<meta property="og:title" content={pageTitle} />
 		<meta property="og:description" content={description} />
 		<meta property="og:url" content={canonical} />
-		<meta property="og:image" content={'https://spacesquare640.github.io' + base + 'social-preview.webp'} />
+		<meta property="og:image" content={'https://kingsleyhk0323.github.io' + base + 'social-preview.webp'} />
 		<meta name="twitter:card" content="summary_large_image" />
 		<title>{pageTitle}</title>
 		<script is:inline>
