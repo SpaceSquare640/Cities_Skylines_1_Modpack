@@ -24,9 +24,9 @@ jobs:
           [xml]$mod = Get-Content AIGaming.csproj
           [xml]$companion = Get-Content Companion/AIGaming.Companion.csproj
           $version = [string]$mod.Project.PropertyGroup.Version
-          $protocol = [string]$mod.Project.PropertyGroup.CompanionProtocolVersion
+          $protocol = $mod.SelectSingleNode('//CompanionProtocolVersion').InnerText
           if ($version -ne [string]$companion.Project.PropertyGroup.Version) { throw 'Version mismatch' }
-          if ($protocol -ne [string]$companion.Project.PropertyGroup.CompanionProtocolVersion) { throw 'Protocol mismatch' }
+          if ($protocol -ne $companion.SelectSingleNode('//CompanionProtocolVersion').InnerText) { throw 'Protocol mismatch' }
           $output = Join-Path $env:RUNNER_TEMP 'companion-development'
           dotnet --info
           dotnet publish Companion/AIGaming.Companion.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:CompanionEdition=development "-p:Version=$version" "-p:CompanionProtocolVersion=$protocol" -o $output
@@ -43,3 +43,4 @@ jobs:
           New-Item -ItemType Directory -Path $gameRoot -Force | Out-Null
           dotnet build AIGaming.csproj -c Release -p:DevTools=true -p:CompanionEdition=development "-p:CompanionVersion=$env:PAIR_VERSION" "-p:CompanionProtocolVersion=$env:PAIR_PROTOCOL" "-p:CompanionSha256=$env:PAIR_SHA256" "-p:CSInstallPath=$gameRoot" "-p:CitiesSkylinesDir=$gameRoot"
           exit $LASTEXITCODE
+
