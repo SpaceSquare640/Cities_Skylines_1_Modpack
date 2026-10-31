@@ -158,6 +158,10 @@
     <Compile Include="Source\Planning\PlanningThreadingExtension.cs" Condition=" '$(DevTools)' == 'true' " />
     <!-- OpenAI-Codex: keep route creation isolated from Release builds. -->
     <Compile Include="Source\Planning\RouteCreation.cs" Condition=" '$(DevTools)' == 'true' " />
+    <!-- Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning -->
+    <Compile Include="Source\Planning\RouteEditPlan.cs" Condition=" '$(DevTools)' == 'true' " />
+    <Compile Include="Source\Planning\RouteEditing.cs" Condition=" '$(DevTools)' == 'true' " />
+    <Compile Include="Source\RouteEditingUi.cs" Condition=" '$(DevTools)' == 'true' " />
     <!-- This probe only reads the city and remains available in the release diagnostics. -->
     <Compile Include="Source\Spike\PerformanceProbe.cs" />
     <Compile Include="Source\Spike\SaveRoundTripSpike.cs" Condition=" '$(DevTools)' == 'true' " />

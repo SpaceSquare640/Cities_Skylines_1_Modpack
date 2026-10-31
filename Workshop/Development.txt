@@ -12,10 +12,12 @@ The Development build can create one eligible route from the generated planning 
 The post-creation check inspects stop-lane connections, the LineNotConnected flag, and PathFailed flags on segments adjacent to stops; it does not validate each route's complete path. If a warning appears, inspect the line and the game log. The route graph does not model lane-level turns or TM:PE restrictions, so treat this as a Development prototype. Fully automatic route planning is not available yet.
 
 [list]
-[*][url=https://github.com/SpaceSquare640/Cities_Skylines_1_Modpack/issues/new/choose]Report a bug[/url] with your mod list and output log.
-[*][url=https://spacesquare640.github.io/Cities_Skylines_1_Modpack/change-log/]Change log[/url]
+[*][url=https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack/issues/new/choose]Report a bug[/url] with your mod list and output log.
+[*][url=https://kingsleyhk0323.github.io/Cities_Skylines_1_Modpack/change-log/]Change log[/url]
 [/list]
 
 Part of the Cities: Skylines 1 Modpack by Kingsley.
 
 [i]Technical description maintained with OpenAI-Codex.[/i]
+
+Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning

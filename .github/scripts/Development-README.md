@@ -6,7 +6,7 @@ Automated Public Transport Planning provides city-data capture, demand analysis 
 
 ## Build Information and Changes
 
-This build uses Configuration=Release with DevTools=true. The accompanying build-info.txt identifies the exact source SHA, fixed shared-reference SHA, workflow run and attempt. This development iteration adds cloud execution of the existing pure-data planning checks and the approved full-name release format. The checks use a cloud CLR v4 host, not the game's Mono runtime. It does not implement editing existing bus routes.
+This build uses Configuration=Release with DevTools=true. The accompanying build-info.txt identifies the exact source SHA, fixed shared-reference SHA, workflow run and attempt. This development iteration adds move-only editing previews and confirmed application for existing ordinary city bus lines. The checks use a cloud CLR v4 host, not the game's Mono runtime. Both manual and automatic modes preserve the line ID and existing three-to-six-stop count. Fixed-platform stops and stop-count changes are not supported.
 
 ## Development Build Risk Warning
 
@@ -33,6 +33,20 @@ Back up saves and use a disposable copy. Development tools can damage saves. Nev
 ## Dev Tool Enablement and Usage
 
 Open the module's Options page. Dev Tool controls are compiled in; no additional DLL is required. Under Diagnostics, select "Generate a read-only planning preview". Inspect and select a proposal, tick "Arm route creation; every click still asks for confirmation", then explicitly confirm each creation. Arming resets when the settings page opens. Do not assume proposals guarantee connected or runnable routes.
+
+### Existing route: manual station placement and ordering
+
+1. In "Existing bus route editing (Development)", enter the existing numeric line ID. Only complete Level1 city bus routes with three to six ordinary street stops are accepted.
+2. Enter one comma-separated target per original stop. `1,3,2` reorders the original three station positions. A token such as `f123` or `b123` selects the captured forward/backward midpoint stop lane of road segment 123, respectively. These road tokens require a fresh read-only planning capture; they are not arbitrary coordinates. Road IDs can be taken from the planning proposal diagnostics.
+3. Select "Prepare manual preview" and inspect every original node/position and target segment/lane/position. Unsupported lanes, repeated sites, stale city data, fixed-platform originals or changed stop counts are refused.
+
+### Existing route: automatic whole-route replanning
+
+1. Generate a fresh planning preview, choose a one-based proposal number and enter it with the existing line ID in the editing controls.
+2. Select "Prepare automatic preview". The selected proposal must have exactly the original stop count and the same bus prefab. A different-count proposal is refused rather than deleting/recreating the route.
+3. Inspect the full before/after preview. Both modes then require arming editing and two separate confirmations for the exact preview. Input changes disarm the controls. The simulation thread checks the original route fingerprint and target roads again before any move.
+
+Both modes use the game's MoveStop operation on the existing line; the mod does not release/recreate or rename it. Failure requests best-effort recovery of the original positions, which is not atomic and cannot restore all passenger, vehicle or path side effects. Recovery can fail: stop and restore your save backup when warned. Follow-up checks inspect stop lanes and adjacent path flags only. Verify the entire route, preserved line identity and save/reload yourself on a disposable save. Runtime UI and MoveStop behavior remain unverified in the subscribed game.
 
 ## Uninstallation and Return to Stable Release
 

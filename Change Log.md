@@ -57,3 +57,11 @@ Copyright © Kingsley.
 - Added immutable move-only editing plans for manual and automatic modes, with exact original-route fingerprints, finite coordinates, preserved line identity and unchanged three-to-six-stop counts.
 - Added pure-data validation checks and cloud inspection of the actual public MoveStop signature. Live editing UI and application are not enabled by this model-only step.
 - Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
+
+## 2026-10-31 — Existing-route manual and automatic editing prototype
+
+- Added Development-only existing city bus route editing: manual original-stop ordering or captured directional road midpoints, and automatic replacement using a selected planning proposal while retaining the line ID and stop count.
+- Require a read-only before/after preview, arming and two independent confirmations; revalidate city epoch, original line fingerprint and target lanes on the simulation thread. Serialize edits with new-route creation.
+- Support complete ordinary Level1 bus routes with three to six street stops. Reject fixed-platform originals, stop-count changes, invalid coordinates, repeated sites and stale captures. Failure requests best-effort position recovery and reports remaining risk; no atomic rollback or in-game acceptance is claimed.
+- Updated active repository/Pages links and both module checkout remotes to KingsleyHK0323; historical release/tag records remain unchanged.
+- Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning

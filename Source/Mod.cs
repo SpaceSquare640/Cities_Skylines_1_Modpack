@@ -87,6 +87,8 @@ namespace AutomatedPublicTransportPlanning
             s_selectedRouteProposalIndex = -1;
             PlanningCapture.ClearLatestPreview();
             RouteCreationController.ResetForLevelChange();
+            RouteEditingController.ResetForLevelChange();
+            RouteEditingUi.Reset(); // OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
 #endif
         }
 
@@ -94,6 +96,7 @@ namespace AutomatedPublicTransportPlanning
         /// <summary>Called on the main thread by PlanningThreadingExtension.OnUpdate.</summary>
         internal static void UpdatePlanningStatus(string text)
         {
+            RouteEditingUi.Refresh(); // OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
             RefreshRouteProposalOptions(PlanningCapture.LatestPreview, false);
             UpdateRouteCreateButton();
             UITextField status = s_planningStatus;
@@ -160,6 +163,7 @@ namespace AutomatedPublicTransportPlanning
                   Strings.ButtonMeasure);
 
 #if DEVTOOLS
+            RouteEditingUi.Build(helper); // OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
             UIButton preview = Track(diagnostics.AddButton(Loc.Get(Strings.ButtonPlanningPreview),
                 Guarded("planning preview", delegate { PlanningCapture.RequestPreview(); })) as UIButton,
                 Strings.ButtonPlanningPreview);

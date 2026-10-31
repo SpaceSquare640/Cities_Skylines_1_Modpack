@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   dispatch:
-    if: false && github.repository == 'SpaceSquare640/Cities_Skylines_1_Modpack' && vars.WORKSHOP_DEV_AUTO_UPLOAD == 'true'
+    if: false && github.repository == 'KingsleyHK0323/Cities_Skylines_1_Modpack' && vars.WORKSHOP_DEV_AUTO_UPLOAD == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Dispatch the Development Version upload

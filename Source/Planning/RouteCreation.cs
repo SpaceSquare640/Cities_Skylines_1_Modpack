@@ -42,7 +42,8 @@ namespace AutomatedPublicTransportPlanning.Planning
 
         public static void RequestCreate(PlanningPreviewResult preview, int proposalIndex)
         {
-            if (preview == null || preview.Snapshot == null ||
+            // OpenAI-Codex_Responsible: Automated_Public_Transport_Planning: serialize city route operations.
+            if (RouteEditingController.IsBusy || preview == null || preview.Snapshot == null ||
                 !object.ReferenceEquals(PlanningCapture.LatestPreview, preview) ||
                 proposalIndex < 0 || proposalIndex >= preview.Proposals.Count ||
                 !RouteCreationRules.HasValidStopSites(preview.Proposals[proposalIndex].StopSites))

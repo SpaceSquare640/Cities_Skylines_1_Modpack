@@ -14,6 +14,7 @@ namespace AutomatedPublicTransportPlanning.Planning
         {
             PlanningCapture.OnAfterSimulationFrame();
             RouteCreationController.OnAfterSimulationFrame();
+            RouteEditingController.OnAfterSimulationFrame(); // OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
         }
 
         public override void OnUpdate(float realTimeDelta, float simulationTimeDelta)

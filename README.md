@@ -1,6 +1,6 @@
 # Automated Public Transport Planning
 
-Visit the [Automated Public Transport Planning website page](https://spacesquare640.github.io/Cities_Skylines_1_Modpack/automated-public-transport-planning/) for project information, documentation, and updates.
+Visit the [Automated Public Transport Planning website page](https://kingsleyhk0323.github.io/Cities_Skylines_1_Modpack/automated-public-transport-planning/) for project information, documentation, and updates.
 
 Author: Kingsley
 
@@ -67,5 +67,15 @@ Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
 ### Planning checks gate and full-name releases
 
 The cloud workflow now compiles and executes the eight existing planning-engine checks before asset preparation and publication. The .NET 3.5 test executable runs using an explicit cloud CLR v4 host; this does not change the mod target or establish game-Mono compatibility. Failures block publication. Future release titles use `Automated Public Transport Planning — Development Build`, with tags `Automated_Public_Transport_Planning-dev-<run_id>-<attempt>` and the approved eight-section installation/risk documentation. Historical diagnostic descriptions above do not describe the current all-push publication workflow. Editing existing bus routes remains unimplemented.
+
+Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
+
+## Existing route editing — Development prototype
+
+The new existing-route controls support both manual stop ordering/placement and automatic whole-route replacement from a selected planning proposal. Both modes preserve the existing line ID and stop count; the first implementation accepts complete ordinary Level1 city bus routes with three to six street stops only. It refuses fixed-platform originals and stop-count changes. This supersedes earlier statements that existing-route editing was unimplemented.
+
+Enter the line ID and use original one-based indices (`1,3,2`) or captured segment-direction tokens (`f123,b456,3`) for a manual preview. Automatic mode takes a one-based planning proposal number with the same stop count. Road tokens and automatic mode require a fresh planning capture. Review the exact before/after preview, arm editing and confirm twice before the simulation-thread revalidation and MoveStop operations. A failed edit requests best-effort position recovery; it cannot guarantee atomic rollback or restore all simulation side effects. Use a save backup and inspect the full route afterwards. See the attached Development README for detailed usage.
+
+Cloud model checks cover immutable input isolation, exact stale-route matching, line identity, unchanged counts and unsafe coordinate/site rejection. Successful cloud compilation and pure-data tests do not establish subscribed-game UI, MoveStop, connectivity or save/reload behavior. No stop insertion/deletion or line recreation is implemented.
 
 Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
