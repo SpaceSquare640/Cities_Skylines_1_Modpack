@@ -2,6 +2,12 @@
 
 Author: OpenAI-Codex
 
+## 2026-10-31 — Planned vehicle management artwork
+
+- Added the approved Release and Development WebP icons for Automated Public Transport Vehicle Management to a separate planned-project section on both homepages.
+- Kept existing project artwork served as WebP and preserved original images. No download or Workshop link is advertised for the planned project.
+- Author: OpenAI-Codex_Responsible: Modpack_Website.
+
 ## 2026-10-31 — Compact homepage Development notice
 
 - Replaced the oversized homepage announcement with a shared compact, responsive notice and retained the download action and save precautions.

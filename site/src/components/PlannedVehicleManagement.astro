@@ -1,0 +1,27 @@
+---
+import { Image } from 'astro:assets';
+import releaseIcon from '../assets/projects/Cities_Skylines_1_Automated_Public_Transport_Vehicle_Management_Release_Version.webp';
+import developmentIcon from '../assets/projects/Cities_Skylines_1_Automated_Public_Transport_Vehicle_Management_Development_Version.webp';
+const editions = [{ label: 'Release', icon: releaseIcon }, { label: 'Development', icon: developmentIcon }];
+---
+
+<!-- Author: OpenAI-Codex_Responsible: Modpack_Website. -->
+<section class="section" lang="en" aria-labelledby="planned-vehicle-management">
+	<div class="page-wrap">
+		<div class="section-heading">
+			<div><p class="eyebrow">Planned project</p><h2 id="planned-vehicle-management">Automated Public Transport Vehicle Management</h2></div>
+		</div>
+		<p>In planning. These approved icons show the intended Release and Development editions. No DLL download or Steam Workshop item is available yet.</p>
+		<div class="planned-icons">
+			{editions.map(({ label, icon }) => <figure><Image src={icon} alt={'Automated Public Transport Vehicle Management ' + label + ' edition icon'} widths={[320, 640]} sizes="(max-width: 640px) 100vw, 320px" format="webp" quality={90} /><figcaption>{label} edition · planned</figcaption></figure>)}
+		</div>
+	</div>
+</section>
+
+<style>
+	.planned-icons { display: grid; grid-template-columns: repeat(2, minmax(0, 320px)); gap: 24px; margin-top: 24px; }
+	figure { min-width: 0; }
+	img { width: 100%; height: auto; }
+	figcaption { margin-top: 8px; color: var(--muted); font-size: 14px; }
+	@media (max-width: 640px) { .planned-icons { grid-template-columns: minmax(0, 320px); } }
+</style>

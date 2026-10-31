@@ -1,5 +1,6 @@
 ---
 import { Image } from 'astro:assets';
+import PlannedVehicleManagement from '../../components/PlannedVehicleManagement.astro';
 import DevelopmentNotice from '../../components/DevelopmentNotice.astro';
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import { changeEntries } from '../../lib/changelog';
@@ -37,6 +38,8 @@ const projects = [
 			</div>
 		</div>
 	</section>
+
+	<PlannedVehicleManagement />
 
 	<section class="section">
 		<div class="page-wrap columns">

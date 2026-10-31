@@ -15,3 +15,5 @@ This is a source-available, noncommercial project.
 - Copyright © Kingsley. Third-party components keep their own licenses; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 The English and Traditional Chinese homepages use a compact, localized Development notice with a shared download guide link. <!-- OpenAI-Codex_Responsible: Modpack_Website -->
+
+Module artwork is served as WebP. The planned Automated Public Transport Vehicle Management project displays the approved Release and Development WebP icons without download or Workshop links. Original resource images are preserved; Steam Workshop artwork uses JPG. <!-- OpenAI-Codex_Responsible: Modpack_Website -->
