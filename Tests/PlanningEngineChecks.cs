@@ -19,6 +19,12 @@ internal static class PlanningEngineChecks
         Run("endpoint pairing uses normalized complementary demand", NormalizedPairing);
         Run("one-way route without a return path is diagnosed", MissingReturnPath);
         Run("planner limits endpoint pools and evaluated pairs", CandidateLimits);
+        // Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
+        Run("route edit plans retain identity, isolate inputs and reject unsafe or stale edits", RouteEditPlanChecks.Run);
+        foreach (MethodInfo method in typeof(TransportLine).GetMethods())
+        {
+            if (method.Name == "MoveStop") { Console.WriteLine("TransportLine API: " + method); }
+        }
 
         Console.WriteLine(s_failures == 0
             ? "All planning engine checks passed."

@@ -51,3 +51,9 @@ Copyright © Kingsley.
 - Use the complete module name in future Development release titles and tags, with the eight approved release-description sections. Existing releases are preserved.
 - Editing existing bus routes remains unimplemented; no game behavior is changed by this iteration.
 - Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
+
+## 2026-10-31 — Existing-route editing safety model
+
+- Added immutable move-only editing plans for manual and automatic modes, with exact original-route fingerprints, finite coordinates, preserved line identity and unchanged three-to-six-stop counts.
+- Added pure-data validation checks and cloud inspection of the actual public MoveStop signature. Live editing UI and application are not enabled by this model-only step.
+- Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning

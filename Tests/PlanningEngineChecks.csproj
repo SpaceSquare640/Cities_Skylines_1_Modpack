@@ -82,6 +82,9 @@
 
   <ItemGroup>
     <Compile Include="PlanningEngineChecks.cs" />
+    <!-- Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning -->
+    <Compile Include="RouteEditPlanChecks.cs" />
+    <Compile Include="..\Source\Planning\RouteEditPlan.cs"><Link>Production\RouteEditPlan.cs</Link></Compile>
     <Compile Include="..\Source\Planning\CitizenUnitDemand.cs"><Link>Production\CitizenUnitDemand.cs</Link></Compile>
     <Compile Include="..\Source\Planning\BusPrefabResolver.cs"><Link>Production\BusPrefabResolver.cs</Link></Compile>
     <Compile Include="..\Source\Planning\PlanningEngine.cs"><Link>Production\PlanningEngine.cs</Link></Compile>
