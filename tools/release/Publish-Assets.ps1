@@ -18,7 +18,10 @@ $tag = "ai-gaming-dev-$($env:GITHUB_RUN_ID)-$($env:GITHUB_RUN_ATTEMPT)"
 $repo = $env:GITHUB_REPOSITORY
 Invoke-Gh @('--repo',$repo,'release','create',$tag,'--target',$env:GITHUB_SHA,'--draft','--prerelease','--latest=false','--title',"AI Gaming Development $tag",'--notes-file',(Join-Path $assets 'README.md'))
 foreach ($file in $files) { Invoke-Gh @('--repo',$repo,'release','upload',$tag,$file.FullName) }
-$release = (Invoke-Gh @('api',"repos/$repo/releases/tags/$tag")) | ConvertFrom-Json
+$drafts = (Invoke-Gh @('api',"repos/$repo/releases?per_page=100")) | ConvertFrom-Json
+$matching = @($drafts | Where-Object tag_name -CEQ $tag)
+if ($matching.Count -ne 1) { throw 'Unique draft not found' }
+$release = $matching[0]
 if (-not $release.draft -or -not $release.prerelease -or $release.target_commitish -cne $env:GITHUB_SHA -or $release.assets.Count -ne $expected.Count) { throw 'Draft metadata mismatch' }
 $verify = Join-Path $env:RUNNER_TEMP 'verified-assets'
 Invoke-Gh @('--repo',$repo,'release','download',$tag,'--dir',$verify)
@@ -30,6 +33,6 @@ foreach ($file in $files) {
     Write-Output "$($file.Name) $($file.Length) SHA256=$($hash.ToLowerInvariant())"
 }
 Invoke-Gh @('--repo',$repo,'release','edit',$tag,'--draft=false','--prerelease','--latest=false')
-$final = (Invoke-Gh @('api',"repos/$repo/releases/tags/$tag")) | ConvertFrom-Json
+$final = (Invoke-Gh @('api',"repos/$repo/releases/$($release.id)")) | ConvertFrom-Json
 if ($final.draft -or -not $final.prerelease) { throw 'Release publication not confirmed' }
 "Published prerelease: $($final.html_url)" | Tee-Object -FilePath $env:GITHUB_STEP_SUMMARY -Append
