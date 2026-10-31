@@ -1,0 +1,23 @@
+# Signature: OpenAI-Codex_Responsible: Realistic_Import_Export_Control
+name: Import Export scaffold checks
+on:
+  push:
+    branches: [Realistic_Import_Export_Control]
+  pull_request:
+    branches: [Realistic_Import_Export_Control]
+permissions:
+  contents: read
+jobs:
+  scaffold:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate scaffold documentation
+        shell: bash
+        run: |
+          test -s README.md
+          test -s LICENSE
+          test -s "Change Log.md"
+          grep -Fq "Scaffold only." README.md
+          grep -Fq "PolyForm Noncommercial License 1.0.0" LICENSE
+          git diff --check
