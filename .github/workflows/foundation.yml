@@ -1,0 +1,25 @@
+# Signature: OpenAI-Codex_Responsible: Realistic_Urban_Population
+name: Urban Population Foundation
+on:
+  push:
+    branches: [Realistic_Urban_Population]
+  pull_request:
+    branches: [Realistic_Urban_Population]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  foundation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate planning-stage foundation
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s README.md
+          test -s LICENSE
+          test -s 'Change Log.md'
+          grep -Fq 'PolyForm Noncommercial License 1.0.0' LICENSE
+          grep -Fq 'No gameplay implementation or DLL is available.' README.md
+          printf '%s\n' 'Foundation documents verified. No game build or release was performed.'
