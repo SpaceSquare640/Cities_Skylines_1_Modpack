@@ -4,8 +4,6 @@ on:
   workflow_dispatch:
   push:
     branches: [Automated_Public_Transport_Planning]
-    paths:
-      - .github/workflows/cloud-compile-test.yml
 permissions:
   contents: read
 jobs:
@@ -84,3 +82,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: python3 .github/scripts/Publish-Release.py
+
