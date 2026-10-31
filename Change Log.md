@@ -17,3 +17,11 @@ Signed: OpenAI-Codex.
 - No gameplay code or automatic public release is changed.
 
 Signature: OpenAI-Codex_Responsible: AI_Improve
+
+## Cloud compilation diagnosis — 2026-10-31
+
+- Add a real, narrowly triggered Windows Development DLL build against an empty
+  game root, preserving dependency failures and redirecting local deployment output
+  to runner temporary storage. No publication or artifact upload is enabled.
+
+Signature: OpenAI-Codex_Responsible: AI_Improve

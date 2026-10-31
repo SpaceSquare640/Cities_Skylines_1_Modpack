@@ -29,3 +29,15 @@ The legacy push-to-Workshop dispatcher is disabled. Workshop Release uploads are
 separate, explicitly authorized local operations; source checks do not upload.
 
 Signature: OpenAI-Codex_Responsible: AI_Improve
+
+### Diagnostic cloud compilation
+
+`cloud-compile-test.yml` performs an actual Development DLL build on a
+GitHub-hosted Windows runner, using .NET SDK 10. It runs manually or when this
+workflow changes on AI_Improve. Game references intentionally point to an empty
+RUNNER_TEMP directory; the original compiler errors and nonzero exit are retained.
+CopyToMods targets a separate RUNNER_TEMP directory. LateMergeProbe is not enabled.
+This diagnostic does not upload artifacts, create Releases, or upload to Workshop.
+A successful toolchain setup or restore does not establish successful DLL compilation.
+
+Signature: OpenAI-Codex_Responsible: AI_Improve
