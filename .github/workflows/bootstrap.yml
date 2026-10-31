@@ -1,0 +1,24 @@
+name: Intercity Resource Sharing bootstrap
+on:
+  push:
+    branches: [Intercity_Resource_Sharing]
+  pull_request:
+    branches: [Intercity_Resource_Sharing]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  documents:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify bootstrap documents
+        shell: bash
+        run: |
+          set -euo pipefail
+          for path in README.md LICENSE 'Change Log.md'; do
+            test -s "$path"
+          done
+          grep -Fq 'PolyForm Noncommercial License 1.0.0' LICENSE
+          grep -Fq 'No game functionality is implemented yet.' README.md
+# Signature: OpenAI-Codex_Responsible: Intercity_Resource_Sharing
