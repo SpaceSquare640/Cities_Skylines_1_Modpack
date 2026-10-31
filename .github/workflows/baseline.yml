@@ -1,0 +1,28 @@
+# Signature: OpenAI-Codex_Responsible: Realistic_Pedestrian_Traffic_Control
+name: Pedestrian module baseline
+on:
+  push:
+    branches: [Realistic_Pedestrian_Traffic_Control]
+  pull_request:
+    branches: [Realistic_Pedestrian_Traffic_Control]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check branch skeleton (no game build)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s README.md
+          test -s LICENSE
+          test -s 'Change Log.md'
+          grep -q 'PolyForm Noncommercial License 1.0.0' LICENSE
+          grep -q 'No gameplay implementation or DLL is available yet' README.md
+          if find . -path './.git' -prune -o -type f \( -iname '*.dll' -o -iname '*.zip' \) -print | grep -q .; then
+            echo 'Unexpected binary deliverable in documentation-only skeleton.' >&2
+            exit 1
+          fi
