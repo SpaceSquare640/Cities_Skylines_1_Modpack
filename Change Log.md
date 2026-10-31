@@ -6,3 +6,7 @@
 - Add a documentation-only GitHub-hosted validation workflow; no build or release is claimed.
 
 Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Vehicle_Management
+
+- Update the canonical repository link and local origin after the GitHub account rename to KingsleyHK0323.
+
+Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Vehicle_Management
