@@ -7,3 +7,6 @@
 - Retrieved LICENSE unchanged from the official PolyForm website.
 
 Signature: OpenAI-Codex_Responsible: Realistic_Urban_Population
+
+- Updated canonical repository and verified modpack website links after the GitHub account rename.
+- Signature: OpenAI-Codex_Responsible: Realistic_Urban_Population
