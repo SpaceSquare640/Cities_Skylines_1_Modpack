@@ -21,6 +21,8 @@ internal static class PlanningEngineChecks
         Run("planner limits endpoint pools and evaluated pairs", CandidateLimits);
         // Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
         Run("route edit plans retain identity, isolate inputs and reject unsafe or stale edits", RouteEditPlanChecks.Run);
+        Run("route execution verifies observed recovery and refuses invalidated writes", RouteEditExecutionChecks.Run);
+        Run("route edit request ownership rejects stale completion after reset", RouteEditRequestGateChecks.Run);
         foreach (MethodInfo method in typeof(TransportLine).GetMethods())
         {
             if (method.Name == "MoveStop") { Console.WriteLine("TransportLine API: " + method); }
