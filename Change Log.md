@@ -2,6 +2,12 @@
 
 Author: OpenAI-Codex
 
+## 2026-10-31 — Compact homepage Development notice
+
+- Replaced the oversized homepage announcement with a shared compact, responsive notice and retained the download action and save precautions.
+- Localized the Traditional Chinese homepage notice and marked its English installation guide destination.
+- Author: OpenAI-Codex_Responsible: Modpack_Website.
+
 ## 2026-10-31 — Mobile documentation and download navigation
 
 - Updated active project URLs and workflow repository checks for the KingsleyHK0323 account name. Historical status records retain their original account names.

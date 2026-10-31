@@ -1,5 +1,6 @@
 ---
 import { Image } from 'astro:assets';
+import DevelopmentNotice from '../components/DevelopmentNotice.astro';
 import SiteLayout from '../layouts/SiteLayout.astro';
 import { changeEntries } from '../lib/changelog';
 import { harmonyUrl } from '../data/workshop';
@@ -17,7 +18,7 @@ const projects = [
 ---
 
 <SiteLayout title="Cities: Skylines 1 Modpack" description="Three Cities: Skylines 1 mods by Kingsley: smarter city behaviour, bus planning in development, and an AI advice preview." active="home">
-	<section class="section soft"><div class="page-wrap"><p class="eyebrow">Development builds · 31 October 2026</p><h2>Test builds are available on GitHub.</h2><p>AI Gaming, AI Improve, and Automated Public Transport Planning have separate Development prereleases. Back up saves, use a test city, and enable only one copy of each mod.</p><a class="button secondary" href={base + 'wiki/development-downloads/'}>Development downloads and installation</a></div></section>
+	<DevelopmentNotice />
 	<section class="hero page-wrap">
 		<div class="hero-copy">
 			<p class="eyebrow">Cities: Skylines 1 mods by Kingsley</p>

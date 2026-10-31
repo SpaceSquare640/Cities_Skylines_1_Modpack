@@ -13,3 +13,5 @@ This is a source-available, noncommercial project.
 - Mod and website code: [PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0/) (see [LICENSE](LICENSE)).
 - Website content, including text and images: [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) (see [LICENSE-CONTENT](LICENSE-CONTENT)).
 - Copyright © Kingsley. Third-party components keep their own licenses; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+The English and Traditional Chinese homepages use a compact, localized Development notice with a shared download guide link. <!-- OpenAI-Codex_Responsible: Modpack_Website -->

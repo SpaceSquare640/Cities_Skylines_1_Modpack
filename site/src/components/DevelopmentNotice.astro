@@ -1,0 +1,32 @@
+---
+interface Props {
+	locale?: 'en' | 'zh-tw';
+}
+const { locale = 'en' } = Astro.props;
+const translated = locale === 'zh-tw';
+const base = import.meta.env.BASE_URL;
+---
+
+<!-- Author: OpenAI-Codex_Responsible: Modpack_Website. -->
+<aside class="development-notice" aria-label={translated ? '開發版下載公告' : 'Development build announcement'}>
+	<div class="page-wrap notice-layout">
+		<div class="notice-copy">
+			<p class="notice-title">{translated ? 'GitHub 測試版本現已提供下載' : 'Test builds are available on GitHub.'} <time datetime="2026-10-31">{translated ? '2026 年 10 月 31 日' : '31 October 2026'}</time></p>
+			<p>{translated ? 'AI Gaming、AI Improve 及 Automated Public Transport Planning 各自提供開發預覽版。請備份存檔、使用測試城市，並僅啟用每個模組的一個版本。' : 'AI Gaming, AI Improve, and Automated Public Transport Planning have separate Development prereleases. Back up saves, use a test city, and enable only one copy of each mod.'}</p>
+		</div>
+		<a class="button secondary" href={base + 'wiki/development-downloads/'}>{translated ? '開發版下載與安裝（英文）' : 'Development downloads and installation'}</a>
+	</div>
+</aside>
+
+<style>
+	.development-notice { padding: 16px var(--margin); background: var(--surface); border-block: 1px solid var(--field); }
+	.notice-layout { display: flex; align-items: center; justify-content: space-between; gap: 16px 28px; }
+	.notice-copy { min-width: 0; }
+	.notice-copy p { max-width: 85ch; font-size: 14px; line-height: 1.5; }
+	.notice-copy .notice-title { margin-bottom: 4px; font-size: 18px; font-weight: 700; }
+	time { display: inline-block; margin-inline-start: 8px; color: var(--muted); font-size: 12px; font-weight: 400; }
+	.button { flex-shrink: 0; max-width: 100%; text-align: center; font-size: 14px; }
+	@media (max-width: 960px) {
+		.notice-layout { align-items: flex-start; flex-direction: column; gap: 12px; }
+	}
+</style>
