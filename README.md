@@ -89,3 +89,9 @@ Recovery skips already unchanged stops and reads back finite stop positions, cou
 Cloud fault-injection checks exercise these control-flow cases against a fake route surface. They do not establish the real game's MoveStop, UI, connectivity or save/reload behavior.
 
 Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
+
+### Manual input validation
+
+Manual lists are limited to 128 characters and must contain exactly one comma-separated token per existing stop. Whitespace around tokens is allowed. Original indices must be positive and within the current stop count; `f`/`b` segment IDs must be 1–65535. Empty, signed, overflowing and normalized duplicate tokens (such as `f1,f001,3`) are refused before stop resolution. Opposite directions on one segment are separate tokens; the later physical-site validation may still reject overlapping stops. A road direction must have a captured anchorable lane. These syntax checks do not replace live-road, snapshot or confirmation safeguards.
+
+Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning

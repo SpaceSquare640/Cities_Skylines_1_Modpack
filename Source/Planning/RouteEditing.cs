@@ -48,27 +48,26 @@ namespace AutomatedPublicTransportPlanning.Planning
                 }
                 else
                 {
-                    string[] tokens = (manualOrder ?? string.Empty).Split(',');
-                    foreach (string input in tokens)
+                    System.Collections.ObjectModel.ReadOnlyCollection<RouteManualToken> tokens;
+                    string inputReason;
+                    if (!RouteManualInput.TryParse(manualOrder, original.Stops.Count, out tokens, out inputReason))
+                    { throw new InvalidOperationException(inputReason); }
+                    foreach (RouteManualToken token in tokens)
                     {
-                        string token = input.Trim();
-                        int index;
-                        if (int.TryParse(token, NumberStyles.None, CultureInfo.InvariantCulture, out index))
+                        if (token.OriginalStopIndex != 0)
                         {
-                            if (index < 1 || index > original.Stops.Count) { throw new InvalidOperationException("Original stop index is outside the captured route."); }
-                            targets.Add(ExistingSite(original.Stops[index - 1]));
+                            targets.Add(ExistingSite(original.Stops[token.OriginalStopIndex - 1]));
                         }
                         else
                         {
                             RequirePlanning(planning, original);
-                            if (token.Length < 2 || (token[0] != 'f' && token[0] != 'b') ||
-                                !int.TryParse(token.Substring(1), NumberStyles.None, CultureInfo.InvariantCulture, out index)) { throw new InvalidOperationException("Use stop indices or f<segment>/b<segment>, separated by commas."); }
+                            int index = token.SegmentId;
                             bool found = false;
                             foreach (SegmentSnapshotData segment in planning.Snapshot.Segments)
                             {
                                 if (segment.Id != index) { continue; }
-                                bool forward = token[0] == 'f';
-                                if (forward ? !segment.ForwardOpen : !segment.BackwardOpen) { throw new InvalidOperationException("The requested captured road direction is unavailable."); }
+                                bool forward = token.Forward;
+                                if (forward ? !segment.ForwardCanAnchor : !segment.BackwardCanAnchor) { throw new InvalidOperationException("The requested captured road direction is unavailable."); }
                                 targets.Add(new RouteStopSite(segment.Id, segment.BuildIndex, forward,
                                     forward ? segment.ForwardLaneIndex : segment.BackwardLaneIndex,
                                     forward ? segment.ForwardStopPosition : segment.BackwardStopPosition,

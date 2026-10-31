@@ -40,6 +40,8 @@ Open the module's Options page. Dev Tool controls are compiled in; no additional
 2. Enter one comma-separated target per original stop. `1,3,2` reorders the original three station positions. A token such as `f123` or `b123` selects the captured forward/backward midpoint stop lane of road segment 123, respectively. These road tokens require a fresh read-only planning capture; they are not arbitrary coordinates. Road IDs can be taken from the planning proposal diagnostics.
 3. Select "Prepare manual preview" and inspect every original node/position and target segment/lane/position. Unsupported lanes, repeated sites, stale city data, fixed-platform originals or changed stop counts are refused.
 
+Manual input is limited to 128 characters with exactly one token per existing stop. Empty, signed, out-of-range and normalized duplicate tokens are refused before site resolution. Road IDs must be 1–65535 and the captured direction must have an anchorable lane.
+
 ### Existing route: automatic whole-route replanning
 
 1. Generate a fresh planning preview, choose a one-based proposal number and enter it with the existing line ID in the editing controls.

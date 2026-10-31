@@ -74,3 +74,10 @@ Copyright © Kingsley.
 - Added fault-injection checks for false/throwing moves with side effects, misleading recovery results, lost identity/count, NaN and request invalidation. The initial test-first cloud run failed as intended and skipped publication.
 - Recovery remains position-only and non-atomic; passenger, vehicle and path effects and subscribed-game behavior remain unverified.
 - Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
+
+## 2026-10-31 — Bounded manual edit input
+
+- Validate the complete manual stop list before resolving stop sites or requiring a road planning capture: at most 128 characters, exactly the existing stop count, positive bounded indices and directional segment IDs, and no normalized duplicate tokens.
+- Reject captured road directions that cannot anchor a stop, rather than accepting an open direction with no usable stop lane.
+- Added cloud checks for valid mixed tokens, supported counts, malformed/oversized input, bounds and normalized duplicates. Live road and stale-route checks remain mandatory.
+- Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
