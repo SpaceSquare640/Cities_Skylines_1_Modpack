@@ -1,0 +1,33 @@
+name: Railway module baseline
+
+on:
+  push:
+    branches: [Realistic_Railway_Traffic_Control]
+  pull_request:
+    branches: [Realistic_Railway_Traffic_Control]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Check initial repository baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s README.md
+          test -s 'Change Log.md'
+          test -s LICENSE
+          grep -Fq '# PolyForm Noncommercial License 1.0.0' LICENSE
+          grep -Fq 'No game implementation' README.md
+          if git ls-files | grep -Ei '\.(dll|exe|zip)$'; then
+            echo 'Unexpected binary or archive in planning-only branch.' >&2
+            exit 1
+          fi
+          git diff --check
+
+# Signature: OpenAI-Codex_Responsible: Realistic_Railway_Traffic_Control
