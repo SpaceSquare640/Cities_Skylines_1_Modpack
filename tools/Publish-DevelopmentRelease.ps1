@@ -1,4 +1,5 @@
 # Signature: OpenAI-Codex_Responsible: AI_Improve
+# Signature: OpenAI-Codex_release_format_audit
 [CmdletBinding()]
 param([Parameter(Mandatory)][string]$AssetDirectory)
 $ErrorActionPreference = 'Stop'
@@ -10,7 +11,7 @@ foreach ($file in $files) {
     if ($file.Name -cnotin $allowed -or $file.PSIsContainer -or $file.Length -le 0 -or ($file.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw 'Unexpected or empty asset.' }
 }
 $info = Get-Content -LiteralPath (Join-Path $AssetDirectory 'build-info.json') -Raw | ConvertFrom-Json
-if ($info.sourceSHA -cne $env:GITHUB_SHA -or $info.runId -cne $env:GITHUB_RUN_ID -or $info.runAttempt -cne $env:GITHUB_RUN_ATTEMPT -or $info.DevTools -ne $true -or $info.EnableLateMergeProbe -ne $false -or $info.sharedReferencesSHA -cne '7b8a5e7c10f2db84388e8dd8af2084f239957b13') { throw 'Build provenance mismatch.' }
+if ($env:RELEASE_BUILD_ATTEMPT -cnotmatch '^[1-9][0-9]*$' -or $info.sourceSHA -cne $env:GITHUB_SHA -or $info.runId -cne $env:GITHUB_RUN_ID -or [string]$info.runAttempt -cne $env:RELEASE_BUILD_ATTEMPT -or $info.DevTools -ne $true -or $info.EnableLateMergeProbe -ne $false -or $info.sharedReferencesSHA -cne '7b8a5e7c10f2db84388e8dd8af2084f239957b13') { throw 'Build provenance mismatch.' }
 $lines = @(Get-Content -LiteralPath (Join-Path $AssetDirectory 'SHA256SUMS'))
 if ($lines.Count -ne 8) { throw 'Checksum count mismatch.' }
 $seen = @()

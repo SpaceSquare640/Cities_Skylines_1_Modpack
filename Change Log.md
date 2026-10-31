@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Fixed failed-publisher retries to use the successful compile job's immutable artifact ID and build attempt instead of the current publish attempt. Full reruns retain distinct immutable artifacts. Preserved source/reference provenance and checksum checks. Signature: OpenAI-Codex_release_format_audit.
+
+
 - Disable the path-altering Development probe unless explicitly enabled at build time.
 - Document that an opted-in probe remains patched until the game exits.
 - Discard diagnostic samples for rejected reroute requests and label the distance statistic as a reference, not a confirmed failure cause.
