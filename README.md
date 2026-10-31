@@ -4,6 +4,10 @@ Planned Cities: Skylines 1 module for intercity water, electricity, heating, and
 
 ## Branch and automation
 
+Canonical repository: [KingsleyHK0323/Cities_Skylines_1_Modpack](https://github.com/KingsleyHK0323/Cities_Skylines_1_Modpack).
+
+Project website: [Cities: Skylines 1 Modpack](https://kingsleyhk0323.github.io/Cities_Skylines_1_Modpack/).
+
 This module is maintained on `Intercity_Resource_Sharing`. The cloud workflow validates the bootstrap documents only. It does not build or publish a DLL.
 
 Future builds require an implementation, a build project, and an approved source of Cities: Skylines and Unity reference assemblies. No automatic public release is enabled. Once these prerequisites are resolved, releases should provide the module DLL and required files directly, without ZIP packaging. Workshop stable uploads remain a separate local operation.
