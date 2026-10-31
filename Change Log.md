@@ -38,3 +38,9 @@ Copyright © Kingsley.
 - Connected the compile diagnostic to the fixed encrypted reference bundle and step-scoped Actions Secret, restoring only under RUNNER_TEMP.
 - Added assertions for nonempty compiled DLL and PDB outputs; retained read-only permissions and no artifact, release, or Workshop publishing.
 - Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
+
+## 2026-10-31 — Independent Development prereleases
+
+- Publish unique Development prereleases after cloud compilation with a strict six-file asset whitelist, unchanged license, install instructions and verified SHA-256 digests.
+- Separate read-only build and write-permitted publisher; no decrypted references, PDBs, public ZIP, or Workshop upload.
+- Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning

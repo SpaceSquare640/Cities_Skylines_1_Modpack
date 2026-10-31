@@ -57,3 +57,9 @@ Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
 The compile diagnostic now restores the approved encrypted reference bundle from fixed commit `7b8a5e7c10f2db84388e8dd8af2084f239957b13` in this repository using a sparse checkout. Only the restore step receives `CS1_GAME_REFERENCES_KEY`; the authenticated helper verifies the ciphertext and all eight file hashes before writing references under `RUNNER_TEMP/cs1-game-root`. MSBuild uses that isolated game root. The workflow asserts that the compiled module DLL and PDB both exist and are nonempty. The earlier empty-root diagnostic and unavailable-source descriptions above describe the previous setup; the manual readiness workflow is retained unchanged. No decrypted references or build outputs are uploaded, cached, or released. Ordinary source pushes still do not trigger this diagnostic.
 
 Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
+
+### Development prereleases
+
+Every push to this module branch or manual run now builds and publishes a unique `aptp-dev-<run_id>-<attempt>` prerelease. Only the module DLL, Development README, unchanged LICENSE, build-info.txt, Steam_Workshop_Link.txt and SHA256SUMS are transferred to an isolated publisher. Uploaded draft assets are checked for exact names, count, nonzero size and SHA-256 before publication. No PDB, game assemblies or public ZIP are attached. Prereleases are not marked Latest and are not gameplay acceptance. The earlier diagnostic-only trigger statements above describe historical setup.
+
+Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning

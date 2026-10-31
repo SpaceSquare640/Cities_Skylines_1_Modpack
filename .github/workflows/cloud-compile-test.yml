@@ -56,3 +56,31 @@ jobs:
             if ($file.Length -le 0) { throw "Compiled output is empty: $name" }
             Write-Host "$name exists and is nonempty ($($file.Length) bytes)."
           }
+      - name: Prepare whitelisted public assets
+        shell: pwsh
+        run: ./.github/scripts/Prepare-Release.ps1
+      - name: Transfer only public assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: aptp-public-assets
+          path: ${{ runner.temp }}/aptp-release-assets/*
+          if-no-files-found: error
+          retention-days: 1
+  publish:
+    needs: compile
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: aptp-public-assets
+          path: release-assets
+      - name: Create draft, verify uploaded assets, then publish prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 .github/scripts/Publish-Release.py
