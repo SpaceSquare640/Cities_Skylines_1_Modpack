@@ -35,3 +35,13 @@ The Development content-manager entry identifies DevTool and warns that the deve
 The route graph still treats junction-connected segments as connected and does not model lane-level turns or TM:PE restrictions. A generated proposal and its asynchronous checks are a Development prototype, not proof that every line can run in a live game.
 
 <!-- Updated by OpenAI-Codex on 2026-10-26. -->
+
+## Cloud build and release readiness
+
+The `Automated_Public_Transport_Planning` branch owns this module's CI. The existing source-integrity workflow checks project metadata only; it does not compile the DLL or validate gameplay. The manual `transport-cloud-readiness.yml` workflow intentionally fails while an approved, authenticated source of matching game reference assemblies is unavailable. It does not accept a variable as proof that dependencies exist.
+
+Required references are `mscorlib.dll`, `System.dll`, `System.Core.dll`, `System.Xml.dll`, `ICities.dll`, `Assembly-CSharp.dll`, `ColossalManaged.dll`, and `UnityEngine.dll`. No reference DLLs are committed or redistributed by this change. Cloud compilation, planning checks, and direct per-module GitHub Release DLL attachments remain blocked pending a dependency provisioning decision. Releases must provide the mod DLL and necessary permitted files directly, without ZIP archives.
+
+Automatic Development Workshop dispatch is disabled regardless of `WORKSHOP_DEV_AUTO_UPLOAD`. Workshop upload is a separately authorized local operation; this branch must not dispatch the Website upload workflow. No automatic public release is enabled.
+
+Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning

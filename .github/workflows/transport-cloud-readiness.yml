@@ -1,0 +1,19 @@
+name: APTP cloud dependency readiness
+# Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  dependency-readiness:
+    if: github.ref == 'refs/heads/Automated_Public_Transport_Planning'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report unresolved build dependency source
+        shell: bash
+        run: |
+          echo '::error::Cloud compilation is blocked: no approved, authenticated game-reference assembly source is configured.'
+          echo 'Required: mscorlib.dll, System.dll, System.Core.dll, System.Xml.dll, ICities.dll, Assembly-CSharp.dll, ColossalManaged.dll, UnityEngine.dll from the matching Cities: Skylines installation.'
+          echo 'Do not publish game assemblies. Future module releases must attach the mod DLL and necessary permitted files directly, without ZIP archives.'
+          echo 'This workflow does not build, publish, or upload to Workshop.'
+          exit 1

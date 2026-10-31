@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   dispatch:
-    if: github.repository == 'SpaceSquare640/Cities_Skylines_1_Modpack' && vars.WORKSHOP_DEV_AUTO_UPLOAD == 'true'
+    if: false && github.repository == 'SpaceSquare640/Cities_Skylines_1_Modpack' && vars.WORKSHOP_DEV_AUTO_UPLOAD == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Dispatch the Development Version upload
@@ -33,3 +33,5 @@ jobs:
             -f source_ref="$SHA" \
             -f change_note="${SHA:0:7} $subject"
 # Author: Anthropic-Claude_Code.
+# Disabled by project direction: cloud builds and direct per-module releases.
+# Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning

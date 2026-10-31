@@ -19,3 +19,10 @@ Copyright © Kingsley.
 - Added a 3–6 distinct-stop-lane eligibility rule and asynchronous checks for stop connections and `PathFailed` flags on segments adjacent to stops.
 - The planner still does not model lane-level turns or TM:PE restrictions; this remains a Development prototype.
 - Author: OpenAI-Codex.
+
+## 2026-10-31 — Independent cloud workflow readiness
+
+- Disabled automatic Development Workshop dispatch.
+- Added a manual, intentionally failing dependency-readiness gate and documented the unresolved game-reference source, independent branch ownership, and direct DLL release direction.
+- No compilation, public release, or Workshop upload is enabled by this change.
+- Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
