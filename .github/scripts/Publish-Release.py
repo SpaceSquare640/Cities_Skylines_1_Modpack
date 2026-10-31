@@ -25,9 +25,10 @@ assert len((root / 'SHA256SUMS').read_text().splitlines()) == 5
 assert f"sourceSHA={os.environ['GITHUB_SHA']}" in (root / 'build-info.txt').read_text(encoding='utf-8-sig')
 repo = os.environ['GITHUB_REPOSITORY']
 tag = f"aptp-dev-{os.environ['GITHUB_RUN_ID']}-{os.environ['GITHUB_RUN_ATTEMPT']}"
-gh('release', 'create', tag, '--repo', repo, '--target', os.environ['GITHUB_SHA'], '--draft', '--prerelease', '--latest=false', '--title', f'APTP Development {tag}', '--notes-file', str(root / 'README.md'))
+created = json.loads(gh('api', '--method', 'POST', f'repos/{repo}/releases', '-f', f'tag_name={tag}', '-f', f'target_commitish={os.environ[''GITHUB_SHA'']}', '-F', 'draft=true', '-F', 'prerelease=true', '-f', 'make_latest=false', '-f', f'name=APTP Development {tag}', '-f', 'body=' + (root / 'README.md').read_text(encoding='utf-8-sig')))
+release_id = created['id']
 gh('release', 'upload', tag, '--repo', repo, *[str(root / n) for n in sorted(names)])
-release = json.loads(gh('api', f'repos/{repo}/releases/tags/{tag}'))
+release = json.loads(gh('api', f'repos/{repo}/releases/{release_id}'))
 assert release['draft'] and release['prerelease']
 assert len(release['assets']) == len(names)
 for asset in release['assets']:
@@ -36,6 +37,7 @@ for asset in release['assets']:
     assert asset['digest'] == 'sha256:' + hashes[name], f'Uploaded digest mismatch: {name}'
     print(f"{name} {sizes[name]} sha256:{hashes[name]}")
 gh('release', 'edit', tag, '--repo', repo, '--draft=false', '--prerelease', '--latest=false')
-release = json.loads(gh('api', f'repos/{repo}/releases/tags/{tag}'))
+release = json.loads(gh('api', f'repos/{repo}/releases/{release_id}'))
 assert not release['draft'] and release['prerelease']
 print(release['html_url'])
+
