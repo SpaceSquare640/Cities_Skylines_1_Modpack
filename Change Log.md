@@ -65,3 +65,12 @@ Copyright © Kingsley.
 - Support complete ordinary Level1 bus routes with three to six street stops. Reject fixed-platform originals, stop-count changes, invalid coordinates, repeated sites and stale captures. Failure requests best-effort position recovery and reports remaining risk; no atomic rollback or in-game acceptance is claimed.
 - Updated active repository/Pages links and both module checkout remotes to KingsleyHK0323; historical release/tag records remain unchanged.
 - Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
+
+## 2026-10-31 — Observed route recovery and request ownership
+
+- Added an ownership ticket gate for queued previews, status publication, delayed checks and completion. City reset invalidates old tickets; an old callback cannot publish a preview or unlock a newer request.
+- Recheck the current city, line identity and unchanged stop count before apply/recovery writes; track stop-node changes caused by this operation while rejecting intervening replacements.
+- Classify recovery by observed finite positions (within 0.5 metres), stop count and line completeness after refresh, rather than MoveStop return values. Skip already unchanged positions and stop writing after invalidation.
+- Added fault-injection checks for false/throwing moves with side effects, misleading recovery results, lost identity/count, NaN and request invalidation. The initial test-first cloud run failed as intended and skipped publication.
+- Recovery remains position-only and non-atomic; passenger, vehicle and path effects and subscribed-game behavior remain unverified.
+- Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning

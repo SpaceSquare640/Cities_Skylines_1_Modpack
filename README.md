@@ -79,3 +79,13 @@ Enter the line ID and use original one-based indices (`1,3,2`) or captured segme
 Cloud model checks cover immutable input isolation, exact stale-route matching, line identity, unchanged counts and unsafe coordinate/site rejection. Successful cloud compilation and pure-data tests do not establish subscribed-game UI, MoveStop, connectivity or save/reload behavior. No stop insertion/deletion or line recreation is implemented.
 
 Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning
+
+### Edit failure and city-change handling
+
+Queued edit operations now carry unique ownership tickets. City unload invalidates the old ticket, so an old preview, delayed check or completion cannot overwrite a new city's edit state. Before each apply or recovery write the operation verifies its request, managers, line identity and unchanged stop count.
+
+Recovery skips already unchanged stops and reads back finite stop positions, count and route completeness after the line refresh. `PositionsRestored` means only that original positions were observed within 0.5 metres; it does not restore all passenger, vehicle or path side effects. `RecoveryIncomplete` requires inspection and restoring a save backup. `Invalidated` stops further writes after a city/request change. False or throwing native calls may already have modified the route, so return values alone are never treated as proof of recovery.
+
+Cloud fault-injection checks exercise these control-flow cases against a fake route surface. They do not establish the real game's MoveStop, UI, connectivity or save/reload behavior.
+
+Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Planning

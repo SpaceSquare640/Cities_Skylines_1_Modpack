@@ -48,6 +48,15 @@ Open the module's Options page. Dev Tool controls are compiled in; no additional
 
 Both modes use the game's MoveStop operation on the existing line; the mod does not release/recreate or rename it. Failure requests best-effort recovery of the original positions, which is not atomic and cannot restore all passenger, vehicle or path side effects. Recovery can fail: stop and restore your save backup when warned. Follow-up checks inspect stop lanes and adjacent path flags only. Verify the entire route, preserved line identity and save/reload yourself on a disposable save. Runtime UI and MoveStop behavior remain unverified in the subscribed game.
 
+### Interpreting an edit failure
+
+- `Refused`: the route did not satisfy the live preconditions; no edit was started by the executor.
+- `PositionsRestored`: the edit failed, and original finite stop positions were observed within 0.5 metres after recovery. This is position-only verification, not an atomic rollback of passengers, vehicles or paths.
+- `RecoveryIncomplete`: recovery could not verify positions, route completeness or identity. Stop editing, inspect the city and restore your save backup if necessary.
+- `Invalidated`: the city or request changed. The old operation stops further apply and recovery writes; it does not report the new city as repaired.
+
+Changing cities also invalidates old preview/status/completion callbacks. Fault-injection checks verify the executor's failure handling in a cloud test host; real in-game behavior still requires subscribed-build testing.
+
 ## Uninstallation and Return to Stable Release
 
 Close the game and remove this Development copy from the Mods folder. Removing the DLL does not reverse saved city changes; restore your backup where necessary. Re-enable the stable Workshop copy only after this Development copy is removed.

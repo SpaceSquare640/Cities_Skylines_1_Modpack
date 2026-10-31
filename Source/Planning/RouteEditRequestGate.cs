@@ -7,11 +7,50 @@ namespace AutomatedPublicTransportPlanning.Planning
 
     internal sealed class RouteEditRequestGate
     {
-        public bool IsBusy { get { throw new NotImplementedException(); } }
-        public bool TryBegin(out RouteEditRequestTicket ticket) { throw new NotImplementedException(); }
-        public bool IsOwner(RouteEditRequestTicket ticket) { throw new NotImplementedException(); }
-        public bool TryPublish(RouteEditRequestTicket ticket, Action action) { throw new NotImplementedException(); }
-        public bool Complete(RouteEditRequestTicket ticket) { throw new NotImplementedException(); }
-        public void Reset(Action clearState) { throw new NotImplementedException(); }
+        private readonly object m_sync = new object();
+        private RouteEditRequestTicket m_active;
+        public bool IsBusy { get { lock (m_sync) { return m_active != null; } } }
+
+        public bool TryBegin(out RouteEditRequestTicket ticket)
+        {
+            lock (m_sync)
+            {
+                ticket = null;
+                if (m_active != null) { return false; }
+                ticket = m_active = new RouteEditRequestTicket();
+                return true;
+            }
+        }
+
+        public bool IsOwner(RouteEditRequestTicket ticket)
+        {
+            lock (m_sync) { return ticket != null && object.ReferenceEquals(m_active, ticket); }
+        }
+
+        // Hold ownership across only short state publications, never game API calls.
+        public bool TryPublish(RouteEditRequestTicket ticket, Action action)
+        {
+            lock (m_sync)
+            {
+                if (ticket == null || !object.ReferenceEquals(m_active, ticket)) { return false; }
+                action();
+                return true;
+            }
+        }
+
+        public bool Complete(RouteEditRequestTicket ticket)
+        {
+            lock (m_sync)
+            {
+                if (ticket == null || !object.ReferenceEquals(m_active, ticket)) { return false; }
+                m_active = null;
+                return true;
+            }
+        }
+
+        public void Reset(Action clearState)
+        {
+            lock (m_sync) { m_active = null; clearState(); }
+        }
     }
 }

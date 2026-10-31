@@ -23,6 +23,10 @@ internal static class RouteEditExecutionChecks
         Check("wrong original identity is refused without writes", WrongIdentity);
         Check("identity lost during apply prevents recovery writes", LostIdentity);
         Check("recovery skips unchanged original positions", SkipUnchangedRecovery);
+        Check("first UpdateLine exception recovers original positions", FirstUpdateException);
+        Check("UpdateLine position corruption cannot be reported applied", UpdatePositionCorruption);
+        Check("persistent UpdateLine exception reports incomplete recovery", PersistentUpdateException);
+        Check("UpdateLine invalidation prevents every subsequent write", InvalidateDuringUpdate);
     }
 
     private static void NormalEdit()
@@ -206,6 +210,51 @@ internal static class RouteEditExecutionChecks
         return Plan(unchanged, unchanged ? new[] { 0f, 20f, 40f } : new[] { 100f, 120f, 140f });
     }
 
+    private static void FirstUpdateException()
+    {
+        FakeSurface surface = new FakeSurface();
+        surface.OnUpdate = delegate
+        {
+            if (surface.UpdateCalls == 1) { throw new InvalidOperationException("injected first update failure"); }
+        };
+        Result(RouteEditExecutionOutcome.PositionsRestored, RouteEditExecutor.Execute(Plan(false), surface));
+        Positions(surface, 0, 20, 40);
+        Require(surface.UpdateCalls == 2, "recovery must complete a later successful line update");
+    }
+
+    private static void UpdatePositionCorruption()
+    {
+        foreach (float invalidPosition in new[] { 999f, float.NaN })
+        {
+            FakeSurface surface = new FakeSurface();
+            surface.OnUpdate = delegate
+            {
+                if (surface.UpdateCalls == 1) { surface.Positions[0] = new Vector3(invalidPosition, 0, 0); }
+            };
+            Result(RouteEditExecutionOutcome.PositionsRestored, RouteEditExecutor.Execute(Plan(false), surface));
+            Positions(surface, 0, 20, 40);
+            Require(surface.UpdateCalls == 2, "post-update corruption must trigger recovery and its own update");
+        }
+    }
+
+    private static void PersistentUpdateException()
+    {
+        FakeSurface surface = new FakeSurface();
+        surface.OnUpdate = delegate { throw new InvalidOperationException("injected persistent update failure"); };
+        Result(RouteEditExecutionOutcome.RecoveryIncomplete, RouteEditExecutor.Execute(Plan(false), surface));
+        Positions(surface, 0, 20, 40);
+        Require(surface.UpdateCalls == 2, "both original and recovery updates must have been attempted");
+    }
+
+    private static void InvalidateDuringUpdate()
+    {
+        FakeSurface surface = new FakeSurface();
+        surface.OnUpdate = delegate { surface.Current = false; };
+        Result(RouteEditExecutionOutcome.Invalidated, RouteEditExecutor.Execute(Plan(false), surface));
+        Require(surface.Moves.Count == 3 && surface.UpdateCalls == 1 && surface.WritesAfterInvalidation == 0,
+            "an invalidating line update cannot be followed by apply, recovery or another update");
+    }
+
     private static RouteEditPlan Plan(bool unchanged, float[] positions)
     {
         ExistingRouteStop[] old = {
@@ -251,6 +300,7 @@ internal static class RouteEditExecutionChecks
         internal bool Current = true, Identity = true, IsComplete = true;
         internal int Count = 3, UpdateCalls, WritesAfterInvalidation;
         internal Func<int, Vector3, bool> OnMove;
+        internal Action OnUpdate;
         public bool IsCurrent { get { return Current; } }
         public bool HasExpectedIdentity { get { return Identity; } }
         public int StopCount { get { return Count; } }
@@ -268,6 +318,7 @@ internal static class RouteEditExecutionChecks
         {
             if (!Current) { WritesAfterInvalidation++; }
             UpdateCalls++;
+            if (OnUpdate != null) { OnUpdate(); }
         }
     }
 }

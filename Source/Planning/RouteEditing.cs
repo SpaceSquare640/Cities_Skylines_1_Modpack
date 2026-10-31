@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
-using System.Threading;
 using ColossalFramework;
 using UnityEngine;
 using AutomatedPublicTransportPlanning.Util;
@@ -18,29 +17,26 @@ namespace AutomatedPublicTransportPlanning.Planning
         private static RouteEditPlan s_plan;
         private static string s_status = "No existing-route edit prepared.";
         private static string s_preview = string.Empty;
-        private static int s_epoch;
-        private static int s_busy;
-        private static ushort s_checkLine;
-        private static int s_checkStops;
-        private static int s_checkFrames;
+        private static readonly RouteEditRequestGate Requests = new RouteEditRequestGate();
+        private static PendingCheck s_check;
         public static RouteEditPlan CurrentPlan { get { lock (Sync) { return s_plan; } } }
         public static string StatusText { get { lock (Sync) { return s_status; } } }
         public static string PreviewText { get { lock (Sync) { return s_preview; } } }
-        public static bool IsBusy { get { return Interlocked.CompareExchange(ref s_busy, 0, 0) != 0; } }
+        public static bool IsBusy { get { return Requests.IsBusy; } }
 
         public static void ResetForLevelChange()
         {
-            Interlocked.Increment(ref s_epoch);
-            Interlocked.Exchange(ref s_busy, 0);
-            s_checkLine = 0;
-            lock (Sync) { s_plan = null; s_preview = string.Empty; s_status = "City changed; prepare a new edit."; }
+            Requests.Reset(delegate
+            {
+                lock (Sync) { s_check = null; s_plan = null; s_preview = string.Empty; s_status = "City changed; prepare a new edit."; }
+            });
         }
 
         public static void RequestPreview(ushort lineId, string manualOrder, int proposalIndex, bool automatic)
         {
-            Queue(delegate
+            Queue(delegate(RouteEditRequestTicket ticket)
             {
-                lock (Sync) { s_plan = null; s_preview = string.Empty; }
+                if (!Requests.TryPublish(ticket, delegate { lock (Sync) { s_plan = null; s_preview = string.Empty; } })) { return; }
                 ExistingRouteSnapshot original = Capture(lineId);
                 PlanningPreviewResult planning = PlanningCapture.LatestPreview;
                 List<RouteStopSite> targets = new List<RouteStopSite>();
@@ -94,79 +90,158 @@ namespace AutomatedPublicTransportPlanning.Planning
                     text.Append(i + 1).Append(": node ").Append(original.Stops[i].NodeId).Append(' ').Append(original.Stops[i].Position)
                         .Append(" -> segment ").Append(targets[i].SegmentId).Append(" lane ").Append(targets[i].LaneIndex).Append(' ').Append(targets[i].Position).Append('\n');
                 }
-                lock (Sync) { s_plan = plan; s_preview = text.ToString(); s_status = "Preview only. Back up the save; two confirmations are required to apply."; }
+                Requests.TryPublish(ticket, delegate { lock (Sync) { s_plan = plan; s_preview = text.ToString(); s_status = "Preview only. Back up the save; two confirmations are required to apply."; } });
             }, "Prepare existing-route edit");
         }
 
         public static void RequestApply(RouteEditPlan plan)
         {
-            Queue(delegate
+            Queue(delegate(RouteEditRequestTicket ticket)
             {
-                int applyingEpoch = Interlocked.CompareExchange(ref s_epoch, 0, 0);
                 if (plan == null || !object.ReferenceEquals(plan, CurrentPlan)) { throw new InvalidOperationException("The displayed edit is no longer current."); }
                 ExistingRouteSnapshot current = Capture(plan.Original.LineId);
                 if (!plan.Original.Matches(current.LineId, current.BuildIndex, current.PrefabName, current.Stops)) { throw new InvalidOperationException("The city or original route changed; prepare a new edit."); }
                 ValidateTargets(plan);
-                lock (Sync) { s_plan = null; }
-                ushort line = plan.Original.LineId;
-                TransportManager tm = Singleton<TransportManager>.instance;
-                try
+                if (!Requests.TryPublish(ticket, delegate { lock (Sync) { s_plan = null; } })) { return; }
+                LiveSurface surface = new LiveSurface(plan.Original.LineId, plan.Stops.Count, ticket);
+                RouteEditExecutionResult result = RouteEditExecutor.Execute(plan, surface);
+                if (result.Outcome == RouteEditExecutionOutcome.Applied)
                 {
-                    for (int i = 0; i < plan.Stops.Count; i++)
+                    Requests.TryPublish(ticket, delegate
                     {
-                        if (applyingEpoch != Interlocked.CompareExchange(ref s_epoch, 0, 0)) { throw new InvalidOperationException("City changed during route editing."); }
-                        Vector3 position = Singleton<NetManager>.instance.m_nodes.m_buffer[tm.m_lines.m_buffer[line].GetStop(i)].m_position;
-                        if ((position - plan.Stops[i].Position).sqrMagnitude < 0.0001f) { continue; }
-                        if (!tm.m_lines.m_buffer[line].MoveStop(line, i, plan.Stops[i].Position, plan.Stops[i].FixedPlatform) ||
-                            tm.m_lines.m_buffer[line].CountStops(line) != plan.Stops.Count) { throw new InvalidOperationException("MoveStop refused or changed the stop count at index " + i + "."); }
-                    }
-                    if (!tm.m_lines.m_buffer[line].Complete) { throw new InvalidOperationException("The edited route is not complete."); }
-                    for (int i = 0; i < plan.Stops.Count; i++)
-                    {
-                        ushort node = tm.m_lines.m_buffer[line].GetStop(i);
-                        if (node == 0 || (Singleton<NetManager>.instance.m_nodes.m_buffer[node].m_position - plan.Stops[i].Position).sqrMagnitude > 0.25f) { throw new InvalidOperationException("The game did not retain a requested stop position."); }
-                    }
-                    tm.UpdateLine(line);
-                    s_checkLine = line; s_checkStops = plan.Stops.Count; s_checkFrames = 0;
-                    SetStatus("Edit applied to existing line " + line + "; checking adjacent paths. This is not full-route acceptance.");
-                }
-                catch (Exception error)
-                {
-                    if (applyingEpoch != Interlocked.CompareExchange(ref s_epoch, 0, 0)) { Log.Exception("City changed; refusing recovery against another city", error); return; }
-                    bool restored = true;
-                    // Best effort only: this cannot undo passenger/vehicle/path side effects.
-                    for (int i = 0; i < plan.Original.Stops.Count; i++)
-                    {
-                        try
+                        lock (Sync)
                         {
-                            if (tm.m_lines.m_buffer[line].CountStops(line) != plan.Original.Stops.Count ||
-                                !tm.m_lines.m_buffer[line].MoveStop(line, i, plan.Original.Stops[i].Position, false)) { restored = false; }
+                            s_check = new PendingCheck(plan.Original.LineId, plan.Stops.Count, ticket, surface);
+                            s_status = "Edit applied to existing line " + plan.Original.LineId + "; " + result.Detail;
                         }
-                        catch { restored = false; }
-                    }
-                    try { tm.UpdateLine(line); } catch { restored = false; }
-                    SetStatus("Edit failed: " + error.Message + (restored ? " Original positions were requested again; inspect the city and use your backup if needed." : " Recovery was incomplete. Stop and restore your save backup."));
-                    Log.Exception("Existing-route edit failed; best-effort recovery=" + restored, error);
+                    });
+                }
+                else
+                {
+                    SetOwnedStatus(ticket, result.Outcome + ": " + result.Detail);
+                    Log.Warning("Existing-route execution " + result.Outcome + ": " + result.Detail);
                 }
             }, "Apply existing-route edit");
         }
 
-        private static void Queue(Action action, string context)
+        private static void Queue(Action<RouteEditRequestTicket> action, string context)
         {
-            if (RouteCreationController.IsBusy || Interlocked.CompareExchange(ref s_busy, 1, 0) != 0) { SetStatus("Another route operation is pending."); return; }
-            int epoch = Interlocked.CompareExchange(ref s_epoch, 0, 0);
-            if (!Singleton<SimulationManager>.exists) { Interlocked.Exchange(ref s_busy, 0); SetStatus("No city is loaded."); return; }
+            RouteEditRequestTicket ticket;
+            if (RouteCreationController.IsBusy || !Requests.TryBegin(out ticket)) { SetStatus("Another route operation is pending."); return; }
+            if (!Singleton<SimulationManager>.exists)
+            {
+                SetOwnedStatus(ticket, "No city is loaded."); Requests.Complete(ticket); return;
+            }
             try
             {
                 Singleton<SimulationManager>.instance.AddAction(delegate
                 {
-                    if (epoch != Interlocked.CompareExchange(ref s_epoch, 0, 0)) { return; }
-                    try { action(); }
-                    catch (Exception error) { lock (Sync) { s_plan = null; } SetStatus(context + " refused: " + error.Message); Log.Exception(context, error); }
-                    finally { if (s_checkLine == 0) { Interlocked.Exchange(ref s_busy, 0); } }
+                    if (!Requests.IsOwner(ticket)) { return; }
+                    try { action(ticket); }
+                    catch (Exception error)
+                    {
+                        Requests.TryPublish(ticket, delegate { lock (Sync) { s_plan = null; s_status = context + " refused: " + error.Message; } });
+                        Log.Exception(context, error);
+                    }
+                    finally
+                    {
+                        PendingCheck pending;
+                        lock (Sync) { pending = s_check; }
+                        if (pending == null || !object.ReferenceEquals(pending.Ticket, ticket)) { Requests.Complete(ticket); }
+                    }
                 });
             }
-            catch (Exception error) { Interlocked.Exchange(ref s_busy, 0); SetStatus(context + " could not be queued."); Log.Exception(context, error); }
+            catch (Exception error)
+            {
+                SetOwnedStatus(ticket, context + " could not be queued."); Requests.Complete(ticket); Log.Exception(context, error);
+            }
+        }
+
+        private sealed class LiveSurface : IRouteEditSurface
+        {
+            private readonly ushort m_line;
+            private readonly int m_count;
+            private readonly RouteEditRequestTicket m_ticket;
+            private readonly TransportManager m_transport;
+            private readonly NetManager m_net;
+            private readonly SimulationManager m_simulation;
+            private readonly TransportInfo m_info;
+            private readonly ushort[] m_nodes;
+            public LiveSurface(ushort line, int count, RouteEditRequestTicket ticket)
+            {
+                m_line = line; m_count = count; m_ticket = ticket;
+                m_transport = Singleton<TransportManager>.instance;
+                m_net = Singleton<NetManager>.instance;
+                m_simulation = Singleton<SimulationManager>.instance;
+                m_info = m_transport.m_lines.m_buffer[line].Info;
+                m_nodes = new ushort[count];
+                RememberOwnStopNodes();
+            }
+            public bool IsCurrent
+            {
+                get { return Requests.IsOwner(m_ticket) && Singleton<TransportManager>.exists && Singleton<NetManager>.exists && Singleton<SimulationManager>.exists &&
+                    object.ReferenceEquals(m_transport, Singleton<TransportManager>.instance) && object.ReferenceEquals(m_net, Singleton<NetManager>.instance) && object.ReferenceEquals(m_simulation, Singleton<SimulationManager>.instance); }
+            }
+            public bool HasExpectedIdentity
+            {
+                get
+                {
+                    try
+                    {
+                        if (!HeaderMatches() || StopCount != m_count) { return false; }
+                        for (int i = 0; i < m_count; i++)
+                        {
+                            if (m_nodes[i] == 0 || m_transport.m_lines.m_buffer[m_line].GetStop(i) != m_nodes[i]) { return false; }
+                        }
+                        return true;
+                    }
+                    catch { return false; }
+                }
+            }
+            private bool HeaderMatches()
+            {
+                return IsCurrent && m_line != 0 && m_line < m_transport.m_lines.m_buffer.Length &&
+                    (m_transport.m_lines.m_buffer[m_line].m_flags & TransportLine.Flags.Created) != 0 && object.ReferenceEquals(m_info, m_transport.m_lines.m_buffer[m_line].Info);
+            }
+            private void RememberOwnStopNodes()
+            {
+                // A native MoveStop can change node IDs even when it returns false.
+                // Adopt only the result of our own call, never an intervening external replacement.
+                if (!HeaderMatches() || StopCount != m_count) { return; }
+                for (int i = 0; i < m_count; i++) { m_nodes[i] = m_transport.m_lines.m_buffer[m_line].GetStop(i); }
+            }
+            public int StopCount { get { return m_transport.m_lines.m_buffer[m_line].CountStops(m_line); } }
+            public bool Complete { get { return m_transport.m_lines.m_buffer[m_line].Complete; } }
+            private void EnsureCurrent()
+            {
+                if (!IsCurrent || !HasExpectedIdentity || StopCount != m_count) { throw new InvalidOperationException("The request, city or line identity changed."); }
+            }
+            public Vector3 ReadPosition(int index)
+            {
+                EnsureCurrent();
+                if (index < 0 || index >= m_count) { throw new ArgumentOutOfRangeException("index"); }
+                ushort node = m_transport.m_lines.m_buffer[m_line].GetStop(index);
+                if (node == 0 || node >= m_net.m_nodes.m_buffer.Length) { throw new InvalidOperationException("A route stop is missing."); }
+                return m_net.m_nodes.m_buffer[node].m_position;
+            }
+            public bool MoveStop(int index, Vector3 position, bool fixedPlatform)
+            {
+                EnsureCurrent();
+                try { return m_transport.m_lines.m_buffer[m_line].MoveStop(m_line, index, position, fixedPlatform); }
+                finally { RememberOwnStopNodes(); }
+            }
+            public void UpdateLine() { EnsureCurrent(); m_transport.UpdateLine(m_line); }
+        }
+
+        private sealed class PendingCheck
+        {
+            public readonly ushort Line;
+            public readonly int Stops;
+            public readonly RouteEditRequestTicket Ticket;
+            public readonly LiveSurface Surface;
+            public int Frames;
+            public PendingCheck(ushort line, int stops, RouteEditRequestTicket ticket, LiveSurface surface)
+            { Line = line; Stops = stops; Ticket = ticket; Surface = surface; }
         }
 
         private static ExistingRouteSnapshot Capture(ushort line)
@@ -241,14 +316,18 @@ namespace AutomatedPublicTransportPlanning.Planning
 
         public static void OnAfterSimulationFrame()
         {
-            if (s_checkLine == 0 || ++s_checkFrames < 60) { return; }
+            PendingCheck pending;
+            lock (Sync) { pending = s_check; }
+            if (pending == null || !Requests.IsOwner(pending.Ticket) || ++pending.Frames < 60) { return; }
+            string status;
             try
             {
+                if (!pending.Surface.IsCurrent) { FinishCheck(pending, "City changed; stop checks were cancelled."); return; }
                 TransportManager tm = Singleton<TransportManager>.instance;
                 NetManager net = Singleton<NetManager>.instance;
-                ushort line = s_checkLine;
-                bool valid = (tm.m_lines.m_buffer[line].m_flags & TransportLine.Flags.Created) != 0 && tm.m_lines.m_buffer[line].Complete && tm.m_lines.m_buffer[line].CountStops(line) == s_checkStops;
-                for (int i = 0; valid && i < s_checkStops; i++)
+                ushort line = pending.Line;
+                bool valid = pending.Surface.HasExpectedIdentity && pending.Surface.Complete && pending.Surface.StopCount == pending.Stops;
+                for (int i = 0; valid && i < pending.Stops; i++)
                 {
                     ushort node = tm.m_lines.m_buffer[line].GetStop(i);
                     valid = node != 0 && StopPlacement.HasLaneConnection(node) && !net.m_nodes.m_buffer[node].m_problems.IsNotNone;
@@ -258,12 +337,22 @@ namespace AutomatedPublicTransportPlanning.Planning
                         if (segment != 0 && (net.m_segments.m_buffer[segment].m_flags & NetSegment.Flags.PathFailed) != 0) { valid = false; }
                     }
                 }
-                if (!valid && s_checkFrames < 300) { return; }
-                SetStatus(valid ? "Edited line " + line + " passed adjacent-stop checks only; verify the whole route and save/reload in game." : "Edited line " + line + " has connectivity/path warnings. Inspect it and restore your backup if needed.");
+                if (!valid && pending.Frames < 300) { return; }
+                status = valid ? "Edited line " + line + " passed adjacent-stop checks only; verify the whole route and save/reload in game." : "Edited line " + line + " has connectivity/path warnings. Inspect it and restore your backup if needed.";
             }
-            catch (Exception error) { SetStatus("Could not verify the edited line; inspect the city."); Log.Exception("Existing-route post-check", error); }
-            s_checkLine = 0;
-            Interlocked.Exchange(ref s_busy, 0);
+            catch (Exception error) { status = "Could not verify the edited line; inspect the city."; Log.Exception("Existing-route post-check", error); }
+            FinishCheck(pending, status);
+        }
+
+        private static void FinishCheck(PendingCheck pending, string status)
+        {
+            Requests.TryPublish(pending.Ticket, delegate { lock (Sync) { if (object.ReferenceEquals(s_check, pending)) { s_check = null; s_status = status; } } });
+            Requests.Complete(pending.Ticket);
+        }
+
+        private static void SetOwnedStatus(RouteEditRequestTicket ticket, string status)
+        {
+            Requests.TryPublish(ticket, delegate { lock (Sync) { s_status = status; } });
         }
 
         private static void SetStatus(string text) { lock (Sync) { s_status = text; } }
