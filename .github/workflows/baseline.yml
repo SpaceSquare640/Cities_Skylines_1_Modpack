@@ -1,0 +1,35 @@
+name: Vehicle traffic repository baseline
+on:
+  push:
+    branches: [Realistic_Vehicle_Traffic_Control]
+  pull_request:
+    branches: [Realistic_Vehicle_Traffic_Control]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: vehicle-baseline-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  repository-baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate planning-stage repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s README.md
+          test -s 'Change Log.md'
+          test -s LICENSE
+          grep -Fq 'PolyForm Noncommercial License 1.0.0' LICENSE
+          grep -Fq 'No game behavior is implemented yet.' README.md
+          git diff-tree --check --root HEAD
+          if git ls-files | grep -Ei '\.(dll|exe|zip|pdb)$'; then
+            echo 'Unexpected binary artifact in the planning-stage branch.' >&2
+            exit 1
+          fi
+# Signature: OpenAI-Codex_Responsible: Realistic_Vehicle_Traffic_Control
