@@ -1,0 +1,34 @@
+# Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Vehicle_Management
+name: Vehicle management cloud build
+on:
+  push:
+    branches: [Automated_Public_Transport_Vehicle_Management]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  checks:
+    if: github.ref == 'refs/heads/Automated_Public_Transport_Vehicle_Management'
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Locate MSBuild
+        shell: pwsh
+        run: |
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
+          $msbuild = & $vswhere -latest -products '*' -requires Microsoft.Component.MSBuild -find 'MSBuild/**/Bin/MSBuild.exe' | Select-Object -First 1
+          if (-not $msbuild) { throw 'MSBuild not found.' }
+          "VEHICLE_MSBUILD=$msbuild" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
+      - name: Compile observation checks
+        shell: pwsh
+        run: |
+          & $env:VEHICLE_MSBUILD Tests/ObservationChecks.csproj /t:Rebuild /p:Configuration=Release /nologo
+          exit $LASTEXITCODE
+      - name: Run observation checks
+        shell: pwsh
+        run: |
+          & ./Tests/bin/Release/ObservationChecks.exe
+          exit $LASTEXITCODE

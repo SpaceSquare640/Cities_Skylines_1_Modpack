@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Vehicle_Management -->
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>ObservationChecks</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <LangVersion>5</LangVersion>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Compile Include="ObservationChecks.cs" />
+    <Compile Include="..\Source\Model\LineKey.cs"><Link>Model\LineKey.cs</Link></Compile>
+    <Compile Include="..\Source\Model\LineObservation.cs"><Link>Model\LineObservation.cs</Link></Compile>
+    <Compile Include="..\Source\State\ObservationGate.cs"><Link>State\ObservationGate.cs</Link></Compile>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
