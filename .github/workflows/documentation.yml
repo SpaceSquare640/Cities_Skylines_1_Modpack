@@ -1,0 +1,24 @@
+# Signature: OpenAI-Codex_Responsible: Realistic_City_First_Response
+name: Emergency response documentation baseline
+on:
+  push:
+    branches: [Realistic_City_First_Response]
+  pull_request:
+    branches: [Realistic_City_First_Response]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check required project documents
+        shell: bash
+        run: |
+          test -s README.md
+          test -s LICENSE.md
+          test -s 'Change Log.md'
+          grep -Fq 'PolyForm Noncommercial' LICENSE.md
+          grep -Fq '(LICENSE.md)' README.md
+          grep -Fq 'No gameplay code' README.md
