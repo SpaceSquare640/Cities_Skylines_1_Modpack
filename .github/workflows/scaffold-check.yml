@@ -1,0 +1,29 @@
+name: Border Control scaffold check
+
+on:
+  push:
+    branches: [Realistic_Border_Control]
+  pull_request:
+    branches: [Realistic_Border_Control]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Check scaffold documentation
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s README.md
+          test -s 'Change Log.md'
+          test -s LICENSE
+          grep -Fq 'PolyForm Noncommercial License 1.0.0' LICENSE
+          grep -Fq 'no game functionality' README.md
+          printf '%s\n' 'Documentation checks passed; no game build or runtime validation performed.'
+
+# Signature: OpenAI-Codex_Responsible: Realistic_Border_Control
