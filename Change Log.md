@@ -40,5 +40,7 @@ Signature: OpenAI-Codex_Responsible: AI_Improve
 - Include the official CitiesHarmony MIT license, stable Workshop links, installation
   and removal instructions, save-risk warnings, checksums and exact build provenance.
 - Use unique module-prefixed tags and retain existing public versions unchanged.
+- Resolve unpublished drafts through their release ID before inspecting assets;
+  the published-release-by-tag endpoint does not find unpublished drafts.
 
 Signature: OpenAI-Codex_Responsible: AI_Improve

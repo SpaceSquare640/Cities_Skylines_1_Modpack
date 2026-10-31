@@ -37,7 +37,9 @@ foreach ($file in $files) {
     gh release upload $tag $file.FullName --repo $env:GITHUB_REPOSITORY
     if ($LASTEXITCODE -ne 0) { throw "Asset upload failed: $($file.Name)" }
 }
-$releaseText = gh api "repos/$env:GITHUB_REPOSITORY/releases/tags/$tag"
+$releaseApi = gh release view $tag --repo $env:GITHUB_REPOSITORY --json apiUrl --jq .apiUrl
+if ($LASTEXITCODE -ne 0) { throw 'Cannot resolve draft release ID.' }
+$releaseText = gh api $releaseApi
 if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect draft.' }
 $release = $releaseText | ConvertFrom-Json
 if (-not $release.draft -or -not $release.prerelease -or $release.target_commitish -cne $env:GITHUB_SHA -or $release.assets.Count -ne $allowed.Count) { throw 'Draft metadata mismatch.' }
@@ -54,7 +56,7 @@ foreach ($file in $files) {
 }
 gh release edit $tag --repo $env:GITHUB_REPOSITORY --draft=false --prerelease --latest=false
 if ($LASTEXITCODE -ne 0) { throw 'Publishing verified draft failed.' }
-$finalText = gh api "repos/$env:GITHUB_REPOSITORY/releases/tags/$tag"
+$finalText = gh api $releaseApi
 if ($LASTEXITCODE -ne 0) { throw 'Cannot verify public release.' }
 $final = $finalText | ConvertFrom-Json
 if ($final.draft -or -not $final.prerelease -or $final.target_commitish -cne $env:GITHUB_SHA) { throw 'Public release state mismatch.' }
