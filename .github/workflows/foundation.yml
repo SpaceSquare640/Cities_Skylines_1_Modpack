@@ -1,0 +1,28 @@
+# Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Vehicle_Management
+name: Vehicle management foundation
+on:
+  push:
+    branches: [Automated_Public_Transport_Vehicle_Management]
+  pull_request:
+    branches: [Automated_Public_Transport_Vehicle_Management]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  documentation:
+    if: github.ref == 'refs/heads/Automated_Public_Transport_Vehicle_Management' || github.base_ref == 'Automated_Public_Transport_Vehicle_Management'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Check foundation documents (not a mod build)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s README.md
+          test -s 'Change Log.md'
+          test -s LICENSE
+          grep -Fq 'Polyform Noncommercial License 1.0.0' LICENSE
+          grep -Fq 'No gameplay implementation' README.md
+          printf '%s\n' 'Documentation checks only; no gameplay build or release.' >> "$GITHUB_STEP_SUMMARY"
