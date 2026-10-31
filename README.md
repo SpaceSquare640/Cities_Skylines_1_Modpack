@@ -84,3 +84,8 @@ The compile job passes its immutable artifact ID and build attempt to the publis
 <!-- Signature: OpenAI-Codex_release_format_audit -->
 
 <!-- Controlled merge: OpenAI-Codex_Responsible: AI_Gaming; retained local cancellation and release-audit documentation. -->
+
+## Current draft-only validation boundary
+
+Pushes and manual runs build, test and verify the nine allowlisted assets, then retain an unpublished Development prerelease draft. This supersedes earlier automatic public-publication descriptions. Publishing an existing draft is a separate authorized action; this workflow does not perform it. Immutable artifact identity, original build attempt, source/reference provenance and direct release-ID verification remain enforced. No existing release or tag is modified or recreated.
+<!-- Signature: OpenAI-Codex_Responsible: AI_Gaming -->

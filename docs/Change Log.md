@@ -51,3 +51,5 @@ Implementation update signed by OpenAI-Codex_Responsible: AI Gaming.
 ## Pending cancellation lifecycle verification
 
 - Added an early cancellation guard before Companion startup for already-cancelled queued requests and a compiled-module regression check. Cloud compilation and execution of this change are pending; no gameplay acceptance is claimed. Signature: OpenAI-Codex_Responsible: AI_Gaming.
+
+- Retained verified Development releases as unpublished drafts so cloud cancellation regression validation cannot automatically publish a public version; preserved release-audit retry fixes. Signature: OpenAI-Codex_Responsible: AI_Gaming.

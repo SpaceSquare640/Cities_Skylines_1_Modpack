@@ -128,7 +128,7 @@ jobs:
           run-id: ${{ github.run_id }}
           merge-multiple: true
           path: ${{ runner.temp }}/release-assets
-      - name: Verify draft assets and publish prerelease
+      - name: Verify assets and retain unpublished prerelease draft
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}

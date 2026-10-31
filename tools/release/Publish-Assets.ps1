@@ -37,7 +37,7 @@ foreach ($file in $files) {
     if ((Get-FileHash (Join-Path $verify $file.Name) -Algorithm SHA256).Hash -cne $hash) { throw 'Uploaded hash mismatch' }
     Write-Output "$($file.Name) $($file.Length) SHA256=$($hash.ToLowerInvariant())"
 }
-Invoke-Gh @('--repo',$repo,'release','edit',$tag,'--draft=false','--prerelease','--latest=false')
 $final = (Invoke-Gh @('api',"repos/$repo/releases/$releaseId")) | ConvertFrom-Json
-if ($final.draft -or -not $final.prerelease) { throw 'Release publication not confirmed' }
-"Published prerelease: $($final.html_url)" | Tee-Object -FilePath $env:GITHUB_STEP_SUMMARY -Append
+if (-not $final.draft -or -not $final.prerelease) { throw 'Verified draft state not confirmed' }
+"Verified draft retained (not publicly published): $($final.html_url)" | Tee-Object -FilePath $env:GITHUB_STEP_SUMMARY -Append
+# Draft-only safety boundary: OpenAI-Codex_Responsible: AI_Gaming.

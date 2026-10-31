@@ -8,3 +8,8 @@ Signature: OpenAI-Codex_Responsible: AI_Gaming
 
 Subsequent releases use `AI Gaming — Development Build` with `AI_Gaming-dev-<Run ID>-<Attempt>` tags and the approved eight-section release-note order. Shared UI changes are validated by cloud checks before publication; prior releases and tags are retained.
 Signature: OpenAI-Codex_Responsible: AI_Gaming
+
+## Current draft-only validation boundary
+
+Pushes and manual runs build, test and verify the nine allowlisted assets, then retain an unpublished Development prerelease draft. This supersedes earlier automatic public-publication descriptions. Publishing an existing draft is a separate authorized action; this workflow does not perform it. Immutable artifact identity, original build attempt, source/reference provenance and direct release-ID verification remain enforced. No existing release or tag is modified or recreated.
+<!-- Signature: OpenAI-Codex_Responsible: AI_Gaming -->
