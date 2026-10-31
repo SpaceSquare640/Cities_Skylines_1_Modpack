@@ -23,6 +23,8 @@ internal static class PlanningEngineChecks
         Run("route edit plans retain identity, isolate inputs and reject unsafe or stale edits", RouteEditPlanChecks.Run);
         Run("route execution verifies observed recovery and refuses invalidated writes", RouteEditExecutionChecks.Run);
         Run("route edit request ownership rejects stale completion after reset", RouteEditRequestGateChecks.Run);
+        // Contributor: OpenAI-Codex_manual_input_tests
+        Run("manual route input validates order, road directions and malformed tokens", RouteManualInputChecks.Run);
         foreach (MethodInfo method in typeof(TransportLine).GetMethods())
         {
             if (method.Name == "MoveStop") { Console.WriteLine("TransportLine API: " + method); }
