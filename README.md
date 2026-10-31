@@ -54,3 +54,6 @@ The legacy Development Workshop dispatch job is disabled unconditionally. Future
 The separately scoped cloud compile diagnostic runs on GitHub-hosted Windows when its workflow file changes on AI_Gaming, or by manual dispatch. It publishes a self-contained win-x64 single-file development Companion with .NET 10, verifies matching project version and protocol metadata, computes its SHA256, and passes that pairing to a real DevTools mod build. An empty game root deliberately exposes the unresolved game references through the build tool's original errors. A failed build remains failed. No artifacts, archives, releases, or Workshop uploads are produced.
 
 <!-- Signature: OpenAI-Codex_Responsible: AI_Gaming -->
+
+The compile diagnostic now restores the approved encrypted game references from fixed dependency commit `7b8a5e7c10f2db84388e8dd8af2084f239957b13`. Only the restore step receives the decryption secret; plaintext stays under the cloud runner temporary directory. Successful compilation must also produce a nonempty mod DLL and paired Companion. This workflow still publishes no assets and does not establish gameplay acceptance.
+<!-- Signature: OpenAI-Codex_Responsible: AI_Gaming -->

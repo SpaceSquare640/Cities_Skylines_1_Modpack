@@ -16,6 +16,21 @@ jobs:
         shell: pwsh
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: 7b8a5e7c10f2db84388e8dd8af2084f239957b13
+          path: build-dependencies
+          persist-credentials: false
+          sparse-checkout: |
+            build-references/cs1/v1
+            tools/build-references
+      - name: Restore approved game references
+        env:
+          CS1_GAME_REFERENCES_KEY: ${{ secrets.CS1_GAME_REFERENCES_KEY }}
+        run: |
+          $gameRoot = Join-Path $env:RUNNER_TEMP 'cs1-game-root'
+          & ./build-dependencies/tools/build-references/Restore-GameReferences.ps1 -BundleDirectory ./build-dependencies/build-references/cs1/v1 -GameRoot $gameRoot
+          "CS1_GAME_ROOT=$gameRoot" >> $env:GITHUB_ENV
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
@@ -42,9 +57,13 @@ jobs:
           "PAIR_PROTOCOL=$protocol" >> $env:GITHUB_ENV
           "PAIR_SHA256=$sha" >> $env:GITHUB_ENV
           "Companion published: edition=development version=$version protocol=$protocol SHA256=$sha" | Tee-Object -FilePath $env:GITHUB_STEP_SUMMARY -Append
-      - name: Compile development DLL against empty game root
+      - name: Compile development DLL with approved game references
         run: |
-          $gameRoot = Join-Path $env:RUNNER_TEMP 'empty-game-root'
-          New-Item -ItemType Directory -Path $gameRoot -Force | Out-Null
-          dotnet build AIGaming.csproj -c Release -p:DevTools=true -p:CompanionEdition=development "-p:CompanionVersion=$env:PAIR_VERSION" "-p:CompanionProtocolVersion=$env:PAIR_PROTOCOL" "-p:CompanionSha256=$env:PAIR_SHA256" "-p:CSInstallPath=$gameRoot" "-p:CitiesSkylinesDir=$gameRoot"
-          exit $LASTEXITCODE
+          $gameRoot = $env:CS1_GAME_ROOT
+          $modOutput = Join-Path $env:RUNNER_TEMP 'mod-development'
+          dotnet build AIGaming.csproj -c Release -p:DevTools=true -p:CompanionEdition=development "-p:CompanionVersion=$env:PAIR_VERSION" "-p:CompanionProtocolVersion=$env:PAIR_PROTOCOL" "-p:CompanionSha256=$env:PAIR_SHA256" "-p:CSInstallPath=$gameRoot" "-p:CitiesSkylinesDir=$gameRoot" -o $modOutput
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $dll = Get-Item -LiteralPath (Join-Path $modOutput 'AIGaming.dll')
+          $exe = Get-Item -LiteralPath (Join-Path $env:RUNNER_TEMP 'companion-development/AIGaming.Companion.exe')
+          if ($dll.Length -le 0 -or $exe.Length -le 0) { throw 'Empty paired build output' }
+          "Verified nonempty mod DLL ($($dll.Length) bytes) and paired Companion ($($exe.Length) bytes)." >> $env:GITHUB_STEP_SUMMARY
