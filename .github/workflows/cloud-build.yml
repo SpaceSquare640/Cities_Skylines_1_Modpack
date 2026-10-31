@@ -32,3 +32,39 @@ jobs:
         run: |
           & ./Tests/bin/Release/ObservationChecks.exe
           exit $LASTEXITCODE
+      - name: Check out pinned reference supply
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: 7b8a5e7c10f2db84388e8dd8af2084f239957b13
+          path: build-dependencies
+          persist-credentials: false
+          sparse-checkout: |
+            build-references/cs1/v1
+            tools/build-references
+      - name: Restore references
+        shell: pwsh
+        env:
+          CS1_GAME_REFERENCES_KEY: ${{ secrets.CS1_GAME_REFERENCES_KEY }}
+        run: |
+          $root = Join-Path $env:RUNNER_TEMP 'vehicle-game-references'
+          & ./build-dependencies/tools/build-references/Restore-GameReferences.ps1 -BundleDirectory ./build-dependencies/build-references/cs1/v1 -GameRoot $root
+          "VEHICLE_REFERENCES=$root" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
+      - name: Compile read-only Release DLL
+        shell: pwsh
+        run: |
+          & $env:VEHICLE_MSBUILD AutomatedPublicTransportVehicleManagement.csproj /t:Rebuild /p:Configuration=Release "/p:GameReferencesRoot=$env:VEHICLE_REFERENCES" /nologo
+          exit $LASTEXITCODE
+      - name: Verify module output only
+        shell: pwsh
+        run: |
+          $allowed = @('AutomatedPublicTransportVehicleManagement.dll','AutomatedPublicTransportVehicleManagement.pdb')
+          $files = @(Get-ChildItem bin/Release -File -Recurse)
+          foreach ($file in $files) {
+            if ($file.Name -cnotin $allowed) { throw "Unexpected output: $($file.Name)" }
+            if ($file.Length -le 0) { throw 'Empty module output.' }
+          }
+          $dll = Get-Item bin/Release/AutomatedPublicTransportVehicleManagement.dll -ErrorAction Stop
+          $identity = [Reflection.AssemblyName]::GetAssemblyName($dll.FullName)
+          if ($identity.Name -cne 'AutomatedPublicTransportVehicleManagement' -or $identity.Version.ToString() -ne '0.1.0.0') { throw 'Unexpected assembly identity.' }
+          Get-FileHash $dll.FullName -Algorithm SHA256 | Format-List
+          'Release DLL compiled and checked. Gameplay and Workshop remain unverified.' >> $env:GITHUB_STEP_SUMMARY

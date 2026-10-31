@@ -1,0 +1,32 @@
+<!-- Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Vehicle_Management -->
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    <OutputType>Library</OutputType>
+    <AssemblyName>AutomatedPublicTransportVehicleManagement</AssemblyName>
+    <RootNamespace>AutomatedPublicTransportVehicleManagement</RootNamespace>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <NoStdLib>true</NoStdLib><NoConfig>true</NoConfig>
+    <LangVersion>5</LangVersion><CodePage>65001</CodePage>
+    <OutputPath>bin\$(Configuration)\</OutputPath><DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize><WarningLevel>4</WarningLevel>
+    <_TargetFrameworkDirectories>$(MSBuildThisFileDirectory)</_TargetFrameworkDirectories>
+    <_FullFrameworkReferenceAssemblyPaths>$(MSBuildThisFileDirectory)</_FullFrameworkReferenceAssemblyPaths>
+    <ManagedDir>$(GameReferencesRoot)\Cities_Data\Managed</ManagedDir>
+  </PropertyGroup>
+  <Target Name="RequireExplicitReferences" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="'$(GameReferencesRoot)' == '' Or !Exists('$(ManagedDir)\ICities.dll')" Text="An explicitly restored GameReferencesRoot is required; no game installation is searched." />
+  </Target>
+  <ItemGroup>
+    <Reference Include="mscorlib"><HintPath>$(ManagedDir)\mscorlib.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="System"><HintPath>$(ManagedDir)\System.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="System.Core, Version=3.5.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"><HintPath>$(ManagedDir)\System.Core.dll</HintPath><SpecificVersion>true</SpecificVersion><Private>false</Private></Reference>
+    <Reference Include="ICities"><HintPath>$(ManagedDir)\ICities.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Assembly-CSharp"><HintPath>$(ManagedDir)\Assembly-CSharp.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="ColossalManaged"><HintPath>$(ManagedDir)\ColossalManaged.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine"><HintPath>$(ManagedDir)\UnityEngine.dll</HintPath><Private>false</Private></Reference>
+    <Compile Include="Source\**\*.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

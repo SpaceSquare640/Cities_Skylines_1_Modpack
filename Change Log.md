@@ -10,3 +10,13 @@ Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Vehicle_Manageme
 - Update the canonical repository link and local origin after the GitHub account rename to KingsleyHK0323.
 
 Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Vehicle_Management
+
+## 0.1.0 - Read-only observation preview
+
+- Add manual, simulation-thread city-bus vehicle census and read-only settings display.
+- Invalidate capture state on city lifecycle changes; bound line and vehicle traversal.
+- Keep target counts and waiting passengers unknown; add no simulation control writes.
+- Add observation model checks and cloud-only compilation with pinned encrypted references.
+- Keep Workshop creation, subscription acceptance, releases and upload automation pending.
+
+Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Vehicle_Management

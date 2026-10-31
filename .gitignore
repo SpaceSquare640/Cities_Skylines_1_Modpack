@@ -1,0 +1,7 @@
+# Signature: OpenAI-Codex_Responsible: Automated_Public_Transport_Vehicle_Management
+bin/
+obj/
+Tests/bin/
+Tests/obj/
+build-dependencies/
+Local.props
