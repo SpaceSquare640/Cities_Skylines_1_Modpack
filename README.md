@@ -40,3 +40,11 @@ Copyright: Kingsley.
 <!-- Updated by OpenAI-Codex_Responsible: AI Gaming on 2026-10-29. -->
 <!-- Updated by OpenAI-Codex on 2026-10-29: optional city data groups. -->
 <!-- Updated by OpenAI-Codex_Responsible: AI Gaming on 2026-10-29. -->
+
+## Cloud validation and release status
+
+The AI Gaming cloud baseline checks required files and project XML metadata on GitHub-hosted Ubuntu. It does not compile the mod or Companion, run gameplay tests, or publish a release. Game reference provisioning remains unresolved for ICities.dll, ColossalManaged.dll, Assembly-CSharp.dll, and UnityEngine.dll. The mod targets .NET Framework 3.5; its paired Companion targets .NET 10.
+
+The legacy Development Workshop dispatch job is disabled unconditionally. Future releases are intended to provide the mod DLL and matching Companion files directly as this module's GitHub Release assets, without ZIP packaging. Automatic public releases remain unconfigured pending dependency provisioning and build validation.
+
+<!-- Signature: OpenAI-Codex_Responsible: AI_Gaming -->

@@ -1,0 +1,31 @@
+name: AI Gaming cloud baseline
+# Signature: OpenAI-Codex_Responsible: AI_Gaming
+on:
+  push:
+    branches: [AI_Gaming]
+  pull_request:
+    branches: [AI_Gaming]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check repository and project metadata
+        shell: python
+        run: |
+          import pathlib
+          import xml.etree.ElementTree as ET
+          for name in ('README.md', 'LICENSE', 'Source/AIGamingMod.cs', 'Companion/Program.cs'):
+              assert pathlib.Path(name).is_file(), name
+          expected = {'AIGaming.csproj': 'net35', 'Companion/AIGaming.Companion.csproj': 'net10.0'}
+          for name, framework in expected.items():
+              project = ET.parse(name).getroot()
+              assert project.findtext('.//TargetFramework') == framework, name
+          print('Project metadata verified. Game build, Companion build, tests and release are not performed.')
+      - name: Record unresolved build dependencies
+        run: |
+          echo 'Game reference DLL provisioning is unresolved: ICities, ColossalManaged, Assembly-CSharp, UnityEngine.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'No DLL or Companion is built or published. Releases must eventually provide paired files directly, without ZIP.' >> "$GITHUB_STEP_SUMMARY"

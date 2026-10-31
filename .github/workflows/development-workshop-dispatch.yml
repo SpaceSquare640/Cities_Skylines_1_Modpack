@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   dispatch:
-    if: github.repository == 'SpaceSquare640/Cities_Skylines_1_Modpack' && vars.WORKSHOP_DEV_AUTO_UPLOAD == 'true'
+    if: ${{ false }} # Disabled: OpenAI-Codex_Responsible: AI_Gaming; cloud-only CI must never dispatch Workshop.
     runs-on: ubuntu-latest
     steps:
       - name: Dispatch the Development Version upload
